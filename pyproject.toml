@@ -27,6 +27,7 @@ classifiers = [
 dependencies = [
     "pyyaml>=6.0",
     "pydantic>=2.0",
+    "fastapi>=0.100",
 ]
 
 [project.optional-dependencies]
@@ -36,8 +37,8 @@ cantera = ["cantera>=3.0"]
 coolprop = ["CoolProp>=6.4"]
 # Full calculation support
 calc = ["chemeng[thermo,cantera,coolprop]"]
-# API server
-api = ["fastapi>=0.100", "uvicorn>=0.20"]
+# API server (fastapi in core deps, uvicorn for local dev)
+api = ["uvicorn>=0.20"]
 ai = ["anthropic>=0.20"]
 dev = [
     "pytest>=7.0",
