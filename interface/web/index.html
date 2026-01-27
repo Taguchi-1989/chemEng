@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChemEng - Chemical Engineering Calculator</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        header p {
+            opacity: 0.9;
+            margin-top: 0.5rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+        }
+
+        .card h2 {
+            font-size: 1.1rem;
+            color: var(--text);
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            background: #cbd5e1;
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.6rem 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        /* Results */
+        .result-section {
+            display: none;
+        }
+
+        .result-section.active {
+            display: block;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .result-icon.success {
+            background: #dcfce7;
+            color: var(--success);
+        }
+
+        .result-icon.error {
+            background: #fee2e2;
+            color: var(--danger);
+        }
+
+        .result-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .result-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-item {
+            background: var(--bg);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .result-item .label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .result-item .value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-top: 0.25rem;
+        }
+
+        .result-item .unit {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        /* Distillation Diagram */
+        .column-diagram {
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .column-svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        /* Table */
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .result-table th,
+        .result-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .result-table th {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .result-table td {
+            font-size: 0.95rem;
+        }
+
+        /* Warnings */
+        .warnings {
+            background: #fef3c7;
+            border-left: 4px solid var(--warning);
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+            margin-top: 1rem;
+        }
+
+        .warnings h4 {
+            color: #92400e;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .warnings ul {
+            margin: 0;
+            padding-left: 1.25rem;
+            color: #92400e;
+            font-size: 0.85rem;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>ChemEng</h1>
+            <p>化学工学計算モジュール / Chemical Engineering Calculator</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="grid">
+            <!-- Input Panel -->
+            <div class="card">
+                <h2>計算タイプ / Calculation Type</h2>
+                <div class="tabs">
+                    <button class="tab active" data-tab="property">物性推算</button>
+                    <button class="tab" data-tab="distillation">蒸留塔設計</button>
+                    <button class="tab" data-tab="mass_balance">物質収支</button>
+                    <button class="tab" data-tab="heat_balance">熱収支</button>
+                </div>
+
+                <!-- Property Estimation Form -->
+                <form id="property-form" class="calc-form">
+                    <div class="form-group">
+                        <label>物質名 / Substance</label>
+                        <input type="text" name="substance" value="ethanol" required>
+                    </div>
+                    <div class="form-group">
+                        <label>物性 / Property</label>
+                        <select name="property">
+                            <option value="vapor_pressure">蒸気圧 / Vapor Pressure</option>
+                            <option value="liquid_density">液密度 / Liquid Density</option>
+                            <option value="liquid_viscosity">液粘度 / Liquid Viscosity</option>
+                            <option value="heat_of_vaporization">蒸発熱 / Heat of Vaporization</option>
+                            <option value="surface_tension">表面張力 / Surface Tension</option>
+                            <option value="boiling_point">沸点 / Boiling Point</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>温度 / Temperature (K)</label>
+                        <input type="number" name="temperature" value="350" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>圧力 / Pressure (Pa)</label>
+                        <input type="number" name="pressure" value="101325" step="100">
+                    </div>
+                    <button type="submit" class="btn">計算実行 / Calculate</button>
+                </form>
+
+                <!-- Distillation Form -->
+                <form id="distillation-form" class="calc-form hidden">
+                    <div class="form-group">
+                        <label>軽沸成分 / Light Component</label>
+                        <input type="text" name="light_component" value="ethanol" required>
+                    </div>
+                    <div class="form-group">
+                        <label>重沸成分 / Heavy Component</label>
+                        <input type="text" name="heavy_component" value="water" required>
+                    </div>
+                    <div class="form-group">
+                        <label>原料流量 / Feed Flow Rate (kmol/h)</label>
+                        <input type="number" name="feed_flow_rate" value="100" step="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>原料組成 / Feed Composition (軽沸成分モル分率)</label>
+                        <input type="number" name="feed_composition" value="0.4" step="0.01" min="0" max="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>留出液純度 / Distillate Purity (軽沸成分モル分率)</label>
+                        <input type="number" name="distillate_purity" value="0.95" step="0.01" min="0" max="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>缶出液純度 / Bottoms Purity (重沸成分モル分率)</label>
+                        <input type="number" name="bottoms_purity" value="0.98" step="0.01" min="0" max="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>還流比係数 / Reflux Ratio Factor (R/Rmin)</label>
+                        <input type="number" name="reflux_ratio_factor" value="1.3" step="0.1" min="1" required>
+                    </div>
+                    <button type="submit" class="btn">塔設計 / Design Column</button>
+                </form>
+
+                <!-- Mass Balance Form -->
+                <form id="mass_balance-form" class="calc-form hidden">
+                    <div class="form-group">
+                        <label>成分リスト / Components (カンマ区切り)</label>
+                        <input type="text" name="components" value="ethanol, water" required>
+                    </div>
+                    <div class="form-group">
+                        <label>原料流量 / Feed Flow Rate (mol/s)</label>
+                        <input type="number" name="feed_flow_rate" value="100" step="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>原料組成 / Feed Composition (第1成分モル分率)</label>
+                        <input type="number" name="feed_composition" value="0.4" step="0.01" min="0" max="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>留出液組成 / Distillate Composition (第1成分)</label>
+                        <input type="number" name="distillate_composition" value="0.95" step="0.01" min="0" max="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>缶出液組成 / Bottoms Composition (第1成分)</label>
+                        <input type="number" name="bottoms_composition" value="0.05" step="0.01" min="0" max="1" required>
+                    </div>
+                    <button type="submit" class="btn">収支計算 / Calculate Balance</button>
+                </form>
+
+                <!-- Heat Balance Form -->
+                <form id="heat_balance-form" class="calc-form hidden">
+                    <div class="form-group">
+                        <label>物質名 / Substance</label>
+                        <input type="text" name="substance" value="water" required>
+                    </div>
+                    <div class="form-group">
+                        <label>流量 / Flow Rate (mol/s)</label>
+                        <input type="number" name="flow_rate" value="100" step="0.1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>入口温度 / Inlet Temperature (K)</label>
+                        <input type="number" name="inlet_temperature" value="300" step="0.1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>出口温度 / Outlet Temperature (K)</label>
+                        <input type="number" name="outlet_temperature" value="400" step="0.1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>圧力 / Pressure (Pa)</label>
+                        <input type="number" name="pressure" value="101325" step="100">
+                    </div>
+                    <div class="form-group">
+                        <label>熱効率 / Efficiency (0-1)</label>
+                        <input type="number" name="efficiency" value="0.85" step="0.01" min="0" max="1">
+                    </div>
+                    <button type="submit" class="btn">熱負荷計算 / Calculate Heat Duty</button>
+                </form>
+            </div>
+
+            <!-- Results Panel -->
+            <div class="card">
+                <div id="empty-state" class="empty-state">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <p>計算タイプを選択してパラメータを入力してください<br>Select a calculation type and enter parameters</p>
+                </div>
+
+                <div id="loading" class="loading hidden">
+                    <div class="spinner"></div>
+                    <p>計算中... / Calculating...</p>
+                </div>
+
+                <!-- Property Result -->
+                <div id="property-result" class="result-section">
+                    <div class="result-header">
+                        <div class="result-icon success">&#x2713;</div>
+                        <div>
+                            <div class="result-title">物性推算結果 / Property Estimation</div>
+                            <div class="result-subtitle" id="property-substance">-</div>
+                        </div>
+                    </div>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <div class="label" id="property-name">物性値</div>
+                            <div class="value"><span id="property-value">-</span> <span class="unit" id="property-unit"></span></div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">温度 / Temperature</div>
+                            <div class="value"><span id="property-temp">-</span> <span class="unit">K</span></div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">圧力 / Pressure</div>
+                            <div class="value"><span id="property-pressure">-</span> <span class="unit">kPa</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Calculation Steps (collapsible) -->
+                    <div style="margin-top: 1.5rem;">
+                        <button id="prop-toggle-steps" class="btn" style="background: #6366f1; width: auto; padding: 0.5rem 1rem; font-size: 0.9rem;">
+                            計算過程を表示 / Show Calculation Steps ▼
+                        </button>
+                        <div id="prop-steps" class="hidden" style="margin-top: 1rem; background: #f1f5f9; border-radius: 8px; padding: 1rem;">
+                            <div id="prop-steps-content"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Distillation Result -->
+                <div id="distillation-result" class="result-section">
+                    <div class="result-header">
+                        <div class="result-icon success">&#x2713;</div>
+                        <div>
+                            <div class="result-title">蒸留塔設計結果 / Distillation Column Design</div>
+                            <div class="result-subtitle" id="distillation-system">-</div>
+                        </div>
+                    </div>
+
+                    <div class="column-diagram">
+                        <svg class="column-svg" width="300" height="400" viewBox="0 0 300 400">
+                            <!-- Column body -->
+                            <rect x="100" y="50" width="100" height="280" rx="5" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2"/>
+
+                            <!-- Trays -->
+                            <g id="trays-group"></g>
+
+                            <!-- Condenser -->
+                            <ellipse cx="150" cy="30" rx="40" ry="15" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+                            <text x="150" y="35" text-anchor="middle" font-size="9" fill="#1e40af">凝縮器</text>
+
+                            <!-- Reboiler -->
+                            <ellipse cx="150" cy="350" rx="40" ry="15" fill="#fecaca" stroke="#dc2626" stroke-width="2"/>
+                            <text x="150" y="355" text-anchor="middle" font-size="9" fill="#991b1b">再沸器</text>
+
+                            <!-- Feed arrow -->
+                            <line x1="50" y1="180" x2="100" y2="180" stroke="#10b981" stroke-width="3" marker-end="url(#arrowhead)"/>
+                            <text x="20" y="175" font-size="10" fill="#047857">原料</text>
+                            <text x="20" y="188" font-size="9" fill="#6b7280" id="feed-flow">F = 100</text>
+
+                            <!-- Distillate arrow -->
+                            <line x1="150" y1="15" x2="150" y2="0" stroke="#2563eb" stroke-width="2"/>
+                            <line x1="150" y1="0" x2="250" y2="0" stroke="#2563eb" stroke-width="2" marker-end="url(#arrowhead)"/>
+                            <text x="255" y="5" font-size="10" fill="#1d4ed8">留出液</text>
+                            <text x="255" y="18" font-size="9" fill="#6b7280" id="distillate-flow">D = 40</text>
+
+                            <!-- Bottoms arrow -->
+                            <line x1="150" y1="365" x2="150" y2="385" stroke="#dc2626" stroke-width="2" marker-end="url(#arrowhead)"/>
+                            <text x="160" y="395" font-size="10" fill="#991b1b">缶出液</text>
+                            <text x="160" y="382" font-size="9" fill="#6b7280" id="bottoms-flow">B = 60</text>
+
+                            <!-- Arrow marker -->
+                            <defs>
+                                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/>
+                                </marker>
+                            </defs>
+
+                            <!-- Feed stage indicator -->
+                            <circle cx="100" cy="180" r="6" fill="#10b981" id="feed-stage-dot"/>
+                        </svg>
+                    </div>
+
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <div class="label">理論段数 / Stages</div>
+                            <div class="value" id="dist-stages">-</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">原料段 / Feed Stage</div>
+                            <div class="value" id="dist-feed-stage">-</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">還流比 / Reflux Ratio</div>
+                            <div class="value" id="dist-reflux">-</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">塔径 / Diameter</div>
+                            <div class="value"><span id="dist-diameter">-</span> <span class="unit">m</span></div>
+                        </div>
+                    </div>
+
+                    <h3 style="font-size: 1rem; margin: 1.5rem 0 0.5rem;">熱負荷 / Heat Duties</h3>
+                    <table class="result-table">
+                        <tr>
+                            <th>機器 / Equipment</th>
+                            <th>熱負荷 / Duty</th>
+                        </tr>
+                        <tr>
+                            <td>凝縮器 / Condenser (Qc)</td>
+                            <td id="dist-qc">-</td>
+                        </tr>
+                        <tr>
+                            <td>再沸器 / Reboiler (Qr)</td>
+                            <td id="dist-qr">-</td>
+                        </tr>
+                    </table>
+
+                    <div id="dist-warnings" class="warnings hidden">
+                        <h4>警告 / Warnings</h4>
+                        <ul id="dist-warnings-list"></ul>
+                    </div>
+
+                    <!-- Calculation Steps (collapsible) -->
+                    <div style="margin-top: 1.5rem;">
+                        <button id="dist-toggle-steps" class="btn" style="background: #6366f1; width: auto; padding: 0.5rem 1rem; font-size: 0.9rem;">
+                            計算過程を表示 / Show Calculation Steps ▼
+                        </button>
+                        <div id="dist-steps" class="hidden" style="margin-top: 1rem; background: #f1f5f9; border-radius: 8px; padding: 1rem;">
+                            <div id="dist-steps-content"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mass Balance Result -->
+                <div id="mass_balance-result" class="result-section">
+                    <div class="result-header">
+                        <div class="result-icon success">&#x2713;</div>
+                        <div>
+                            <div class="result-title">物質収支結果 / Mass Balance</div>
+                            <div class="result-subtitle" id="mb-components">-</div>
+                        </div>
+                    </div>
+
+                    <!-- Flow Diagram -->
+                    <div class="mass-balance-diagram" style="display: flex; justify-content: center; margin: 1.5rem 0;">
+                        <svg width="450" height="200" viewBox="0 0 450 200">
+                            <!-- Arrow markers -->
+                            <defs>
+                                <marker id="arrow-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="#10b981"/>
+                                </marker>
+                                <marker id="arrow-blue-mb" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="#2563eb"/>
+                                </marker>
+                                <marker id="arrow-red-mb" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="#dc2626"/>
+                                </marker>
+                            </defs>
+
+                            <!-- Process box -->
+                            <rect id="mb-process-box" x="150" y="50" width="150" height="100"
+                                  rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"
+                                  style="cursor: pointer;" class="mb-clickable"/>
+                            <text x="225" y="90" text-anchor="middle" font-size="14" fill="#0369a1" font-weight="600">プロセス</text>
+                            <text x="225" y="108" text-anchor="middle" font-size="10" fill="#0284c7">Process Unit</text>
+                            <text x="225" y="135" text-anchor="middle" font-size="9" fill="#64748b" id="mb-svg-closure">閉合率: --%</text>
+
+                            <!-- Inlet arrow (left) -->
+                            <g id="mb-inlet-group" style="cursor: pointer;" class="mb-clickable">
+                                <line x1="30" y1="100" x2="145" y2="100" stroke="#10b981" stroke-width="4" marker-end="url(#arrow-green)"/>
+                                <text x="10" y="80" font-size="11" fill="#047857" font-weight="500">入口 Feed</text>
+                                <text id="mb-svg-inlet-flow" x="10" y="125" font-size="9" fill="#6b7280">- mol/s</text>
+                            </g>
+
+                            <!-- Outlet 1 arrow (top right - Distillate) -->
+                            <g id="mb-outlet1-group" style="cursor: pointer;" class="mb-clickable">
+                                <line x1="305" y1="70" x2="400" y2="35" stroke="#2563eb" stroke-width="3" marker-end="url(#arrow-blue-mb)"/>
+                                <text x="340" y="25" font-size="11" fill="#1d4ed8" font-weight="500">留出液</text>
+                                <text x="340" y="40" font-size="9" fill="#3b82f6">Distillate</text>
+                                <text id="mb-svg-outlet1-flow" x="405" y="40" font-size="9" fill="#6b7280">- mol/s</text>
+                            </g>
+
+                            <!-- Outlet 2 arrow (bottom right - Bottoms) -->
+                            <g id="mb-outlet2-group" style="cursor: pointer;" class="mb-clickable">
+                                <line x1="305" y1="130" x2="400" y2="165" stroke="#dc2626" stroke-width="3" marker-end="url(#arrow-red-mb)"/>
+                                <text x="340" y="185" font-size="11" fill="#991b1b" font-weight="500">缶出液</text>
+                                <text x="340" y="170" font-size="9" fill="#dc2626">Bottoms</text>
+                                <text id="mb-svg-outlet2-flow" x="405" y="165" font-size="9" fill="#6b7280">- mol/s</text>
+                            </g>
+                        </svg>
+                    </div>
+
+                    <!-- Detail Panel (shown on click) -->
+                    <div id="mb-detail-panel" class="hidden" style="margin: 1rem 0; padding: 1rem; background: #f0f9ff; border: 2px solid #0284c7; border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <h4 id="mb-detail-title" style="margin: 0; color: #0369a1;">ストリーム詳細</h4>
+                            <button id="mb-close-detail" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b;">&times;</button>
+                        </div>
+                        <div id="mb-detail-content"></div>
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="result-item" style="margin-top: 1rem; background: #dcfce7;">
+                        <div class="label">収支閉合率 / Mass Closure</div>
+                        <div class="value" style="color: #047857;"><span id="mb-closure">-</span> <span class="unit">%</span></div>
+                    </div>
+
+                    <!-- Calculation Steps (collapsible) -->
+                    <div style="margin-top: 1.5rem;">
+                        <button id="mb-toggle-steps" class="btn" style="background: #6366f1; width: auto; padding: 0.5rem 1rem; font-size: 0.9rem;">
+                            計算過程を表示 / Show Calculation Steps ▼
+                        </button>
+                        <div id="mb-steps" class="hidden" style="margin-top: 1rem; background: #f1f5f9; border-radius: 8px; padding: 1rem;">
+                            <div id="mb-steps-content"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Heat Balance Result -->
+                <div id="heat_balance-result" class="result-section">
+                    <div class="result-header">
+                        <div class="result-icon success">&#x2713;</div>
+                        <div>
+                            <div class="result-title">熱収支結果 / Heat Balance</div>
+                            <div class="result-subtitle" id="hb-substance">-</div>
+                        </div>
+                    </div>
+
+                    <div class="heat-diagram" style="display: flex; justify-content: center; margin: 1.5rem 0;">
+                        <svg width="400" height="180" viewBox="0 0 400 180">
+                            <!-- Heat Exchanger box -->
+                            <rect x="120" y="40" width="160" height="100" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                            <text x="200" y="90" text-anchor="middle" font-size="14" fill="#92400e" font-weight="600">熱交換器</text>
+                            <text x="200" y="108" text-anchor="middle" font-size="10" fill="#b45309">Heat Exchanger</text>
+
+                            <!-- Inlet arrow -->
+                            <line x1="30" y1="90" x2="120" y2="90" stroke="#2563eb" stroke-width="3" marker-end="url(#arrow-blue)"/>
+                            <text x="20" y="75" font-size="10" fill="#1d4ed8">入口 / Inlet</text>
+                            <text x="20" y="115" font-size="9" fill="#6b7280" id="hb-inlet-temp">T = 300 K</text>
+
+                            <!-- Outlet arrow -->
+                            <line x1="280" y1="90" x2="370" y2="90" stroke="#dc2626" stroke-width="3" marker-end="url(#arrow-red)"/>
+                            <text x="330" y="75" font-size="10" fill="#991b1b">出口 / Outlet</text>
+                            <text x="330" y="115" font-size="9" fill="#6b7280" id="hb-outlet-temp">T = 400 K</text>
+
+                            <!-- Heat input arrow -->
+                            <line x1="200" y1="170" x2="200" y2="140" stroke="#f59e0b" stroke-width="3" marker-end="url(#arrow-orange)"/>
+                            <text x="200" y="178" text-anchor="middle" font-size="10" fill="#b45309" id="hb-q-label">Q = 0 kW</text>
+
+                            <!-- Arrow markers -->
+                            <defs>
+                                <marker id="arrow-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="#2563eb"/>
+                                </marker>
+                                <marker id="arrow-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="#dc2626"/>
+                                </marker>
+                                <marker id="arrow-orange" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="#f59e0b"/>
+                                </marker>
+                            </defs>
+                        </svg>
+                    </div>
+
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <div class="label">顕熱 / Sensible Heat</div>
+                            <div class="value"><span id="hb-sensible">-</span> <span class="unit">kW</span></div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">潜熱 / Latent Heat</div>
+                            <div class="value"><span id="hb-latent">-</span> <span class="unit">kW</span></div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">合計熱負荷 / Total Duty</div>
+                            <div class="value" style="color: #f59e0b;"><span id="hb-total">-</span> <span class="unit">kW</span></div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">実熱負荷 / Actual Duty</div>
+                            <div class="value" style="color: #dc2626;"><span id="hb-actual">-</span> <span class="unit">kW</span></div>
+                        </div>
+                    </div>
+
+                    <h3 style="font-size: 1rem; margin: 1.5rem 0 0.5rem;">相情報 / Phase Information</h3>
+                    <table class="result-table">
+                        <tr>
+                            <th>項目 / Item</th>
+                            <th>値 / Value</th>
+                        </tr>
+                        <tr>
+                            <td>入口相 / Inlet Phase</td>
+                            <td id="hb-inlet-phase">-</td>
+                        </tr>
+                        <tr>
+                            <td>出口相 / Outlet Phase</td>
+                            <td id="hb-outlet-phase">-</td>
+                        </tr>
+                        <tr>
+                            <td>沸点 / Boiling Point</td>
+                            <td id="hb-boiling">-</td>
+                        </tr>
+                        <tr>
+                            <td>相変化 / Phase Change</td>
+                            <td id="hb-phase-change">-</td>
+                        </tr>
+                    </table>
+
+                    <div id="hb-warnings" class="warnings hidden">
+                        <h4>警告 / Warnings</h4>
+                        <ul id="hb-warnings-list"></ul>
+                    </div>
+
+                    <!-- Calculation Steps (collapsible) -->
+                    <div style="margin-top: 1.5rem;">
+                        <button id="hb-toggle-steps" class="btn" style="background: #6366f1; width: auto; padding: 0.5rem 1rem; font-size: 0.9rem;">
+                            計算過程を表示 / Show Calculation Steps ▼
+                        </button>
+                        <div id="hb-steps" class="hidden" style="margin-top: 1rem; background: #f1f5f9; border-radius: 8px; padding: 1rem;">
+                            <div id="hb-steps-content"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                const tabName = tab.dataset.tab;
+                document.querySelectorAll('.calc-form').forEach(form => form.classList.add('hidden'));
+                document.getElementById(`${tabName}-form`).classList.remove('hidden');
+            });
+        });
+
+        // API base URL
+        const API_BASE = '/api/v1';
+
+        // Property names mapping (日本語/English)
+        const propertyNames = {
+            'vapor_pressure': { name: '蒸気圧 / Vapor Pressure', unit: 'kPa', factor: 0.001 },
+            'liquid_density': { name: '液密度 / Liquid Density', unit: 'kg/m³', factor: 1 },
+            'liquid_viscosity': { name: '液粘度 / Liquid Viscosity', unit: 'mPa·s', factor: 1000 },
+            'heat_of_vaporization': { name: '蒸発熱 / Heat of Vaporization', unit: 'kJ/mol', factor: 0.001 },
+            'surface_tension': { name: '表面張力 / Surface Tension', unit: 'mN/m', factor: 1000 },
+            'boiling_point': { name: '沸点 / Boiling Point', unit: 'K', factor: 1 }
+        };
+
+        function showLoading() {
+            document.getElementById('empty-state').classList.add('hidden');
+            document.getElementById('loading').classList.remove('hidden');
+            document.querySelectorAll('.result-section').forEach(s => s.classList.remove('active'));
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.add('hidden');
+        }
+
+        function showResult(type) {
+            hideLoading();
+            document.getElementById(`${type}-result`).classList.add('active');
+        }
+
+        // Property Estimation
+        document.getElementById('property-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showLoading();
+
+            const formData = new FormData(e.target);
+            const params = {
+                substance: formData.get('substance'),
+                property: formData.get('property'),
+                temperature: parseFloat(formData.get('temperature')),
+                pressure: parseFloat(formData.get('pressure'))
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/calculate/property_estimation`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ parameters: params })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    const out = data.outputs;
+                    const propInfo = propertyNames[params.property] || { name: params.property, unit: '', factor: 1 };
+                    document.getElementById('property-substance').textContent = out.substance || params.substance;
+                    document.getElementById('property-name').textContent = propInfo.name;
+                    document.getElementById('property-value').textContent = (out.value * propInfo.factor).toFixed(2);
+                    document.getElementById('property-unit').textContent = propInfo.unit;
+                    document.getElementById('property-temp').textContent = params.temperature.toFixed(1);
+                    document.getElementById('property-pressure').textContent = (params.pressure / 1000).toFixed(1);
+
+                    // Calculation Steps
+                    if (out.calculation_steps && out.calculation_steps.length > 0) {
+                        const stepsHtml = out.calculation_steps.map(step => `
+                            <div style="margin-bottom: 1rem; padding: 0.75rem; background: white; border-radius: 6px; border-left: 3px solid #6366f1;">
+                                <div style="font-weight: 600; color: #4f46e5; margin-bottom: 0.5rem;">
+                                    Step ${step.step}: ${step.title}
+                                </div>
+                                ${step.description ? `<div style="font-size: 0.85rem; color: #64748b; margin-bottom: 0.5rem;">${step.description}</div>` : ''}
+                                <div style="font-family: 'Courier New', monospace; font-size: 0.85rem; background: #f8fafc; padding: 0.5rem; border-radius: 4px;">
+                                    ${step.formulas.map(f => `<div style="margin: 0.25rem 0;">${f}</div>`).join('')}
+                                </div>
+                            </div>
+                        `).join('');
+                        document.getElementById('prop-steps-content').innerHTML = stepsHtml;
+                        document.getElementById('prop-steps').classList.add('hidden');
+                        document.getElementById('prop-toggle-steps').textContent = '計算過程を表示 / Show Calculation Steps ▼';
+                    }
+
+                    showResult('property');
+                } else {
+                    alert('Error: ' + data.errors.join(', '));
+                    hideLoading();
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+                hideLoading();
+            }
+        });
+
+        // Distillation
+        document.getElementById('distillation-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showLoading();
+
+            const formData = new FormData(e.target);
+            const params = {
+                light_component: formData.get('light_component'),
+                heavy_component: formData.get('heavy_component'),
+                feed_flow_rate: parseFloat(formData.get('feed_flow_rate')),
+                feed_composition: parseFloat(formData.get('feed_composition')),
+                distillate_purity: parseFloat(formData.get('distillate_purity')),
+                bottoms_purity: parseFloat(formData.get('bottoms_purity')),
+                reflux_ratio_factor: parseFloat(formData.get('reflux_ratio_factor'))
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/calculate/distillation`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ parameters: params })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    const out = data.outputs;
+
+                    document.getElementById('distillation-system').textContent =
+                        `${params.light_component} / ${params.heavy_component}`;
+                    document.getElementById('dist-stages').textContent = out.actual_stages;
+                    document.getElementById('dist-feed-stage').textContent = out.feed_stage;
+                    document.getElementById('dist-reflux').textContent = out.actual_reflux_ratio.toFixed(2);
+                    document.getElementById('dist-diameter').textContent = out.column_diameter.toFixed(2);
+
+                    // Format heat duties
+                    const formatDuty = (kw) => kw > 1000 ? `${(kw/1000).toFixed(1)} MW` : `${kw.toFixed(0)} kW`;
+                    document.getElementById('dist-qc').textContent = formatDuty(out.condenser_duty);
+                    document.getElementById('dist-qr').textContent = formatDuty(out.reboiler_duty);
+
+                    // Update diagram
+                    document.getElementById('feed-flow').textContent = `F = ${params.feed_flow_rate}`;
+                    document.getElementById('distillate-flow').textContent = `D = ${out.distillate_flow_rate.toFixed(1)}`;
+                    document.getElementById('bottoms-flow').textContent = `B = ${out.bottoms_flow_rate.toFixed(1)}`;
+
+                    // Draw trays
+                    const traysGroup = document.getElementById('trays-group');
+                    traysGroup.innerHTML = '';
+                    const numTrays = out.actual_stages - 1; // exclude reboiler
+                    const traySpacing = 260 / (numTrays + 1);
+                    for (let i = 1; i <= numTrays; i++) {
+                        const y = 60 + i * traySpacing;
+                        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        line.setAttribute('x1', '110');
+                        line.setAttribute('y1', y);
+                        line.setAttribute('x2', '190');
+                        line.setAttribute('y2', y);
+                        line.setAttribute('stroke', '#94a3b8');
+                        line.setAttribute('stroke-width', '1');
+                        traysGroup.appendChild(line);
+                    }
+
+                    // Position feed stage
+                    const feedY = 60 + out.feed_stage * traySpacing;
+                    document.getElementById('feed-stage-dot').setAttribute('cy', feedY);
+                    document.querySelector('line[y1="180"]').setAttribute('y1', feedY);
+                    document.querySelector('line[y2="180"]').setAttribute('y2', feedY);
+
+                    // Warnings
+                    if (data.warnings && data.warnings.length > 0) {
+                        document.getElementById('dist-warnings').classList.remove('hidden');
+                        document.getElementById('dist-warnings-list').innerHTML =
+                            data.warnings.map(w => `<li>${w}</li>`).join('');
+                    } else {
+                        document.getElementById('dist-warnings').classList.add('hidden');
+                    }
+
+                    // Calculation Steps
+                    if (out.calculation_steps && out.calculation_steps.length > 0) {
+                        const stepsHtml = out.calculation_steps.map(step => `
+                            <div style="margin-bottom: 1rem; padding: 0.75rem; background: white; border-radius: 6px; border-left: 3px solid #6366f1;">
+                                <div style="font-weight: 600; color: #4f46e5; margin-bottom: 0.5rem;">
+                                    Step ${step.step}: ${step.title}
+                                </div>
+                                ${step.description ? `<div style="font-size: 0.85rem; color: #64748b; margin-bottom: 0.5rem;">${step.description}</div>` : ''}
+                                <div style="font-family: 'Courier New', monospace; font-size: 0.85rem; background: #f8fafc; padding: 0.5rem; border-radius: 4px;">
+                                    ${step.formulas.map(f => `<div style="margin: 0.25rem 0;">${f}</div>`).join('')}
+                                </div>
+                            </div>
+                        `).join('');
+                        document.getElementById('dist-steps-content').innerHTML = stepsHtml;
+                        document.getElementById('dist-steps').classList.add('hidden');
+                        document.getElementById('dist-toggle-steps').textContent = '計算過程を表示 / Show Calculation Steps ▼';
+                    }
+
+                    showResult('distillation');
+                } else {
+                    alert('Error: ' + data.errors.join(', '));
+                    hideLoading();
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+                hideLoading();
+            }
+        });
+
+        // Mass Balance
+        document.getElementById('mass_balance-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showLoading();
+
+            const formData = new FormData(e.target);
+            const components = formData.get('components').split(',').map(c => c.trim());
+            const feedComp = parseFloat(formData.get('feed_composition'));
+            const distComp = parseFloat(formData.get('distillate_composition'));
+            const bottComp = parseFloat(formData.get('bottoms_composition'));
+
+            const params = {
+                components: components,
+                inlet_streams: [{
+                    name: 'Feed',
+                    flow_rate: parseFloat(formData.get('feed_flow_rate')),
+                    composition: {
+                        [components[0]]: feedComp,
+                        [components[1]]: 1 - feedComp
+                    }
+                }],
+                outlet_streams: [
+                    { name: 'Distillate', composition: { [components[0]]: distComp, [components[1]]: 1 - distComp } },
+                    { name: 'Bottoms', composition: { [components[0]]: bottComp, [components[1]]: 1 - bottComp } }
+                ]
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/calculate/mass_balance`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ parameters: params })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    const out = data.outputs;
+
+                    // Store data for click handlers
+                    window.mbStreamData = {
+                        inlet: out.inlet_total,
+                        outlets: out.outlet_streams,
+                        closure: out.closure,
+                        components: components
+                    };
+
+                    document.getElementById('mb-components').textContent = components.join(' / ');
+
+                    // Update SVG diagram labels
+                    document.getElementById('mb-svg-inlet-flow').textContent = `${out.inlet_total.flow_rate.toFixed(1)} mol/s`;
+                    document.getElementById('mb-svg-closure').textContent = `閉合率: ${out.closure.toFixed(1)}%`;
+
+                    // Update outlet labels
+                    if (out.outlet_streams.length >= 1) {
+                        document.getElementById('mb-svg-outlet1-flow').textContent = `${out.outlet_streams[0].flow_rate.toFixed(1)} mol/s`;
+                    }
+                    if (out.outlet_streams.length >= 2) {
+                        document.getElementById('mb-svg-outlet2-flow').textContent = `${out.outlet_streams[1].flow_rate.toFixed(1)} mol/s`;
+                    }
+
+                    // Hide detail panel initially
+                    document.getElementById('mb-detail-panel').classList.add('hidden');
+
+                    document.getElementById('mb-closure').textContent = out.closure.toFixed(2);
+
+                    // Calculation Steps
+                    if (out.calculation_steps && out.calculation_steps.length > 0) {
+                        const stepsHtml = out.calculation_steps.map(step => `
+                            <div style="margin-bottom: 1rem; padding: 0.75rem; background: white; border-radius: 6px; border-left: 3px solid #6366f1;">
+                                <div style="font-weight: 600; color: #4f46e5; margin-bottom: 0.5rem;">
+                                    Step ${step.step}: ${step.title}
+                                </div>
+                                ${step.description ? `<div style="font-size: 0.85rem; color: #64748b; margin-bottom: 0.5rem;">${step.description}</div>` : ''}
+                                <div style="font-family: 'Courier New', monospace; font-size: 0.85rem; background: #f8fafc; padding: 0.5rem; border-radius: 4px; white-space: pre-wrap;">
+                                    ${step.formulas.map(f => `<div style="margin: 0.25rem 0;">${f}</div>`).join('')}
+                                </div>
+                            </div>
+                        `).join('');
+                        document.getElementById('mb-steps-content').innerHTML = stepsHtml;
+                        document.getElementById('mb-steps').classList.add('hidden');
+                        document.getElementById('mb-toggle-steps').textContent = '計算過程を表示 / Show Calculation Steps ▼';
+                    }
+
+                    showResult('mass_balance');
+                } else {
+                    alert('Error: ' + data.errors.join(', '));
+                    hideLoading();
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+                hideLoading();
+            }
+        });
+
+        // Heat Balance
+        document.getElementById('heat_balance-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showLoading();
+
+            const formData = new FormData(e.target);
+            const params = {
+                substance: formData.get('substance'),
+                flow_rate: parseFloat(formData.get('flow_rate')),
+                inlet_temperature: parseFloat(formData.get('inlet_temperature')),
+                outlet_temperature: parseFloat(formData.get('outlet_temperature')),
+                pressure: parseFloat(formData.get('pressure')),
+                efficiency: parseFloat(formData.get('efficiency')),
+                phase_change: true
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/calculate/heat_balance`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ parameters: params })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    const out = data.outputs;
+                    const phaseJa = { 'liquid': '液相', 'vapor': '気相', 'unknown': '不明' };
+
+                    document.getElementById('hb-substance').textContent =
+                        `${params.substance} (${params.flow_rate} mol/s)`;
+
+                    // Update values
+                    document.getElementById('hb-sensible').textContent = out.sensible_heat.toFixed(1);
+                    document.getElementById('hb-latent').textContent = out.latent_heat.toFixed(1);
+                    document.getElementById('hb-total').textContent = out.total_heat_duty.toFixed(1);
+                    document.getElementById('hb-actual').textContent = out.actual_heat_duty.toFixed(1);
+
+                    // Update diagram
+                    document.getElementById('hb-inlet-temp').textContent = `T = ${params.inlet_temperature} K`;
+                    document.getElementById('hb-outlet-temp').textContent = `T = ${params.outlet_temperature} K`;
+                    const qLabel = out.total_heat_duty > 1000
+                        ? `Q = ${(out.total_heat_duty/1000).toFixed(1)} MW`
+                        : `Q = ${out.total_heat_duty.toFixed(0)} kW`;
+                    document.getElementById('hb-q-label').textContent = qLabel;
+
+                    // Phase info
+                    const inletPhase = out.phase_info.inlet_phase;
+                    const outletPhase = out.phase_info.outlet_phase;
+                    document.getElementById('hb-inlet-phase').textContent =
+                        `${phaseJa[inletPhase] || inletPhase} / ${inletPhase}`;
+                    document.getElementById('hb-outlet-phase').textContent =
+                        `${phaseJa[outletPhase] || outletPhase} / ${outletPhase}`;
+                    document.getElementById('hb-boiling').textContent =
+                        out.phase_info.boiling_point ? `${out.phase_info.boiling_point.toFixed(1)} K` : '-';
+                    document.getElementById('hb-phase-change').textContent =
+                        out.phase_info.has_phase_change ? 'あり / Yes' : 'なし / No';
+
+                    // Warnings
+                    if (data.warnings && data.warnings.length > 0) {
+                        document.getElementById('hb-warnings').classList.remove('hidden');
+                        document.getElementById('hb-warnings-list').innerHTML =
+                            data.warnings.map(w => `<li>${w}</li>`).join('');
+                    } else {
+                        document.getElementById('hb-warnings').classList.add('hidden');
+                    }
+
+                    // Calculation Steps
+                    if (out.calculation_steps && out.calculation_steps.length > 0) {
+                        const stepsHtml = out.calculation_steps.map(step => `
+                            <div style="margin-bottom: 1rem; padding: 0.75rem; background: white; border-radius: 6px; border-left: 3px solid #6366f1;">
+                                <div style="font-weight: 600; color: #4f46e5; margin-bottom: 0.5rem;">
+                                    Step ${step.step}: ${step.title}
+                                </div>
+                                ${step.description ? `<div style="font-size: 0.85rem; color: #64748b; margin-bottom: 0.5rem;">${step.description}</div>` : ''}
+                                <div style="font-family: 'Courier New', monospace; font-size: 0.85rem; background: #f8fafc; padding: 0.5rem; border-radius: 4px;">
+                                    ${step.formulas.map(f => `<div style="margin: 0.25rem 0;">${f}</div>`).join('')}
+                                </div>
+                            </div>
+                        `).join('');
+                        document.getElementById('hb-steps-content').innerHTML = stepsHtml;
+                        document.getElementById('hb-steps').classList.add('hidden');
+                        document.getElementById('hb-toggle-steps').textContent = '計算過程を表示 / Show Calculation Steps ▼';
+                    }
+
+                    showResult('heat_balance');
+                } else {
+                    alert('Error: ' + data.errors.join(', '));
+                    hideLoading();
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+                hideLoading();
+            }
+        });
+
+        // Toggle calculation steps (Property Estimation)
+        document.getElementById('prop-toggle-steps').addEventListener('click', () => {
+            const steps = document.getElementById('prop-steps');
+            const btn = document.getElementById('prop-toggle-steps');
+            if (steps.classList.contains('hidden')) {
+                steps.classList.remove('hidden');
+                btn.textContent = '計算過程を隠す / Hide Calculation Steps ▲';
+            } else {
+                steps.classList.add('hidden');
+                btn.textContent = '計算過程を表示 / Show Calculation Steps ▼';
+            }
+        });
+
+        // Toggle calculation steps (Heat Balance)
+        document.getElementById('hb-toggle-steps').addEventListener('click', () => {
+            const steps = document.getElementById('hb-steps');
+            const btn = document.getElementById('hb-toggle-steps');
+            if (steps.classList.contains('hidden')) {
+                steps.classList.remove('hidden');
+                btn.textContent = '計算過程を隠す / Hide Calculation Steps ▲';
+            } else {
+                steps.classList.add('hidden');
+                btn.textContent = '計算過程を表示 / Show Calculation Steps ▼';
+            }
+        });
+
+        // Toggle calculation steps (Distillation)
+        document.getElementById('dist-toggle-steps').addEventListener('click', () => {
+            const steps = document.getElementById('dist-steps');
+            const btn = document.getElementById('dist-toggle-steps');
+            if (steps.classList.contains('hidden')) {
+                steps.classList.remove('hidden');
+                btn.textContent = '計算過程を隠す / Hide Calculation Steps ▲';
+            } else {
+                steps.classList.add('hidden');
+                btn.textContent = '計算過程を表示 / Show Calculation Steps ▼';
+            }
+        });
+
+        // Toggle calculation steps (Mass Balance)
+        document.getElementById('mb-toggle-steps').addEventListener('click', () => {
+            const steps = document.getElementById('mb-steps');
+            const btn = document.getElementById('mb-toggle-steps');
+            if (steps.classList.contains('hidden')) {
+                steps.classList.remove('hidden');
+                btn.textContent = '計算過程を隠す / Hide Calculation Steps ▲';
+            } else {
+                steps.classList.add('hidden');
+                btn.textContent = '計算過程を表示 / Show Calculation Steps ▼';
+            }
+        });
+
+        // Mass Balance SVG click handlers
+        function showMbStreamDetail(streamType) {
+            const data = window.mbStreamData;
+            if (!data) return;
+
+            const panel = document.getElementById('mb-detail-panel');
+            const title = document.getElementById('mb-detail-title');
+            const content = document.getElementById('mb-detail-content');
+
+            let streamData, streamName, color;
+
+            switch (streamType) {
+                case 'inlet':
+                    streamData = data.inlet;
+                    streamName = '入口 Feed';
+                    color = '#10b981';
+                    break;
+                case 'outlet1':
+                    streamData = data.outlets[0];
+                    streamName = '留出液 Distillate';
+                    color = '#2563eb';
+                    break;
+                case 'outlet2':
+                    streamData = data.outlets[1];
+                    streamName = '缶出液 Bottoms';
+                    color = '#dc2626';
+                    break;
+                case 'process':
+                    // Show overall balance
+                    title.textContent = 'プロセス収支 / Process Balance';
+                    content.innerHTML = `
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <div style="font-weight: 500; color: #10b981;">入口 / Inlet</div>
+                                <div style="font-size: 1.25rem; font-weight: 600;">${data.inlet.flow_rate.toFixed(2)} mol/s</div>
+                            </div>
+                            <div>
+                                <div style="font-weight: 500; color: #64748b;">出口合計 / Outlet Total</div>
+                                <div style="font-size: 1.25rem; font-weight: 600;">${data.outlets.reduce((sum, s) => sum + s.flow_rate, 0).toFixed(2)} mol/s</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1rem; padding: 0.75rem; background: #dcfce7; border-radius: 6px;">
+                            <div style="font-weight: 500; color: #047857;">閉合率 / Mass Closure</div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: #047857;">${data.closure.toFixed(2)}%</div>
+                        </div>
+                    `;
+                    panel.classList.remove('hidden');
+                    return;
+            }
+
+            if (!streamData) return;
+
+            title.textContent = streamName;
+            title.style.color = color;
+
+            let html = `
+                <div style="margin-bottom: 0.75rem;">
+                    <span style="font-weight: 500;">流量 / Flow Rate:</span>
+                    <span style="font-size: 1.25rem; font-weight: 600; margin-left: 0.5rem;">${streamData.flow_rate.toFixed(2)} mol/s</span>
+                </div>
+                <div style="font-weight: 500; margin-bottom: 0.5rem;">組成 / Composition:</div>
+            `;
+
+            for (const [comp, frac] of Object.entries(streamData.composition)) {
+                const flow = streamData.component_flows ? streamData.component_flows[comp] : (streamData.flow_rate * frac);
+                html += `
+                    <div style="margin-bottom: 0.5rem;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                            <span>${comp}</span>
+                            <span>${(frac * 100).toFixed(1)}% (${flow.toFixed(2)} mol/s)</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${frac * 100}%; background: ${color};"></div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            content.innerHTML = html;
+            panel.classList.remove('hidden');
+        }
+
+        // Attach click events to SVG elements
+        document.getElementById('mb-inlet-group').addEventListener('click', () => showMbStreamDetail('inlet'));
+        document.getElementById('mb-outlet1-group').addEventListener('click', () => showMbStreamDetail('outlet1'));
+        document.getElementById('mb-outlet2-group').addEventListener('click', () => showMbStreamDetail('outlet2'));
+        document.getElementById('mb-process-box').addEventListener('click', () => showMbStreamDetail('process'));
+
+        // Close detail panel
+        document.getElementById('mb-close-detail').addEventListener('click', () => {
+            document.getElementById('mb-detail-panel').classList.add('hidden');
+        });
+    </script>
+</body>
+</html>

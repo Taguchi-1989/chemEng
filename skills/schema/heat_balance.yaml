@@ -1,0 +1,105 @@
+# 熱収支スキル
+# 定常状態のエネルギー収支計算
+
+skill_id: "heat_balance"
+name: "熱収支"
+description: "定常状態のプロセスにおける熱収支（エネルギーバランス）を計算する"
+calculation_type: "heat_balance"
+version: "1.0.0"
+author: "chemeng"
+tags: ["balance", "process", "energy", "heat"]
+
+required_engines:
+  - thermo
+
+input_schema:
+  - name: substance
+    type: str
+    description: "物質名またはCAS番号"
+    required: true
+    example: "water"
+
+  - name: flow_rate
+    type: float
+    description: "流量 (mol/s)"
+    required: true
+    example: 100.0
+
+  - name: inlet_temperature
+    type: float
+    description: "入口温度 (K)"
+    required: true
+    example: 300.0
+
+  - name: outlet_temperature
+    type: float
+    description: "出口温度 (K)"
+    required: true
+    example: 400.0
+
+  - name: pressure
+    type: float
+    description: "圧力 (Pa)"
+    required: false
+    default: 101325
+    example: 101325
+
+  - name: phase_change
+    type: bool
+    description: "相変化を考慮するか"
+    required: false
+    default: true
+    example: true
+
+  - name: heat_of_reaction
+    type: float
+    description: "反応熱 (J/mol) - 発熱反応は負、吸熱反応は正"
+    required: false
+    default: 0.0
+    example: -283000
+
+  - name: efficiency
+    type: float
+    description: "熱効率 (0-1)"
+    required: false
+    default: 1.0
+    example: 0.85
+
+output_schema:
+  - name: sensible_heat
+    type: float
+    description: "顕熱 (kW)"
+
+  - name: latent_heat
+    type: float
+    description: "潜熱 (kW) - 相変化がある場合"
+
+  - name: reaction_heat
+    type: float
+    description: "反応熱 (kW)"
+
+  - name: total_heat_duty
+    type: float
+    description: "合計熱負荷 (kW)"
+
+  - name: actual_heat_duty
+    type: float
+    description: "実際の熱負荷 (効率考慮) (kW)"
+
+  - name: inlet_enthalpy
+    type: float
+    description: "入口エンタルピー (J/mol)"
+
+  - name: outlet_enthalpy
+    type: float
+    description: "出口エンタルピー (J/mol)"
+
+  - name: phase_info
+    type: dict
+    description: "相情報（入口・出口）"
+
+validation_rules:
+  - "inlet_temperature must be positive (K)"
+  - "outlet_temperature must be positive (K)"
+  - "flow_rate must be positive"
+  - "efficiency must be between 0 and 1"

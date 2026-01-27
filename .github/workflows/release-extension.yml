@@ -1,0 +1,47 @@
+name: Release VS Code Extension
+
+on:
+  push:
+    tags:
+      - 'vscode-v*'
+
+jobs:
+  build:
+    name: Build and Package
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hub/vscode-extension
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: hub/vscode-extension/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compile
+        run: npm run compile
+
+      - name: Package extension
+        run: npx vsce package
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: walktalk-hub-vsix
+          path: hub/vscode-extension/*.vsix
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: hub/vscode-extension/*.vsix
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

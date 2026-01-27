@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chemeng"
+version = "0.1.0"
+description = "化学工学計算モジュール - AI対話ベースの要件収集と計算実行"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "WalkTalk Hub Team"}
+]
+keywords = ["chemical engineering", "thermodynamics", "process simulation"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Chemistry",
+]
+
+dependencies = [
+    "thermo>=0.2.0",
+    "chemicals>=1.1.0",
+    "pyyaml>=6.0",
+    "pydantic>=2.0",
+]
+
+[project.optional-dependencies]
+cantera = ["cantera>=3.0"]
+coolprop = ["CoolProp>=6.4"]
+api = ["fastapi>=0.100", "uvicorn>=0.20"]
+ai = ["anthropic>=0.20"]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.1.0",
+]
+all = [
+    "chemeng[cantera,coolprop,api,ai,dev]"
+]
+
+[project.scripts]
+chemeng = "chemeng.interface.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/user/walktalk-hub"
+Documentation = "https://github.com/user/walktalk-hub/tree/main/chemeng"
+Repository = "https://github.com/user/walktalk-hub"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["chemeng*"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "C4"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"

@@ -1,0 +1,98 @@
+# 物質収支スキル
+# 定常状態の物質収支計算
+
+skill_id: "mass_balance"
+name: "物質収支"
+description: "定常状態のプロセスにおける物質収支（マスバランス）を計算する"
+calculation_type: "mass_balance"
+version: "1.0.0"
+author: "chemeng"
+tags: ["balance", "process", "steady_state"]
+
+required_engines:
+  - thermo
+
+input_schema:
+  - name: components
+    type: list
+    description: "成分リスト（物質名またはCAS番号）"
+    required: true
+    example: ["ethanol", "water"]
+
+  - name: inlet_streams
+    type: list
+    description: |
+      入口ストリームのリスト。各ストリームは以下を含む:
+      - name: ストリーム名
+      - flow_rate: 流量
+      - composition: 組成（モル分率または質量分率）
+    required: true
+    example:
+      - name: "Feed"
+        flow_rate: 100.0
+        composition: {"ethanol": 0.4, "water": 0.6}
+
+  - name: outlet_streams
+    type: list
+    description: |
+      出口ストリームのリスト（既知の情報）。
+      未知の流量や組成は計算される。
+    required: false
+    default: []
+    example:
+      - name: "Distillate"
+        composition: {"ethanol": 0.95, "water": 0.05}
+      - name: "Bottoms"
+        composition: {"ethanol": 0.05, "water": 0.95}
+
+  - name: basis
+    type: str
+    description: "計算基準"
+    required: false
+    default: "molar"
+    choices:
+      - molar
+      - mass
+    example: "molar"
+
+  - name: reactions
+    type: list
+    description: |
+      反応がある場合の反応式リスト（オプション）。
+      各反応は stoichiometry と conversion を含む。
+    required: false
+    default: []
+
+  - name: split_fractions
+    type: dict
+    description: |
+      分配係数（複数出口がある場合）。
+      キー: 成分名, 値: {ストリーム名: 分配率}
+    required: false
+    default: {}
+
+output_schema:
+  - name: inlet_total
+    type: dict
+    description: "入口合計（流量、組成）"
+
+  - name: outlet_total
+    type: dict
+    description: "出口合計（流量、組成）"
+
+  - name: outlet_streams
+    type: list
+    description: "計算された出口ストリーム"
+
+  - name: balance_check
+    type: dict
+    description: "収支チェック結果（各成分の入出差）"
+
+  - name: closure
+    type: float
+    description: "収支閉合率（%）"
+
+validation_rules:
+  - "inlet compositions must sum to 1.0 for each stream"
+  - "all components must be defined in each stream composition"
+  - "flow rates must be positive"

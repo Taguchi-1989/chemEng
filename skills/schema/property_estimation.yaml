@@ -1,0 +1,106 @@
+# 物性推算スキル
+# 純物質の熱力学物性を計算する
+
+skill_id: "property_estimation"
+name: "物性推算"
+description: "純物質の熱力学物性値（蒸気圧、密度、粘度など）を計算する"
+calculation_type: "property_estimation"
+version: "1.0.0"
+author: "chemeng"
+tags: ["property", "thermodynamics", "pure_substance"]
+
+required_engines:
+  - thermo
+
+input_schema:
+  - name: substance
+    type: str
+    description: "物質名、IUPAC名、またはCAS番号"
+    required: true
+    example: "ethanol"
+
+  - name: property
+    type: str
+    description: "計算する物性名"
+    required: true
+    choices:
+      - vapor_pressure
+      - liquid_density
+      - gas_density
+      - liquid_viscosity
+      - gas_viscosity
+      - heat_capacity_liquid
+      - heat_capacity_gas
+      - thermal_conductivity_liquid
+      - thermal_conductivity_gas
+      - surface_tension
+      - heat_of_vaporization
+      - critical_temperature
+      - critical_pressure
+      - acentric_factor
+      - molecular_weight
+    example: "vapor_pressure"
+
+  - name: temperature
+    type: float
+    description: "温度"
+    unit: "K"
+    required: false
+    default: 298.15
+    min_value: 50.0
+    max_value: 2000.0
+    example: 350.0
+
+  - name: pressure
+    type: float
+    description: "圧力（一部の物性で使用）"
+    unit: "Pa"
+    required: false
+    default: 101325.0
+    min_value: 100.0
+    max_value: 100000000.0
+    example: 101325.0
+
+output_schema:
+  - name: value
+    type: float
+    description: "計算された物性値"
+
+  - name: unit
+    type: str
+    description: "物性値の単位"
+
+  - name: substance
+    type: str
+    description: "物質名"
+
+  - name: property
+    type: str
+    description: "物性名"
+
+  - name: conditions
+    type: dict
+    description: "計算条件"
+
+# 物性の単位マッピング
+metadata:
+  property_units:
+    vapor_pressure: "Pa"
+    liquid_density: "kg/m³"
+    gas_density: "kg/m³"
+    liquid_viscosity: "Pa·s"
+    gas_viscosity: "Pa·s"
+    heat_capacity_liquid: "J/(mol·K)"
+    heat_capacity_gas: "J/(mol·K)"
+    thermal_conductivity_liquid: "W/(m·K)"
+    thermal_conductivity_gas: "W/(m·K)"
+    surface_tension: "N/m"
+    heat_of_vaporization: "J/mol"
+    critical_temperature: "K"
+    critical_pressure: "Pa"
+    acentric_factor: "-"
+    molecular_weight: "g/mol"
+
+validation_rules:
+  - "temperature must be positive"
+  - "pressure must be positive"

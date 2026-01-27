@@ -1,0 +1,151 @@
+# 蒸留塔設計スキル
+# 二成分系蒸留塔の設計計算（McCabe-Thiele / Fenske-Underwood-Gilliland）
+
+skill_id: "distillation"
+name: "蒸留塔設計"
+description: "二成分系蒸留塔の設計計算。McCabe-Thiele法およびFenske-Underwood-Gilliland法を使用。"
+calculation_type: "distillation"
+version: "1.0.0"
+author: "chemeng"
+tags: ["separation", "unit_operation", "distillation", "design"]
+
+required_engines:
+  - thermo
+
+input_schema:
+  # 物質系
+  - name: light_component
+    type: str
+    description: "軽沸成分（低沸点成分）の名前またはCAS番号"
+    required: true
+    example: "ethanol"
+
+  - name: heavy_component
+    type: str
+    description: "重沸成分（高沸点成分）の名前またはCAS番号"
+    required: true
+    example: "water"
+
+  # 原料条件
+  - name: feed_flow_rate
+    type: float
+    description: "原料流量"
+    unit: "kmol/h"
+    required: true
+    min_value: 0.001
+    example: 100.0
+
+  - name: feed_composition
+    type: float
+    description: "原料中の軽沸成分モル分率"
+    required: true
+    min_value: 0.001
+    max_value: 0.999
+    example: 0.4
+
+  - name: feed_temperature
+    type: float
+    description: "原料温度"
+    unit: "K"
+    required: false
+    default: 350.0
+    min_value: 200.0
+    max_value: 600.0
+
+  - name: feed_condition
+    type: float
+    description: "原料熱状態 q（1.0=飽和液、0.0=飽和蒸気、>1=過冷却液、<0=過熱蒸気）"
+    required: false
+    default: 1.0
+    min_value: -0.5
+    max_value: 1.5
+
+  # 運転条件
+  - name: column_pressure
+    type: float
+    description: "塔頂圧力"
+    unit: "Pa"
+    required: false
+    default: 101325.0
+    min_value: 1000.0
+    max_value: 10000000.0
+
+  # 設計仕様
+  - name: distillate_purity
+    type: float
+    description: "留出液中の軽沸成分モル分率（目標純度）"
+    required: true
+    min_value: 0.5
+    max_value: 0.9999
+    example: 0.95
+
+  - name: bottoms_purity
+    type: float
+    description: "缶出液中の重沸成分モル分率（目標純度）"
+    required: true
+    min_value: 0.5
+    max_value: 0.9999
+    example: 0.98
+
+  - name: reflux_ratio_factor
+    type: float
+    description: "最小還流比に対する倍率（通常1.1〜2.0）"
+    required: false
+    default: 1.3
+    min_value: 1.05
+    max_value: 5.0
+
+output_schema:
+  - name: minimum_reflux_ratio
+    type: float
+    description: "最小還流比 R_min"
+
+  - name: actual_reflux_ratio
+    type: float
+    description: "実還流比 R"
+
+  - name: minimum_stages
+    type: int
+    description: "最小理論段数 N_min（全還流時）"
+
+  - name: actual_stages
+    type: int
+    description: "実理論段数 N"
+
+  - name: feed_stage
+    type: int
+    description: "原料供給段（塔底から数えて）"
+
+  - name: distillate_flow_rate
+    type: float
+    description: "留出液流量"
+    unit: "kmol/h"
+
+  - name: bottoms_flow_rate
+    type: float
+    description: "缶出液流量"
+    unit: "kmol/h"
+
+  - name: condenser_duty
+    type: float
+    description: "凝縮器熱負荷"
+    unit: "kW"
+
+  - name: reboiler_duty
+    type: float
+    description: "再沸器熱負荷"
+    unit: "kW"
+
+  - name: relative_volatility
+    type: float
+    description: "平均相対揮発度 α"
+
+  - name: column_diameter
+    type: float
+    description: "推定塔径（概算）"
+    unit: "m"
+
+validation_rules:
+  - "feed_composition must be between distillate and bottoms purity"
+  - "distillate_purity must be greater than feed_composition"
+  - "1 - bottoms_purity must be less than feed_composition"
