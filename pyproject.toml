@@ -25,15 +25,18 @@ classifiers = [
 ]
 
 dependencies = [
-    "thermo>=0.2.0",
-    "chemicals>=1.1.0",
     "pyyaml>=6.0",
     "pydantic>=2.0",
 ]
 
 [project.optional-dependencies]
+# Calculation engines (heavy scientific libraries)
+thermo = ["thermo>=0.2.0", "chemicals>=1.1.0"]
 cantera = ["cantera>=3.0"]
 coolprop = ["CoolProp>=6.4"]
+# Full calculation support
+calc = ["chemeng[thermo,cantera,coolprop]"]
+# API server
 api = ["fastapi>=0.100", "uvicorn>=0.20"]
 ai = ["anthropic>=0.20"]
 dev = [
@@ -41,8 +44,9 @@ dev = [
     "pytest-cov>=4.0",
     "ruff>=0.1.0",
 ]
+# All features for local development
 all = [
-    "chemeng[cantera,coolprop,api,ai,dev]"
+    "chemeng[calc,api,ai,dev]"
 ]
 
 [project.scripts]
