@@ -53,10 +53,21 @@ class CalculationRequest(BaseModel):
 @app.get("/")
 def root():
     """API情報"""
+    # Check for available engines
+    try:
+        from engines import get_available_engines
+        engines = get_available_engines()
+        engine_names = [e.name for e in engines]
+    except Exception:
+        engine_names = []
+
     return {
         "name": "ChemEng API",
         "version": "0.1.0",
         "description": "化学工学計算API",
+        "mode": "full" if engine_names else "lightweight",
+        "available_engines": engine_names,
+        "note": None if engine_names else "Lightweight mode: heavy calculation libraries (thermo, chemicals) not installed. Install locally for full functionality.",
         "endpoints": {
             "/api/v1/engines": "利用可能なエンジン一覧",
             "/api/v1/skills": "利用可能なスキル一覧",
@@ -70,7 +81,7 @@ def root():
 def list_engines():
     """利用可能なエンジン一覧"""
     try:
-        from chemeng.engines import get_available_engines
+        from engines import get_available_engines
         engines = get_available_engines()
         return {
             "engines": [
@@ -91,7 +102,7 @@ def list_engines():
 def list_skills():
     """利用可能なスキル一覧"""
     try:
-        from chemeng.core import get_registry
+        from core import get_registry
         registry = get_registry()
         skills = registry.list_skills()
         return {
@@ -113,7 +124,7 @@ def list_skills():
 def get_skill(skill_id: str):
     """スキル詳細"""
     try:
-        from chemeng.core import get_registry
+        from core import get_registry
         registry = get_registry()
         skill = registry.get_skill(skill_id)
         if skill is None:
@@ -145,11 +156,14 @@ def get_skill(skill_id: str):
 def get_property(request: PropertyRequest):
     """物性値を取得"""
     try:
-        from chemeng.engines import select_engine
+        from engines import select_engine
 
         engine = select_engine(substance=request.substance, property_name=request.property)
         if engine is None:
-            raise HTTPException(status_code=500, detail="No engine available")
+            raise HTTPException(
+                status_code=503,
+                detail="No calculation engine available. This API is running in lightweight mode. Install thermo/chemicals locally for full functionality."
+            )
 
         conditions = {}
         if request.temperature:
@@ -180,7 +194,7 @@ def get_property(request: PropertyRequest):
 def calculate(skill_id: str, request: CalculationRequest):
     """計算を実行"""
     try:
-        from chemeng.core import get_registry
+        from core import get_registry
         registry = get_registry()
         result = registry.execute(skill_id, request.parameters)
         return result.to_dict()
