@@ -17,6 +17,8 @@ Endpoints:
     POST /api/v1/equilibrium        - 相平衡計算
 """
 
+from __future__ import annotations
+
 from datetime import datetime
 from pathlib import Path
 from typing import Any

@@ -4,6 +4,8 @@
 スキル（計算テンプレート）の登録・検索・実行を管理する。
 """
 
+from __future__ import annotations
+
 import importlib.util
 import time
 from pathlib import Path

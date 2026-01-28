@@ -4,6 +4,8 @@
 計算スキルのスキーマと実行結果を定義する。
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path

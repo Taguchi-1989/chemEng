@@ -4,6 +4,8 @@ Cantera エンジン
 反応速度論、化学平衡、燃焼計算を提供。
 """
 
+from __future__ import annotations
+
 from typing import Any
 
 from .base import (
