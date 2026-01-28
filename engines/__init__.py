@@ -9,6 +9,8 @@ ChemEng 計算エンジンモジュール
 - coolprop: 冷媒・純物質の高精度物性（120+流体）
 """
 
+from __future__ import annotations
+
 from .base import (
     CalculationEngine,
     EngineCapability,

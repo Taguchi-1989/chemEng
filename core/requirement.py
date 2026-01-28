@@ -4,6 +4,8 @@
 ユーザーからの計算要件を構造化して保持する。
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
