@@ -12,8 +12,14 @@ from typing import Any, Callable
 import yaml
 
 from .skill import SkillDefinition, CalculationResult
-from ..engines import get_available_engines
-from ..engines.base import CalculationEngine
+
+# Use try/except to support both package import and direct module import (Vercel)
+try:
+    from ..engines import get_available_engines
+    from ..engines.base import CalculationEngine
+except ImportError:
+    from engines import get_available_engines
+    from engines.base import CalculationEngine
 
 
 class SkillRegistry:
