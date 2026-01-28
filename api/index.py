@@ -1,9 +1,14 @@
 """
 Vercel Serverless Function Entry Point
 
-既存のFastAPIアプリをVercelにデプロイするためのエントリーポイント
+フロントエンドUI + バックエンドAPIへのプロキシ
+計算処理はローカルサーバー（BACKEND_URL）に転送される
+
+環境変数:
+    BACKEND_URL: ローカルサーバーのURL（例: https://xxxx.ngrok-free.app）
 """
 
+import os
 import sys
 from pathlib import Path
 
@@ -11,10 +16,20 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import Any
+
+try:
+    import httpx
+    HTTPX_AVAILABLE = True
+except ImportError:
+    HTTPX_AVAILABLE = False
+
+# バックエンドURL（環境変数から取得）
+BACKEND_URL = os.environ.get("BACKEND_URL", "")
 
 
 # ==================== FastAPI App ====================
@@ -22,7 +37,7 @@ from typing import Any
 app = FastAPI(
     title="ChemEng API",
     description="化学工学計算API - 物性推算、物質収支、蒸留塔設計など",
-    version="0.1.0",
+    version="0.2.0",
 )
 
 # CORS設定
@@ -48,15 +63,67 @@ class CalculationRequest(BaseModel):
     parameters: dict[str, Any] = Field(default_factory=dict)
 
 
+# ==================== Proxy Helper ====================
+
+async def proxy_request(request: Request, path: str):
+    """リクエストをバックエンドサーバーに転送"""
+    if not BACKEND_URL:
+        raise HTTPException(
+            status_code=503,
+            detail="Backend server not configured. Set BACKEND_URL environment variable."
+        )
+    
+    if not HTTPX_AVAILABLE:
+        raise HTTPException(
+            status_code=503,
+            detail="httpx not installed. Cannot proxy requests."
+        )
+    
+    url = f"{BACKEND_URL.rstrip('/')}/{path.lstrip('/')}"
+    
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        try:
+            # リクエストボディを取得
+            body = await request.body()
+            
+            # ヘッダーを転送（一部除外）
+            headers = {
+                k: v for k, v in request.headers.items()
+                if k.lower() not in ("host", "content-length")
+            }
+            
+            response = await client.request(
+                method=request.method,
+                url=url,
+                content=body,
+                headers=headers,
+            )
+            
+            return JSONResponse(
+                content=response.json(),
+                status_code=response.status_code,
+            )
+        except httpx.TimeoutException:
+            raise HTTPException(status_code=504, detail="Backend server timeout")
+        except httpx.ConnectError:
+            raise HTTPException(status_code=503, detail="Cannot connect to backend server")
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=f"Backend error: {str(e)}")
+
+
 # ==================== Endpoints ====================
 
 @app.get("/")
 def root():
     """API情報"""
+    backend_status = "connected" if BACKEND_URL else "not configured"
     return {
         "name": "ChemEng API",
-        "version": "0.1.0",
+        "version": "0.2.0",
         "description": "化学工学計算API",
+        "mode": "proxy" if BACKEND_URL else "standalone",
+        "backend_url": BACKEND_URL or None,
+        "backend_status": backend_status,
         "endpoints": {
             "/api/v1/engines": "利用可能なエンジン一覧",
             "/api/v1/skills": "利用可能なスキル一覧",
@@ -67,8 +134,13 @@ def root():
 
 
 @app.get("/api/v1/engines")
-def list_engines():
+async def list_engines(request: Request):
     """利用可能なエンジン一覧"""
+    # バックエンドURLが設定されている場合はプロキシ
+    if BACKEND_URL and HTTPX_AVAILABLE:
+        return await proxy_request(request, "/api/v1/engines")
+    
+    # フォールバック: ローカル実行
     try:
         from chemeng.engines import get_available_engines
         engines = get_available_engines()
@@ -88,8 +160,11 @@ def list_engines():
 
 
 @app.get("/api/v1/skills")
-def list_skills():
+async def list_skills(request: Request):
     """利用可能なスキル一覧"""
+    if BACKEND_URL and HTTPX_AVAILABLE:
+        return await proxy_request(request, "/api/v1/skills")
+    
     try:
         from chemeng.core import get_registry
         registry = get_registry()
@@ -110,8 +185,11 @@ def list_skills():
 
 
 @app.get("/api/v1/skills/{skill_id}")
-def get_skill(skill_id: str):
+async def get_skill(skill_id: str, request: Request):
     """スキル詳細"""
+    if BACKEND_URL and HTTPX_AVAILABLE:
+        return await proxy_request(request, f"/api/v1/skills/{skill_id}")
+    
     try:
         from chemeng.core import get_registry
         registry = get_registry()
@@ -142,27 +220,34 @@ def get_skill(skill_id: str):
 
 
 @app.post("/api/v1/property")
-def get_property(request: PropertyRequest):
+async def get_property(request: Request):
     """物性値を取得"""
+    if BACKEND_URL and HTTPX_AVAILABLE:
+        return await proxy_request(request, "/api/v1/property")
+    
+    # ローカル実行
+    body = await request.json()
+    prop_request = PropertyRequest(**body)
+    
     try:
         from chemeng.engines import select_engine
 
-        engine = select_engine(substance=request.substance, property_name=request.property)
+        engine = select_engine(substance=prop_request.substance, property_name=prop_request.property)
         if engine is None:
             raise HTTPException(status_code=500, detail="No engine available")
 
         conditions = {}
-        if request.temperature:
-            conditions["temperature"] = request.temperature
-        if request.pressure:
-            conditions["pressure"] = request.pressure
+        if prop_request.temperature:
+            conditions["temperature"] = prop_request.temperature
+        if prop_request.pressure:
+            conditions["pressure"] = prop_request.pressure
 
-        value = engine.get_property(request.substance, request.property, conditions)
+        value = engine.get_property(prop_request.substance, prop_request.property, conditions)
 
         return {
             "success": True,
-            "substance": request.substance,
-            "property": request.property,
+            "substance": prop_request.substance,
+            "property": prop_request.property,
             "value": value,
             "conditions": conditions,
             "engine": engine.name,
@@ -170,19 +255,25 @@ def get_property(request: PropertyRequest):
     except Exception as e:
         return {
             "success": False,
-            "substance": request.substance,
-            "property": request.property,
+            "substance": prop_request.substance,
+            "property": prop_request.property,
             "error": str(e),
         }
 
 
 @app.post("/api/v1/calculate/{skill_id}")
-def calculate(skill_id: str, request: CalculationRequest):
+async def calculate(skill_id: str, request: Request):
     """計算を実行"""
+    if BACKEND_URL and HTTPX_AVAILABLE:
+        return await proxy_request(request, f"/api/v1/calculate/{skill_id}")
+    
+    body = await request.json()
+    calc_request = CalculationRequest(**body)
+    
     try:
         from chemeng.core import get_registry
         registry = get_registry()
-        result = registry.execute(skill_id, request.parameters)
+        result = registry.execute(skill_id, calc_request.parameters)
         return result.to_dict()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -190,3 +281,4 @@ def calculate(skill_id: str, request: CalculationRequest):
 
 # Vercel用ハンドラー
 handler = app
+
