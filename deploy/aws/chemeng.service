@@ -1,0 +1,18 @@
+[Unit]
+Description=ChemEng FastAPI Application
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/opt/chemeng
+Environment="PATH=/opt/chemeng/venv/bin"
+Environment="PYTHONUNBUFFERED=1"
+ExecStart=/opt/chemeng/venv/bin/uvicorn chemeng.interface.api:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=3
+StandardOutput=append:/var/log/chemeng/app.log
+StandardError=append:/var/log/chemeng/error.log
+
+[Install]
+WantedBy=multi-user.target

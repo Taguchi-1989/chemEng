@@ -4,6 +4,8 @@
 各OSSライブラリ（thermo, Cantera, CoolProp）のラッパーの共通インターフェースを定義。
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any

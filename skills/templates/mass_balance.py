@@ -4,6 +4,8 @@
 定常状態のプロセスにおける物質収支（マスバランス）を計算する。
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from typing import Any
 
