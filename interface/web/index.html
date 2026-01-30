@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChemEng - Chemical Engineering Calculator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #2563eb;
@@ -138,6 +139,153 @@
             .grid {
                 grid-template-columns: 1fr;
             }
+            .container {
+                padding: 1rem;
+            }
+            header h1 {
+                font-size: 1.5rem;
+            }
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .tabs {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+            }
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0.75rem;
+            }
+            .card {
+                padding: 1rem;
+            }
+            header {
+                padding: 1rem 0;
+            }
+            .tabs {
+                grid-template-columns: 1fr;
+            }
+            .api-status {
+                font-size: 0.7rem;
+            }
+        }
+
+        /* Unit conversion helper */
+        .unit-helper {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.25rem;
+        }
+
+        .unit-chip {
+            padding: 0.2rem 0.5rem;
+            font-size: 0.75rem;
+            background: var(--border);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+
+        .unit-chip:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .unit-chip.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Export buttons */
+        .export-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .btn-export {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .btn-export:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Chart container */
+        .chart-container {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: var(--bg);
+            border-radius: 8px;
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .chart-controls label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0;
+        }
+
+        .chart-controls input {
+            width: 80px;
+        }
+
+        .btn-chart {
+            padding: 0.4rem 0.75rem;
+            font-size: 0.85rem;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .btn-chart:hover {
+            background: #059669;
+        }
+
+        /* Keyboard shortcut hint */
+        .shortcut-hint {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+
+        kbd {
+            padding: 0.15rem 0.4rem;
+            background: var(--border);
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.8rem;
         }
 
         .card {
@@ -669,13 +817,25 @@
                     </div>
                     <div class="form-group">
                         <label>温度 / Temperature (K)</label>
-                        <input type="number" name="temperature" value="350" step="0.1">
+                        <input type="number" name="temperature" id="prop-temp-input" value="350" step="any">
+                        <div class="unit-helper">
+                            <button type="button" class="unit-chip active" data-unit="K" data-target="prop-temp-input">K</button>
+                            <button type="button" class="unit-chip" data-unit="C" data-target="prop-temp-input">°C</button>
+                            <button type="button" class="unit-chip" data-unit="F" data-target="prop-temp-input">°F</button>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>圧力 / Pressure (Pa)</label>
-                        <input type="number" name="pressure" value="101325" step="100">
+                        <input type="number" name="pressure" id="prop-press-input" value="101325" step="100">
+                        <div class="unit-helper">
+                            <button type="button" class="unit-chip active" data-unit="Pa" data-target="prop-press-input">Pa</button>
+                            <button type="button" class="unit-chip" data-unit="kPa" data-target="prop-press-input">kPa</button>
+                            <button type="button" class="unit-chip" data-unit="atm" data-target="prop-press-input">atm</button>
+                            <button type="button" class="unit-chip" data-unit="bar" data-target="prop-press-input">bar</button>
+                        </div>
                     </div>
                     <button type="submit" class="btn">計算実行 / Calculate</button>
+                    <div class="shortcut-hint"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> で計算実行</div>
                 </form>
 
                 <!-- Distillation Form -->
@@ -822,6 +982,41 @@
                             <div class="value"><span id="property-pressure">-</span> <span class="unit">kPa</span></div>
                         </div>
                     </div>
+                    <!-- Export Buttons -->
+                    <div class="export-buttons">
+                        <button type="button" class="btn-export" id="prop-export-json">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            JSON
+                        </button>
+                        <button type="button" class="btn-export" id="prop-export-csv">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            CSV
+                        </button>
+                    </div>
+
+                    <!-- Temperature Chart -->
+                    <div class="chart-container">
+                        <h4 style="margin-bottom: 0.75rem; font-size: 0.9rem;">温度依存性グラフ / Temperature Dependence</h4>
+                        <div class="chart-controls">
+                            <label>
+                                <span>T_min:</span>
+                                <input type="number" id="chart-temp-min" value="280" step="10">K
+                            </label>
+                            <label>
+                                <span>T_max:</span>
+                                <input type="number" id="chart-temp-max" value="400" step="10">K
+                            </label>
+                            <button type="button" class="btn-chart" id="generate-chart">グラフ生成</button>
+                        </div>
+                        <canvas id="property-chart" height="200"></canvas>
+                    </div>
+
                     <div style="margin-top: 1.5rem;">
                         <button id="prop-toggle-steps" class="btn" style="background: #6366f1; width: auto; padding: 0.5rem 1rem; font-size: 0.9rem;">
                             計算過程を表示 / Show Steps ▼
@@ -1403,11 +1598,17 @@
             showLoading();
 
             const formData = new FormData(e.target);
+            // Use unit conversion to get base units
+            const tempUnit = currentUnits['prop-temp-input'] || 'K';
+            const pressUnit = currentUnits['prop-press-input'] || 'Pa';
+            const tempValue = parseFloat(formData.get('temperature'));
+            const pressValue = parseFloat(formData.get('pressure'));
+
             const params = {
                 substance: formData.get('substance'),
                 property: formData.get('property'),
-                temperature: parseFloat(formData.get('temperature')),
-                pressure: parseFloat(formData.get('pressure'))
+                temperature: unitConversions.temperature[tempUnit].toBase(tempValue),
+                pressure: unitConversions.pressure[pressUnit].toBase(pressValue)
             };
 
             try {
@@ -1431,6 +1632,13 @@
                     if (out.calculation_steps?.length > 0) {
                         document.getElementById('prop-steps-content').innerHTML = renderSteps(out.calculation_steps);
                     }
+
+                    // Store for export
+                    lastPropertyResult = { params, outputs: out };
+
+                    // Set chart temperature range around current temperature
+                    document.getElementById('chart-temp-min').value = Math.max(250, params.temperature - 50);
+                    document.getElementById('chart-temp-max').value = Math.min(500, params.temperature + 50);
 
                     saveToHistory('property', params, out);
                     showResult('property');
@@ -1789,6 +1997,212 @@
         document.getElementById('mb-process-box').addEventListener('click', () => showMbStreamDetail('process'));
         document.getElementById('mb-close-detail').addEventListener('click', () => {
             document.getElementById('mb-detail-panel').classList.add('hidden');
+        });
+
+        // ==================== Unit Conversion ====================
+        const unitConversions = {
+            temperature: {
+                K: { toBase: v => v, fromBase: v => v },
+                C: { toBase: v => v + 273.15, fromBase: v => v - 273.15 },
+                F: { toBase: v => (v - 32) * 5/9 + 273.15, fromBase: v => (v - 273.15) * 9/5 + 32 }
+            },
+            pressure: {
+                Pa: { toBase: v => v, fromBase: v => v },
+                kPa: { toBase: v => v * 1000, fromBase: v => v / 1000 },
+                atm: { toBase: v => v * 101325, fromBase: v => v / 101325 },
+                bar: { toBase: v => v * 100000, fromBase: v => v / 100000 }
+            }
+        };
+
+        const currentUnits = {
+            'prop-temp-input': 'K',
+            'prop-press-input': 'Pa'
+        };
+
+        document.querySelectorAll('.unit-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                const targetId = chip.dataset.target;
+                const newUnit = chip.dataset.unit;
+                const input = document.getElementById(targetId);
+                const currentValue = parseFloat(input.value) || 0;
+                const currentUnit = currentUnits[targetId];
+
+                // Determine conversion type
+                const isTemp = ['K', 'C', 'F'].includes(newUnit);
+                const convType = isTemp ? 'temperature' : 'pressure';
+
+                // Convert: current unit -> base (K or Pa) -> new unit
+                const baseValue = unitConversions[convType][currentUnit].toBase(currentValue);
+                const newValue = unitConversions[convType][newUnit].fromBase(baseValue);
+
+                input.value = newValue.toFixed(isTemp ? 2 : 0);
+                currentUnits[targetId] = newUnit;
+
+                // Update active state
+                chip.parentElement.querySelectorAll('.unit-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+            });
+        });
+
+        // Ensure we always submit in base units (K, Pa)
+        function getBaseTemperature(inputId) {
+            const input = document.getElementById(inputId);
+            const value = parseFloat(input.value) || 0;
+            const unit = currentUnits[inputId];
+            return unitConversions.temperature[unit].toBase(value);
+        }
+
+        function getBasePressure(inputId) {
+            const input = document.getElementById(inputId);
+            const value = parseFloat(input.value) || 0;
+            const unit = currentUnits[inputId];
+            return unitConversions.pressure[unit].toBase(value);
+        }
+
+        // ==================== Keyboard Shortcuts ====================
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                // Find the active form and submit it
+                const activeTab = document.querySelector('.tab.active');
+                if (activeTab) {
+                    const formId = `${activeTab.dataset.tab}-form`;
+                    const form = document.getElementById(formId);
+                    if (form && !form.classList.contains('hidden')) {
+                        form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+                    }
+                }
+            }
+        });
+
+        // ==================== Export Functions ====================
+        let lastPropertyResult = null;
+
+        function downloadFile(content, filename, type) {
+            const blob = new Blob([content], { type });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast(`${filename} をダウンロードしました`, 'success');
+        }
+
+        document.getElementById('prop-export-json').addEventListener('click', () => {
+            if (!lastPropertyResult) {
+                showToast('エクスポートするデータがありません', 'warning');
+                return;
+            }
+            const json = JSON.stringify(lastPropertyResult, null, 2);
+            downloadFile(json, `chemeng_property_${Date.now()}.json`, 'application/json');
+        });
+
+        document.getElementById('prop-export-csv').addEventListener('click', () => {
+            if (!lastPropertyResult) {
+                showToast('エクスポートするデータがありません', 'warning');
+                return;
+            }
+            const { params, outputs } = lastPropertyResult;
+            const propInfo = propertyNames[params.property] || { name: params.property, unit: '', factor: 1 };
+            const csv = [
+                'Substance,Property,Value,Unit,Temperature (K),Pressure (Pa)',
+                `${params.substance},${propInfo.name},${(outputs.value * propInfo.factor).toFixed(4)},${propInfo.unit},${params.temperature},${params.pressure}`
+            ].join('\n');
+            downloadFile(csv, `chemeng_property_${Date.now()}.csv`, 'text/csv');
+        });
+
+        // ==================== Temperature Chart ====================
+        let propertyChart = null;
+
+        document.getElementById('generate-chart').addEventListener('click', async () => {
+            if (!lastPropertyResult) {
+                showToast('先に計算を実行してください', 'warning');
+                return;
+            }
+
+            const tMin = parseFloat(document.getElementById('chart-temp-min').value) || 280;
+            const tMax = parseFloat(document.getElementById('chart-temp-max').value) || 400;
+            const { params } = lastPropertyResult;
+
+            showToast('グラフデータを計算中...', 'success');
+
+            const temperatures = [];
+            const values = [];
+            const step = (tMax - tMin) / 20;
+
+            for (let t = tMin; t <= tMax; t += step) {
+                temperatures.push(t);
+                try {
+                    const res = await fetch(`${API_BASE}/calculate/property_estimation`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            parameters: {
+                                substance: params.substance,
+                                property: params.property,
+                                temperature: t,
+                                pressure: params.pressure
+                            }
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        const propInfo = propertyNames[params.property] || { factor: 1 };
+                        values.push(data.outputs.value * propInfo.factor);
+                    } else {
+                        values.push(null);
+                    }
+                } catch {
+                    values.push(null);
+                }
+            }
+
+            const ctx = document.getElementById('property-chart').getContext('2d');
+            const propInfo = propertyNames[params.property] || { name: params.property, unit: '' };
+
+            if (propertyChart) {
+                propertyChart.destroy();
+            }
+
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+            propertyChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: temperatures.map(t => t.toFixed(0)),
+                    datasets: [{
+                        label: `${propInfo.name} (${propInfo.unit})`,
+                        data: values,
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: { color: isDark ? '#f1f5f9' : '#1e293b' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Temperature (K)', color: isDark ? '#94a3b8' : '#64748b' },
+                            ticks: { color: isDark ? '#94a3b8' : '#64748b' },
+                            grid: { color: isDark ? '#334155' : '#e2e8f0' }
+                        },
+                        y: {
+                            title: { display: true, text: propInfo.unit, color: isDark ? '#94a3b8' : '#64748b' },
+                            ticks: { color: isDark ? '#94a3b8' : '#64748b' },
+                            grid: { color: isDark ? '#334155' : '#e2e8f0' }
+                        }
+                    }
+                }
+            });
+
+            showToast('グラフを生成しました', 'success');
         });
     </script>
 </body>
