@@ -172,7 +172,7 @@ def create_app() -> "FastAPI":
     @app.get("/api/v1/engines", response_model=list[EngineInfo])
     async def list_engines():
         """利用可能なエンジン一覧"""
-        from chemeng.engines import get_available_engines
+        from engines import get_available_engines
 
         engines = get_available_engines()
         return [
@@ -189,7 +189,7 @@ def create_app() -> "FastAPI":
     @app.get("/api/v1/skills", response_model=list[SkillInfo])
     async def list_skills():
         """スキル一覧"""
-        from chemeng.core import get_registry
+        from core import get_registry
 
         registry = get_registry()
         skills = registry.list_skills()
@@ -208,7 +208,7 @@ def create_app() -> "FastAPI":
     @app.get("/api/v1/skills/{skill_id}", response_model=SkillDetail)
     async def get_skill(skill_id: str):
         """スキル詳細"""
-        from chemeng.core import get_registry
+        from core import get_registry
 
         registry = get_registry()
         skill = registry.get_skill(skill_id)
@@ -232,7 +232,7 @@ def create_app() -> "FastAPI":
     @app.post("/api/v1/calculate/{skill_id}", response_model=CalculationResponse)
     async def calculate(skill_id: str, request: CalculationRequest):
         """計算実行"""
-        from chemeng.core import get_registry
+        from core import get_registry
 
         registry = get_registry()
         result = registry.execute(skill_id, request.parameters)
@@ -252,7 +252,7 @@ def create_app() -> "FastAPI":
     @app.post("/api/v1/property", response_model=PropertyResponse)
     async def get_property(request: PropertyRequest):
         """物性値取得"""
-        from chemeng.engines import get_engine, select_engine
+        from engines import get_engine, select_engine
 
         # エンジン選択
         if request.engine:
@@ -310,7 +310,7 @@ def create_app() -> "FastAPI":
     @app.post("/api/v1/equilibrium")
     async def calculate_equilibrium(request: EquilibriumRequest):
         """相平衡計算"""
-        from chemeng.engines import get_engine, select_engine
+        from engines import get_engine, select_engine
 
         # エンジン選択
         if request.engine:
@@ -361,7 +361,7 @@ def create_app() -> "FastAPI":
     @app.get("/api/v1/substances/{substance}")
     async def get_substance_info(substance: str, engine: str | None = None):
         """物質情報取得"""
-        from chemeng.engines import get_engine, select_engine
+        from engines import get_engine, select_engine
 
         if engine:
             eng = get_engine(engine)

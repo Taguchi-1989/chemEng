@@ -18,6 +18,19 @@
             --border: #e2e8f0;
         }
 
+        [data-theme="dark"] {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --success: #34d399;
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -29,6 +42,7 @@
             background: var(--bg);
             color: var(--text);
             line-height: 1.6;
+            transition: background 0.3s, color 0.3s;
         }
 
         .container {
@@ -40,18 +54,78 @@
         header {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
-            padding: 2rem 0;
+            padding: 1.5rem 0;
             margin-bottom: 2rem;
         }
 
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
         header h1 {
-            font-size: 2rem;
+            font-size: 1.75rem;
             font-weight: 700;
         }
 
         header p {
             opacity: 0.9;
-            margin-top: 0.5rem;
+            margin-top: 0.25rem;
+            font-size: 0.9rem;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* API Status */
+        .api-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.75rem;
+            background: rgba(255,255,255,0.15);
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #94a3b8;
+        }
+
+        .status-dot.connected {
+            background: #34d399;
+            box-shadow: 0 0 6px #34d399;
+        }
+
+        .status-dot.error {
+            background: #f87171;
+            box-shadow: 0 0 6px #f87171;
+        }
+
+        /* Dark Mode Toggle */
+        .theme-toggle {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.25);
         }
 
         .grid {
@@ -92,6 +166,7 @@
             padding: 0.5rem 1rem;
             border: none;
             background: var(--border);
+            color: var(--text);
             border-radius: 8px;
             cursor: pointer;
             font-size: 0.9rem;
@@ -99,7 +174,8 @@
         }
 
         .tab:hover {
-            background: #cbd5e1;
+            background: var(--text-muted);
+            color: white;
         }
 
         .tab.active {
@@ -126,12 +202,44 @@
             border-radius: 6px;
             font-size: 0.95rem;
             transition: border-color 0.2s;
+            background: var(--card);
+            color: var(--text);
         }
 
         input:focus, select:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Autocomplete */
+        .autocomplete-wrapper {
+            position: relative;
+        }
+
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .autocomplete-item {
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .autocomplete-item:hover {
+            background: var(--primary);
+            color: white;
         }
 
         .btn {
@@ -154,6 +262,114 @@
         .btn:disabled {
             background: #94a3b8;
             cursor: not-allowed;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toast {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideIn 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .toast.success {
+            background: var(--success);
+        }
+
+        .toast.error {
+            background: var(--danger);
+        }
+
+        .toast.warning {
+            background: var(--warning);
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 0;
+            margin-left: 0.5rem;
+            opacity: 0.8;
+        }
+
+        .toast-close:hover {
+            opacity: 1;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* History Panel */
+        .history-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .history-toggle:hover {
+            color: var(--primary);
+        }
+
+        .history-list {
+            margin-top: 0.75rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 0.5rem;
+            background: var(--bg);
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .history-item:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .history-item .history-type {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            opacity: 0.8;
+        }
+
+        .history-item .history-params {
+            margin-top: 0.25rem;
         }
 
         /* Results */
@@ -185,6 +401,10 @@
         .result-icon.success {
             background: #dcfce7;
             color: var(--success);
+        }
+
+        [data-theme="dark"] .result-icon.success {
+            background: #064e3b;
         }
 
         .result-icon.error {
@@ -298,10 +518,18 @@
             margin-top: 1rem;
         }
 
+        [data-theme="dark"] .warnings {
+            background: #451a03;
+        }
+
         .warnings h4 {
             color: #92400e;
             font-size: 0.9rem;
             margin-bottom: 0.5rem;
+        }
+
+        [data-theme="dark"] .warnings h4 {
+            color: #fbbf24;
         }
 
         .warnings ul {
@@ -309,6 +537,10 @@
             padding-left: 1.25rem;
             color: #92400e;
             font-size: 0.85rem;
+        }
+
+        [data-theme="dark"] .warnings ul {
+            color: #fcd34d;
         }
 
         /* Loading */
@@ -349,13 +581,57 @@
         .hidden {
             display: none !important;
         }
+
+        /* Footer */
+        footer {
+            margin-top: 3rem;
+            padding: 1.5rem 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 0.5rem;
+        }
     </style>
 </head>
 <body>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
     <header>
         <div class="container">
-            <h1>ChemEng</h1>
-            <p>化学工学計算モジュール / Chemical Engineering Calculator</p>
+            <div class="header-content">
+                <div>
+                    <h1>ChemEng</h1>
+                    <p>化学工学計算モジュール / Chemical Engineering Calculator</p>
+                </div>
+                <div class="header-controls">
+                    <div class="api-status">
+                        <div class="status-dot" id="status-dot"></div>
+                        <span id="status-text">接続確認中...</span>
+                    </div>
+                    <button class="theme-toggle" id="theme-toggle" title="ダークモード切替">
+                        <svg id="theme-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -375,7 +651,10 @@
                 <form id="property-form" class="calc-form">
                     <div class="form-group">
                         <label>物質名 / Substance</label>
-                        <input type="text" name="substance" value="ethanol" required>
+                        <div class="autocomplete-wrapper">
+                            <input type="text" name="substance" value="ethanol" required autocomplete="off" class="substance-input">
+                            <div class="autocomplete-list hidden" id="substance-autocomplete-1"></div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>物性 / Property</label>
@@ -403,11 +682,17 @@
                 <form id="distillation-form" class="calc-form hidden">
                     <div class="form-group">
                         <label>軽沸成分 / Light Component</label>
-                        <input type="text" name="light_component" value="ethanol" required>
+                        <div class="autocomplete-wrapper">
+                            <input type="text" name="light_component" value="ethanol" required autocomplete="off" class="substance-input">
+                            <div class="autocomplete-list hidden" id="substance-autocomplete-2"></div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>重沸成分 / Heavy Component</label>
-                        <input type="text" name="heavy_component" value="water" required>
+                        <div class="autocomplete-wrapper">
+                            <input type="text" name="heavy_component" value="water" required autocomplete="off" class="substance-input">
+                            <div class="autocomplete-list hidden" id="substance-autocomplete-3"></div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>原料流量 / Feed Flow Rate (kmol/h)</label>
@@ -461,7 +746,10 @@
                 <form id="heat_balance-form" class="calc-form hidden">
                     <div class="form-group">
                         <label>物質名 / Substance</label>
-                        <input type="text" name="substance" value="water" required>
+                        <div class="autocomplete-wrapper">
+                            <input type="text" name="substance" value="water" required autocomplete="off" class="substance-input">
+                            <div class="autocomplete-list hidden" id="substance-autocomplete-4"></div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>流量 / Flow Rate (mol/s)</label>
@@ -485,6 +773,16 @@
                     </div>
                     <button type="submit" class="btn">熱負荷計算 / Calculate Heat Duty</button>
                 </form>
+
+                <!-- History Section -->
+                <div class="history-toggle" id="history-toggle">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <span>計算履歴 / History (<span id="history-count">0</span>)</span>
+                </div>
+                <div class="history-list hidden" id="history-list"></div>
             </div>
 
             <!-- Results Panel -->
@@ -524,13 +822,11 @@
                             <div class="value"><span id="property-pressure">-</span> <span class="unit">kPa</span></div>
                         </div>
                     </div>
-
-                    <!-- Calculation Steps (collapsible) -->
                     <div style="margin-top: 1.5rem;">
                         <button id="prop-toggle-steps" class="btn" style="background: #6366f1; width: auto; padding: 0.5rem 1rem; font-size: 0.9rem;">
-                            計算過程を表示 / Show Calculation Steps ▼
+                            計算過程を表示 / Show Steps ▼
                         </button>
-                        <div id="prop-steps" class="hidden" style="margin-top: 1rem; background: #f1f5f9; border-radius: 8px; padding: 1rem;">
+                        <div id="prop-steps" class="hidden" style="margin-top: 1rem; background: var(--bg); border-radius: 8px; padding: 1rem;">
                             <div id="prop-steps-content"></div>
                         </div>
                     </div>
@@ -548,44 +844,27 @@
 
                     <div class="column-diagram">
                         <svg class="column-svg" width="300" height="400" viewBox="0 0 300 400">
-                            <!-- Column body -->
                             <rect x="100" y="50" width="100" height="280" rx="5" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2"/>
-
-                            <!-- Trays -->
                             <g id="trays-group"></g>
-
-                            <!-- Condenser -->
                             <ellipse cx="150" cy="30" rx="40" ry="15" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
                             <text x="150" y="35" text-anchor="middle" font-size="9" fill="#1e40af">凝縮器</text>
-
-                            <!-- Reboiler -->
                             <ellipse cx="150" cy="350" rx="40" ry="15" fill="#fecaca" stroke="#dc2626" stroke-width="2"/>
                             <text x="150" y="355" text-anchor="middle" font-size="9" fill="#991b1b">再沸器</text>
-
-                            <!-- Feed arrow -->
                             <line x1="50" y1="180" x2="100" y2="180" stroke="#10b981" stroke-width="3" marker-end="url(#arrowhead)"/>
                             <text x="20" y="175" font-size="10" fill="#047857">原料</text>
                             <text x="20" y="188" font-size="9" fill="#6b7280" id="feed-flow">F = 100</text>
-
-                            <!-- Distillate arrow -->
                             <line x1="150" y1="15" x2="150" y2="0" stroke="#2563eb" stroke-width="2"/>
                             <line x1="150" y1="0" x2="250" y2="0" stroke="#2563eb" stroke-width="2" marker-end="url(#arrowhead)"/>
                             <text x="255" y="5" font-size="10" fill="#1d4ed8">留出液</text>
                             <text x="255" y="18" font-size="9" fill="#6b7280" id="distillate-flow">D = 40</text>
-
-                            <!-- Bottoms arrow -->
                             <line x1="150" y1="365" x2="150" y2="385" stroke="#dc2626" stroke-width="2" marker-end="url(#arrowhead)"/>
                             <text x="160" y="395" font-size="10" fill="#991b1b">缶出液</text>
                             <text x="160" y="382" font-size="9" fill="#6b7280" id="bottoms-flow">B = 60</text>
-
-                            <!-- Arrow marker -->
                             <defs>
                                 <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
                                     <polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/>
                                 </marker>
                             </defs>
-
-                            <!-- Feed stage indicator -->
                             <circle cx="100" cy="180" r="6" fill="#10b981" id="feed-stage-dot"/>
                         </svg>
                     </div>
@@ -630,12 +909,11 @@
                         <ul id="dist-warnings-list"></ul>
                     </div>
 
-                    <!-- Calculation Steps (collapsible) -->
                     <div style="margin-top: 1.5rem;">
                         <button id="dist-toggle-steps" class="btn" style="background: #6366f1; width: auto; padding: 0.5rem 1rem; font-size: 0.9rem;">
-                            計算過程を表示 / Show Calculation Steps ▼
+                            計算過程を表示 / Show Steps ▼
                         </button>
-                        <div id="dist-steps" class="hidden" style="margin-top: 1rem; background: #f1f5f9; border-radius: 8px; padding: 1rem;">
+                        <div id="dist-steps" class="hidden" style="margin-top: 1rem; background: var(--bg); border-radius: 8px; padding: 1rem;">
                             <div id="dist-steps-content"></div>
                         </div>
                     </div>
@@ -651,10 +929,8 @@
                         </div>
                     </div>
 
-                    <!-- Flow Diagram -->
                     <div class="mass-balance-diagram" style="display: flex; justify-content: center; margin: 1.5rem 0;">
                         <svg width="450" height="200" viewBox="0 0 450 200">
-                            <!-- Arrow markers -->
                             <defs>
                                 <marker id="arrow-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
                                     <polygon points="0 0, 10 3.5, 0 7" fill="#10b981"/>
@@ -667,7 +943,6 @@
                                 </marker>
                             </defs>
 
-                            <!-- Process box -->
                             <rect id="mb-process-box" x="150" y="50" width="150" height="100"
                                   rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"
                                   style="cursor: pointer;" class="mb-clickable"/>
@@ -675,14 +950,12 @@
                             <text x="225" y="108" text-anchor="middle" font-size="10" fill="#0284c7">Process Unit</text>
                             <text x="225" y="135" text-anchor="middle" font-size="9" fill="#64748b" id="mb-svg-closure">閉合率: --%</text>
 
-                            <!-- Inlet arrow (left) -->
                             <g id="mb-inlet-group" style="cursor: pointer;" class="mb-clickable">
                                 <line x1="30" y1="100" x2="145" y2="100" stroke="#10b981" stroke-width="4" marker-end="url(#arrow-green)"/>
                                 <text x="10" y="80" font-size="11" fill="#047857" font-weight="500">入口 Feed</text>
                                 <text id="mb-svg-inlet-flow" x="10" y="125" font-size="9" fill="#6b7280">- mol/s</text>
                             </g>
 
-                            <!-- Outlet 1 arrow (top right - Distillate) -->
                             <g id="mb-outlet1-group" style="cursor: pointer;" class="mb-clickable">
                                 <line x1="305" y1="70" x2="400" y2="35" stroke="#2563eb" stroke-width="3" marker-end="url(#arrow-blue-mb)"/>
                                 <text x="340" y="25" font-size="11" fill="#1d4ed8" font-weight="500">留出液</text>
@@ -690,7 +963,6 @@
                                 <text id="mb-svg-outlet1-flow" x="405" y="40" font-size="9" fill="#6b7280">- mol/s</text>
                             </g>
 
-                            <!-- Outlet 2 arrow (bottom right - Bottoms) -->
                             <g id="mb-outlet2-group" style="cursor: pointer;" class="mb-clickable">
                                 <line x1="305" y1="130" x2="400" y2="165" stroke="#dc2626" stroke-width="3" marker-end="url(#arrow-red-mb)"/>
                                 <text x="340" y="185" font-size="11" fill="#991b1b" font-weight="500">缶出液</text>
@@ -700,27 +972,24 @@
                         </svg>
                     </div>
 
-                    <!-- Detail Panel (shown on click) -->
-                    <div id="mb-detail-panel" class="hidden" style="margin: 1rem 0; padding: 1rem; background: #f0f9ff; border: 2px solid #0284c7; border-radius: 8px;">
+                    <div id="mb-detail-panel" class="hidden" style="margin: 1rem 0; padding: 1rem; background: var(--bg); border: 2px solid #0284c7; border-radius: 8px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
                             <h4 id="mb-detail-title" style="margin: 0; color: #0369a1;">ストリーム詳細</h4>
-                            <button id="mb-close-detail" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b;">&times;</button>
+                            <button id="mb-close-detail" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted);">&times;</button>
                         </div>
                         <div id="mb-detail-content"></div>
                     </div>
 
-                    <!-- Summary -->
                     <div class="result-item" style="margin-top: 1rem; background: #dcfce7;">
                         <div class="label">収支閉合率 / Mass Closure</div>
                         <div class="value" style="color: #047857;"><span id="mb-closure">-</span> <span class="unit">%</span></div>
                     </div>
 
-                    <!-- Calculation Steps (collapsible) -->
                     <div style="margin-top: 1.5rem;">
                         <button id="mb-toggle-steps" class="btn" style="background: #6366f1; width: auto; padding: 0.5rem 1rem; font-size: 0.9rem;">
-                            計算過程を表示 / Show Calculation Steps ▼
+                            計算過程を表示 / Show Steps ▼
                         </button>
-                        <div id="mb-steps" class="hidden" style="margin-top: 1rem; background: #f1f5f9; border-radius: 8px; padding: 1rem;">
+                        <div id="mb-steps" class="hidden" style="margin-top: 1rem; background: var(--bg); border-radius: 8px; padding: 1rem;">
                             <div id="mb-steps-content"></div>
                         </div>
                     </div>
@@ -738,26 +1007,21 @@
 
                     <div class="heat-diagram" style="display: flex; justify-content: center; margin: 1.5rem 0;">
                         <svg width="400" height="180" viewBox="0 0 400 180">
-                            <!-- Heat Exchanger box -->
                             <rect x="120" y="40" width="160" height="100" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
                             <text x="200" y="90" text-anchor="middle" font-size="14" fill="#92400e" font-weight="600">熱交換器</text>
                             <text x="200" y="108" text-anchor="middle" font-size="10" fill="#b45309">Heat Exchanger</text>
 
-                            <!-- Inlet arrow -->
                             <line x1="30" y1="90" x2="120" y2="90" stroke="#2563eb" stroke-width="3" marker-end="url(#arrow-blue)"/>
                             <text x="20" y="75" font-size="10" fill="#1d4ed8">入口 / Inlet</text>
                             <text x="20" y="115" font-size="9" fill="#6b7280" id="hb-inlet-temp">T = 300 K</text>
 
-                            <!-- Outlet arrow -->
                             <line x1="280" y1="90" x2="370" y2="90" stroke="#dc2626" stroke-width="3" marker-end="url(#arrow-red)"/>
                             <text x="330" y="75" font-size="10" fill="#991b1b">出口 / Outlet</text>
                             <text x="330" y="115" font-size="9" fill="#6b7280" id="hb-outlet-temp">T = 400 K</text>
 
-                            <!-- Heat input arrow -->
                             <line x1="200" y1="170" x2="200" y2="140" stroke="#f59e0b" stroke-width="3" marker-end="url(#arrow-orange)"/>
                             <text x="200" y="178" text-anchor="middle" font-size="10" fill="#b45309" id="hb-q-label">Q = 0 kW</text>
 
-                            <!-- Arrow markers -->
                             <defs>
                                 <marker id="arrow-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
                                     <polygon points="0 0, 10 3.5, 0 7" fill="#2563eb"/>
@@ -783,11 +1047,11 @@
                         </div>
                         <div class="result-item">
                             <div class="label">合計熱負荷 / Total Duty</div>
-                            <div class="value" style="color: #f59e0b;"><span id="hb-total">-</span> <span class="unit">kW</span></div>
+                            <div class="value" style="color: var(--warning);"><span id="hb-total">-</span> <span class="unit">kW</span></div>
                         </div>
                         <div class="result-item">
                             <div class="label">実熱負荷 / Actual Duty</div>
-                            <div class="value" style="color: #dc2626;"><span id="hb-actual">-</span> <span class="unit">kW</span></div>
+                            <div class="value" style="color: var(--danger);"><span id="hb-actual">-</span> <span class="unit">kW</span></div>
                         </div>
                     </div>
 
@@ -820,12 +1084,11 @@
                         <ul id="hb-warnings-list"></ul>
                     </div>
 
-                    <!-- Calculation Steps (collapsible) -->
                     <div style="margin-top: 1.5rem;">
                         <button id="hb-toggle-steps" class="btn" style="background: #6366f1; width: auto; padding: 0.5rem 1rem; font-size: 0.9rem;">
-                            計算過程を表示 / Show Calculation Steps ▼
+                            計算過程を表示 / Show Steps ▼
                         </button>
-                        <div id="hb-steps" class="hidden" style="margin-top: 1rem; background: #f1f5f9; border-radius: 8px; padding: 1rem;">
+                        <div id="hb-steps" class="hidden" style="margin-top: 1rem; background: var(--bg); border-radius: 8px; padding: 1rem;">
                             <div id="hb-steps-content"></div>
                         </div>
                     </div>
@@ -834,8 +1097,265 @@
         </div>
     </div>
 
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p><strong>ChemEng</strong> v0.2.0 - 化学工学計算モジュール</p>
+            <div class="footer-links">
+                <a href="https://github.com/Taguchi-1989/chemEng" target="_blank">GitHub</a>
+                <a href="/docs" target="_blank">API Docs</a>
+                <span>Powered by thermo/chemicals</span>
+            </div>
+        </div>
+    </footer>
+
     <script>
-        // Tab switching
+        // ==================== Configuration ====================
+        const API_BASE = '/api/v1';
+
+        // Common substances for autocomplete
+        const COMMON_SUBSTANCES = [
+            'water', 'ethanol', 'methanol', 'acetone', 'benzene', 'toluene',
+            'hexane', 'heptane', 'octane', 'propane', 'butane', 'pentane',
+            'ammonia', 'nitrogen', 'oxygen', 'hydrogen', 'carbon dioxide',
+            'acetic acid', 'formic acid', 'ethylene glycol', 'glycerol',
+            'chloroform', 'dichloromethane', 'diethyl ether', 'tetrahydrofuran',
+            'dimethyl sulfoxide', 'acetonitrile', 'cyclohexane', 'xylene'
+        ];
+
+        // Property names mapping
+        const propertyNames = {
+            'vapor_pressure': { name: '蒸気圧 / Vapor Pressure', unit: 'kPa', factor: 0.001 },
+            'liquid_density': { name: '液密度 / Liquid Density', unit: 'kg/m³', factor: 1 },
+            'liquid_viscosity': { name: '液粘度 / Liquid Viscosity', unit: 'mPa·s', factor: 1000 },
+            'heat_of_vaporization': { name: '蒸発熱 / Heat of Vaporization', unit: 'kJ/mol', factor: 0.001 },
+            'surface_tension': { name: '表面張力 / Surface Tension', unit: 'mN/m', factor: 1000 },
+            'boiling_point': { name: '沸点 / Boiling Point', unit: 'K', factor: 1 }
+        };
+
+        // ==================== Toast Notifications ====================
+        function showToast(message, type = 'success', duration = 4000) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : '⚠';
+            toast.innerHTML = `
+                <span>${icon}</span>
+                <span>${message}</span>
+                <button class="toast-close">&times;</button>
+            `;
+
+            container.appendChild(toast);
+
+            const closeBtn = toast.querySelector('.toast-close');
+            closeBtn.addEventListener('click', () => toast.remove());
+
+            setTimeout(() => toast.remove(), duration);
+        }
+
+        // ==================== API Status Check ====================
+        async function checkApiStatus() {
+            const dot = document.getElementById('status-dot');
+            const text = document.getElementById('status-text');
+
+            try {
+                const res = await fetch('/api');
+                const data = await res.json();
+
+                dot.className = 'status-dot connected';
+                text.textContent = `${data.mode || 'connected'}`;
+
+                if (data.available_engines && data.available_engines.length > 0) {
+                    text.textContent += ` (${data.available_engines.join(', ')})`;
+                }
+            } catch (err) {
+                dot.className = 'status-dot error';
+                text.textContent = 'オフライン / Offline';
+            }
+        }
+
+        // Check API status on load and periodically
+        checkApiStatus();
+        setInterval(checkApiStatus, 30000);
+
+        // ==================== Dark Mode ====================
+        function initTheme() {
+            const saved = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            if (saved === 'dark' || (!saved && prefersDark)) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                updateThemeIcon(true);
+            }
+        }
+
+        function updateThemeIcon(isDark) {
+            const icon = document.getElementById('theme-icon');
+            if (isDark) {
+                icon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+            } else {
+                icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+            }
+        }
+
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+            if (isDark) {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+                updateThemeIcon(false);
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                updateThemeIcon(true);
+            }
+        });
+
+        initTheme();
+
+        // ==================== Autocomplete ====================
+        function setupAutocomplete() {
+            document.querySelectorAll('.substance-input').forEach((input, index) => {
+                const listId = `substance-autocomplete-${index + 1}`;
+                let list = input.parentElement.querySelector('.autocomplete-list');
+                if (!list) {
+                    list = document.createElement('div');
+                    list.className = 'autocomplete-list hidden';
+                    list.id = listId;
+                    input.parentElement.appendChild(list);
+                }
+
+                input.addEventListener('input', () => {
+                    const value = input.value.toLowerCase();
+                    if (value.length < 1) {
+                        list.classList.add('hidden');
+                        return;
+                    }
+
+                    const matches = COMMON_SUBSTANCES.filter(s =>
+                        s.toLowerCase().includes(value)
+                    ).slice(0, 8);
+
+                    if (matches.length === 0) {
+                        list.classList.add('hidden');
+                        return;
+                    }
+
+                    list.innerHTML = matches.map(s =>
+                        `<div class="autocomplete-item">${s}</div>`
+                    ).join('');
+                    list.classList.remove('hidden');
+
+                    list.querySelectorAll('.autocomplete-item').forEach(item => {
+                        item.addEventListener('click', () => {
+                            input.value = item.textContent;
+                            list.classList.add('hidden');
+                        });
+                    });
+                });
+
+                input.addEventListener('blur', () => {
+                    setTimeout(() => list.classList.add('hidden'), 200);
+                });
+            });
+        }
+
+        setupAutocomplete();
+
+        // ==================== History ====================
+        function getHistory() {
+            const data = localStorage.getItem('chemeng_history');
+            return data ? JSON.parse(data) : [];
+        }
+
+        function saveToHistory(type, params, result) {
+            const history = getHistory();
+            history.unshift({
+                type,
+                params,
+                timestamp: new Date().toISOString(),
+                summary: getSummary(type, params, result)
+            });
+
+            // Keep only last 20 entries
+            if (history.length > 20) history.pop();
+
+            localStorage.setItem('chemeng_history', JSON.stringify(history));
+            updateHistoryUI();
+        }
+
+        function getSummary(type, params, result) {
+            switch (type) {
+                case 'property':
+                    return `${params.substance}: ${params.property}`;
+                case 'distillation':
+                    return `${params.light_component}/${params.heavy_component}`;
+                case 'mass_balance':
+                    return `${params.components?.join('/')}`;
+                case 'heat_balance':
+                    return `${params.substance}: ${params.inlet_temperature}→${params.outlet_temperature}K`;
+                default:
+                    return type;
+            }
+        }
+
+        function updateHistoryUI() {
+            const history = getHistory();
+            document.getElementById('history-count').textContent = history.length;
+
+            const list = document.getElementById('history-list');
+            list.innerHTML = history.map((item, i) => `
+                <div class="history-item" data-index="${i}">
+                    <div class="history-type">${item.type}</div>
+                    <div class="history-params">${item.summary}</div>
+                </div>
+            `).join('');
+
+            list.querySelectorAll('.history-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const index = parseInt(item.dataset.index);
+                    const entry = history[index];
+                    loadFromHistory(entry);
+                });
+            });
+        }
+
+        function loadFromHistory(entry) {
+            // Switch to correct tab
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`[data-tab="${entry.type}"]`)?.classList.add('active');
+
+            document.querySelectorAll('.calc-form').forEach(form => form.classList.add('hidden'));
+            document.getElementById(`${entry.type}-form`)?.classList.remove('hidden');
+
+            // Fill form
+            const form = document.getElementById(`${entry.type}-form`);
+            if (form && entry.params) {
+                Object.entries(entry.params).forEach(([key, value]) => {
+                    const input = form.querySelector(`[name="${key}"]`);
+                    if (input) {
+                        if (Array.isArray(value)) {
+                            input.value = value.join(', ');
+                        } else {
+                            input.value = value;
+                        }
+                    }
+                });
+            }
+
+            showToast('履歴から読み込みました / Loaded from history', 'success');
+        }
+
+        document.getElementById('history-toggle').addEventListener('click', () => {
+            const list = document.getElementById('history-list');
+            list.classList.toggle('hidden');
+        });
+
+        updateHistoryUI();
+
+        // ==================== Tab Switching ====================
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', () => {
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -847,19 +1367,7 @@
             });
         });
 
-        // API base URL
-        const API_BASE = '/api/v1';
-
-        // Property names mapping (日本語/English)
-        const propertyNames = {
-            'vapor_pressure': { name: '蒸気圧 / Vapor Pressure', unit: 'kPa', factor: 0.001 },
-            'liquid_density': { name: '液密度 / Liquid Density', unit: 'kg/m³', factor: 1 },
-            'liquid_viscosity': { name: '液粘度 / Liquid Viscosity', unit: 'mPa·s', factor: 1000 },
-            'heat_of_vaporization': { name: '蒸発熱 / Heat of Vaporization', unit: 'kJ/mol', factor: 0.001 },
-            'surface_tension': { name: '表面張力 / Surface Tension', unit: 'mN/m', factor: 1000 },
-            'boiling_point': { name: '沸点 / Boiling Point', unit: 'K', factor: 1 }
-        };
-
+        // ==================== UI Helpers ====================
         function showLoading() {
             document.getElementById('empty-state').classList.add('hidden');
             document.getElementById('loading').classList.remove('hidden');
@@ -875,7 +1383,21 @@
             document.getElementById(`${type}-result`).classList.add('active');
         }
 
-        // Property Estimation
+        function renderSteps(steps) {
+            return steps.map(step => `
+                <div style="margin-bottom: 1rem; padding: 0.75rem; background: var(--card); border-radius: 6px; border-left: 3px solid #6366f1;">
+                    <div style="font-weight: 600; color: #6366f1; margin-bottom: 0.5rem;">
+                        Step ${step.step}: ${step.title}
+                    </div>
+                    ${step.description ? `<div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">${step.description}</div>` : ''}
+                    <div style="font-family: 'Courier New', monospace; font-size: 0.85rem; background: var(--bg); padding: 0.5rem; border-radius: 4px;">
+                        ${step.formulas.map(f => `<div style="margin: 0.25rem 0;">${f}</div>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ==================== Property Estimation ====================
         document.getElementById('property-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             showLoading();
@@ -901,41 +1423,29 @@
                     const propInfo = propertyNames[params.property] || { name: params.property, unit: '', factor: 1 };
                     document.getElementById('property-substance').textContent = out.substance || params.substance;
                     document.getElementById('property-name').textContent = propInfo.name;
-                    document.getElementById('property-value').textContent = (out.value * propInfo.factor).toFixed(2);
+                    document.getElementById('property-value').textContent = (out.value * propInfo.factor).toFixed(4);
                     document.getElementById('property-unit').textContent = propInfo.unit;
                     document.getElementById('property-temp').textContent = params.temperature.toFixed(1);
                     document.getElementById('property-pressure').textContent = (params.pressure / 1000).toFixed(1);
 
-                    // Calculation Steps
-                    if (out.calculation_steps && out.calculation_steps.length > 0) {
-                        const stepsHtml = out.calculation_steps.map(step => `
-                            <div style="margin-bottom: 1rem; padding: 0.75rem; background: white; border-radius: 6px; border-left: 3px solid #6366f1;">
-                                <div style="font-weight: 600; color: #4f46e5; margin-bottom: 0.5rem;">
-                                    Step ${step.step}: ${step.title}
-                                </div>
-                                ${step.description ? `<div style="font-size: 0.85rem; color: #64748b; margin-bottom: 0.5rem;">${step.description}</div>` : ''}
-                                <div style="font-family: 'Courier New', monospace; font-size: 0.85rem; background: #f8fafc; padding: 0.5rem; border-radius: 4px;">
-                                    ${step.formulas.map(f => `<div style="margin: 0.25rem 0;">${f}</div>`).join('')}
-                                </div>
-                            </div>
-                        `).join('');
-                        document.getElementById('prop-steps-content').innerHTML = stepsHtml;
-                        document.getElementById('prop-steps').classList.add('hidden');
-                        document.getElementById('prop-toggle-steps').textContent = '計算過程を表示 / Show Calculation Steps ▼';
+                    if (out.calculation_steps?.length > 0) {
+                        document.getElementById('prop-steps-content').innerHTML = renderSteps(out.calculation_steps);
                     }
 
+                    saveToHistory('property', params, out);
                     showResult('property');
+                    showToast('計算完了 / Calculation complete', 'success');
                 } else {
-                    alert('Error: ' + data.errors.join(', '));
+                    showToast('エラー: ' + (data.errors?.join(', ') || 'Unknown error'), 'error');
                     hideLoading();
                 }
             } catch (err) {
-                alert('Error: ' + err.message);
+                showToast('接続エラー: ' + err.message, 'error');
                 hideLoading();
             }
         });
 
-        // Distillation
+        // ==================== Distillation ====================
         document.getElementById('distillation-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             showLoading();
@@ -969,12 +1479,10 @@
                     document.getElementById('dist-reflux').textContent = out.actual_reflux_ratio.toFixed(2);
                     document.getElementById('dist-diameter').textContent = out.column_diameter.toFixed(2);
 
-                    // Format heat duties
                     const formatDuty = (kw) => kw > 1000 ? `${(kw/1000).toFixed(1)} MW` : `${kw.toFixed(0)} kW`;
                     document.getElementById('dist-qc').textContent = formatDuty(out.condenser_duty);
                     document.getElementById('dist-qr').textContent = formatDuty(out.reboiler_duty);
 
-                    // Update diagram
                     document.getElementById('feed-flow').textContent = `F = ${params.feed_flow_rate}`;
                     document.getElementById('distillate-flow').textContent = `D = ${out.distillate_flow_rate.toFixed(1)}`;
                     document.getElementById('bottoms-flow').textContent = `B = ${out.bottoms_flow_rate.toFixed(1)}`;
@@ -982,7 +1490,7 @@
                     // Draw trays
                     const traysGroup = document.getElementById('trays-group');
                     traysGroup.innerHTML = '';
-                    const numTrays = out.actual_stages - 1; // exclude reboiler
+                    const numTrays = out.actual_stages - 1;
                     const traySpacing = 260 / (numTrays + 1);
                     for (let i = 1; i <= numTrays; i++) {
                         const y = 60 + i * traySpacing;
@@ -996,14 +1504,10 @@
                         traysGroup.appendChild(line);
                     }
 
-                    // Position feed stage
                     const feedY = 60 + out.feed_stage * traySpacing;
                     document.getElementById('feed-stage-dot').setAttribute('cy', feedY);
-                    document.querySelector('line[y1="180"]').setAttribute('y1', feedY);
-                    document.querySelector('line[y2="180"]').setAttribute('y2', feedY);
 
-                    // Warnings
-                    if (data.warnings && data.warnings.length > 0) {
+                    if (data.warnings?.length > 0) {
                         document.getElementById('dist-warnings').classList.remove('hidden');
                         document.getElementById('dist-warnings-list').innerHTML =
                             data.warnings.map(w => `<li>${w}</li>`).join('');
@@ -1011,36 +1515,24 @@
                         document.getElementById('dist-warnings').classList.add('hidden');
                     }
 
-                    // Calculation Steps
-                    if (out.calculation_steps && out.calculation_steps.length > 0) {
-                        const stepsHtml = out.calculation_steps.map(step => `
-                            <div style="margin-bottom: 1rem; padding: 0.75rem; background: white; border-radius: 6px; border-left: 3px solid #6366f1;">
-                                <div style="font-weight: 600; color: #4f46e5; margin-bottom: 0.5rem;">
-                                    Step ${step.step}: ${step.title}
-                                </div>
-                                ${step.description ? `<div style="font-size: 0.85rem; color: #64748b; margin-bottom: 0.5rem;">${step.description}</div>` : ''}
-                                <div style="font-family: 'Courier New', monospace; font-size: 0.85rem; background: #f8fafc; padding: 0.5rem; border-radius: 4px;">
-                                    ${step.formulas.map(f => `<div style="margin: 0.25rem 0;">${f}</div>`).join('')}
-                                </div>
-                            </div>
-                        `).join('');
-                        document.getElementById('dist-steps-content').innerHTML = stepsHtml;
-                        document.getElementById('dist-steps').classList.add('hidden');
-                        document.getElementById('dist-toggle-steps').textContent = '計算過程を表示 / Show Calculation Steps ▼';
+                    if (out.calculation_steps?.length > 0) {
+                        document.getElementById('dist-steps-content').innerHTML = renderSteps(out.calculation_steps);
                     }
 
+                    saveToHistory('distillation', params, out);
                     showResult('distillation');
+                    showToast('塔設計完了 / Column design complete', 'success');
                 } else {
-                    alert('Error: ' + data.errors.join(', '));
+                    showToast('エラー: ' + (data.errors?.join(', ') || 'Unknown error'), 'error');
                     hideLoading();
                 }
             } catch (err) {
-                alert('Error: ' + err.message);
+                showToast('接続エラー: ' + err.message, 'error');
                 hideLoading();
             }
         });
 
-        // Mass Balance
+        // ==================== Mass Balance ====================
         document.getElementById('mass_balance-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             showLoading();
@@ -1078,7 +1570,6 @@
                 if (data.success) {
                     const out = data.outputs;
 
-                    // Store data for click handlers
                     window.mbStreamData = {
                         inlet: out.inlet_total,
                         outlets: out.outlet_streams,
@@ -1087,12 +1578,9 @@
                     };
 
                     document.getElementById('mb-components').textContent = components.join(' / ');
-
-                    // Update SVG diagram labels
                     document.getElementById('mb-svg-inlet-flow').textContent = `${out.inlet_total.flow_rate.toFixed(1)} mol/s`;
                     document.getElementById('mb-svg-closure').textContent = `閉合率: ${out.closure.toFixed(1)}%`;
 
-                    // Update outlet labels
                     if (out.outlet_streams.length >= 1) {
                         document.getElementById('mb-svg-outlet1-flow').textContent = `${out.outlet_streams[0].flow_rate.toFixed(1)} mol/s`;
                     }
@@ -1100,41 +1588,27 @@
                         document.getElementById('mb-svg-outlet2-flow').textContent = `${out.outlet_streams[1].flow_rate.toFixed(1)} mol/s`;
                     }
 
-                    // Hide detail panel initially
                     document.getElementById('mb-detail-panel').classList.add('hidden');
-
                     document.getElementById('mb-closure').textContent = out.closure.toFixed(2);
 
-                    // Calculation Steps
-                    if (out.calculation_steps && out.calculation_steps.length > 0) {
-                        const stepsHtml = out.calculation_steps.map(step => `
-                            <div style="margin-bottom: 1rem; padding: 0.75rem; background: white; border-radius: 6px; border-left: 3px solid #6366f1;">
-                                <div style="font-weight: 600; color: #4f46e5; margin-bottom: 0.5rem;">
-                                    Step ${step.step}: ${step.title}
-                                </div>
-                                ${step.description ? `<div style="font-size: 0.85rem; color: #64748b; margin-bottom: 0.5rem;">${step.description}</div>` : ''}
-                                <div style="font-family: 'Courier New', monospace; font-size: 0.85rem; background: #f8fafc; padding: 0.5rem; border-radius: 4px; white-space: pre-wrap;">
-                                    ${step.formulas.map(f => `<div style="margin: 0.25rem 0;">${f}</div>`).join('')}
-                                </div>
-                            </div>
-                        `).join('');
-                        document.getElementById('mb-steps-content').innerHTML = stepsHtml;
-                        document.getElementById('mb-steps').classList.add('hidden');
-                        document.getElementById('mb-toggle-steps').textContent = '計算過程を表示 / Show Calculation Steps ▼';
+                    if (out.calculation_steps?.length > 0) {
+                        document.getElementById('mb-steps-content').innerHTML = renderSteps(out.calculation_steps);
                     }
 
+                    saveToHistory('mass_balance', { components, feed_flow_rate: params.inlet_streams[0].flow_rate }, out);
                     showResult('mass_balance');
+                    showToast('収支計算完了 / Balance calculation complete', 'success');
                 } else {
-                    alert('Error: ' + data.errors.join(', '));
+                    showToast('エラー: ' + (data.errors?.join(', ') || 'Unknown error'), 'error');
                     hideLoading();
                 }
             } catch (err) {
-                alert('Error: ' + err.message);
+                showToast('接続エラー: ' + err.message, 'error');
                 hideLoading();
             }
         });
 
-        // Heat Balance
+        // ==================== Heat Balance ====================
         document.getElementById('heat_balance-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             showLoading();
@@ -1165,13 +1639,11 @@
                     document.getElementById('hb-substance').textContent =
                         `${params.substance} (${params.flow_rate} mol/s)`;
 
-                    // Update values
                     document.getElementById('hb-sensible').textContent = out.sensible_heat.toFixed(1);
                     document.getElementById('hb-latent').textContent = out.latent_heat.toFixed(1);
                     document.getElementById('hb-total').textContent = out.total_heat_duty.toFixed(1);
                     document.getElementById('hb-actual').textContent = out.actual_heat_duty.toFixed(1);
 
-                    // Update diagram
                     document.getElementById('hb-inlet-temp').textContent = `T = ${params.inlet_temperature} K`;
                     document.getElementById('hb-outlet-temp').textContent = `T = ${params.outlet_temperature} K`;
                     const qLabel = out.total_heat_duty > 1000
@@ -1179,7 +1651,6 @@
                         : `Q = ${out.total_heat_duty.toFixed(0)} kW`;
                     document.getElementById('hb-q-label').textContent = qLabel;
 
-                    // Phase info
                     const inletPhase = out.phase_info.inlet_phase;
                     const outletPhase = out.phase_info.outlet_phase;
                     document.getElementById('hb-inlet-phase').textContent =
@@ -1191,8 +1662,7 @@
                     document.getElementById('hb-phase-change').textContent =
                         out.phase_info.has_phase_change ? 'あり / Yes' : 'なし / No';
 
-                    // Warnings
-                    if (data.warnings && data.warnings.length > 0) {
+                    if (data.warnings?.length > 0) {
                         document.getElementById('hb-warnings').classList.remove('hidden');
                         document.getElementById('hb-warnings-list').innerHTML =
                             data.warnings.map(w => `<li>${w}</li>`).join('');
@@ -1200,88 +1670,39 @@
                         document.getElementById('hb-warnings').classList.add('hidden');
                     }
 
-                    // Calculation Steps
-                    if (out.calculation_steps && out.calculation_steps.length > 0) {
-                        const stepsHtml = out.calculation_steps.map(step => `
-                            <div style="margin-bottom: 1rem; padding: 0.75rem; background: white; border-radius: 6px; border-left: 3px solid #6366f1;">
-                                <div style="font-weight: 600; color: #4f46e5; margin-bottom: 0.5rem;">
-                                    Step ${step.step}: ${step.title}
-                                </div>
-                                ${step.description ? `<div style="font-size: 0.85rem; color: #64748b; margin-bottom: 0.5rem;">${step.description}</div>` : ''}
-                                <div style="font-family: 'Courier New', monospace; font-size: 0.85rem; background: #f8fafc; padding: 0.5rem; border-radius: 4px;">
-                                    ${step.formulas.map(f => `<div style="margin: 0.25rem 0;">${f}</div>`).join('')}
-                                </div>
-                            </div>
-                        `).join('');
-                        document.getElementById('hb-steps-content').innerHTML = stepsHtml;
-                        document.getElementById('hb-steps').classList.add('hidden');
-                        document.getElementById('hb-toggle-steps').textContent = '計算過程を表示 / Show Calculation Steps ▼';
+                    if (out.calculation_steps?.length > 0) {
+                        document.getElementById('hb-steps-content').innerHTML = renderSteps(out.calculation_steps);
                     }
 
+                    saveToHistory('heat_balance', params, out);
                     showResult('heat_balance');
+                    showToast('熱負荷計算完了 / Heat duty calculation complete', 'success');
                 } else {
-                    alert('Error: ' + data.errors.join(', '));
+                    showToast('エラー: ' + (data.errors?.join(', ') || 'Unknown error'), 'error');
                     hideLoading();
                 }
             } catch (err) {
-                alert('Error: ' + err.message);
+                showToast('接続エラー: ' + err.message, 'error');
                 hideLoading();
             }
         });
 
-        // Toggle calculation steps (Property Estimation)
-        document.getElementById('prop-toggle-steps').addEventListener('click', () => {
-            const steps = document.getElementById('prop-steps');
-            const btn = document.getElementById('prop-toggle-steps');
-            if (steps.classList.contains('hidden')) {
-                steps.classList.remove('hidden');
-                btn.textContent = '計算過程を隠す / Hide Calculation Steps ▲';
-            } else {
-                steps.classList.add('hidden');
-                btn.textContent = '計算過程を表示 / Show Calculation Steps ▼';
-            }
+        // ==================== Toggle Steps ====================
+        ['prop', 'dist', 'mb', 'hb'].forEach(prefix => {
+            document.getElementById(`${prefix}-toggle-steps`).addEventListener('click', () => {
+                const steps = document.getElementById(`${prefix}-steps`);
+                const btn = document.getElementById(`${prefix}-toggle-steps`);
+                if (steps.classList.contains('hidden')) {
+                    steps.classList.remove('hidden');
+                    btn.textContent = '計算過程を隠す / Hide Steps ▲';
+                } else {
+                    steps.classList.add('hidden');
+                    btn.textContent = '計算過程を表示 / Show Steps ▼';
+                }
+            });
         });
 
-        // Toggle calculation steps (Heat Balance)
-        document.getElementById('hb-toggle-steps').addEventListener('click', () => {
-            const steps = document.getElementById('hb-steps');
-            const btn = document.getElementById('hb-toggle-steps');
-            if (steps.classList.contains('hidden')) {
-                steps.classList.remove('hidden');
-                btn.textContent = '計算過程を隠す / Hide Calculation Steps ▲';
-            } else {
-                steps.classList.add('hidden');
-                btn.textContent = '計算過程を表示 / Show Calculation Steps ▼';
-            }
-        });
-
-        // Toggle calculation steps (Distillation)
-        document.getElementById('dist-toggle-steps').addEventListener('click', () => {
-            const steps = document.getElementById('dist-steps');
-            const btn = document.getElementById('dist-toggle-steps');
-            if (steps.classList.contains('hidden')) {
-                steps.classList.remove('hidden');
-                btn.textContent = '計算過程を隠す / Hide Calculation Steps ▲';
-            } else {
-                steps.classList.add('hidden');
-                btn.textContent = '計算過程を表示 / Show Calculation Steps ▼';
-            }
-        });
-
-        // Toggle calculation steps (Mass Balance)
-        document.getElementById('mb-toggle-steps').addEventListener('click', () => {
-            const steps = document.getElementById('mb-steps');
-            const btn = document.getElementById('mb-toggle-steps');
-            if (steps.classList.contains('hidden')) {
-                steps.classList.remove('hidden');
-                btn.textContent = '計算過程を隠す / Hide Calculation Steps ▲';
-            } else {
-                steps.classList.add('hidden');
-                btn.textContent = '計算過程を表示 / Show Calculation Steps ▼';
-            }
-        });
-
-        // Mass Balance SVG click handlers
+        // ==================== Mass Balance SVG Click Handlers ====================
         function showMbStreamDetail(streamType) {
             const data = window.mbStreamData;
             if (!data) return;
@@ -1309,7 +1730,6 @@
                     color = '#dc2626';
                     break;
                 case 'process':
-                    // Show overall balance
                     title.textContent = 'プロセス収支 / Process Balance';
                     content.innerHTML = `
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
@@ -1318,7 +1738,7 @@
                                 <div style="font-size: 1.25rem; font-weight: 600;">${data.inlet.flow_rate.toFixed(2)} mol/s</div>
                             </div>
                             <div>
-                                <div style="font-weight: 500; color: #64748b;">出口合計 / Outlet Total</div>
+                                <div style="font-weight: 500; color: var(--text-muted);">出口合計 / Outlet Total</div>
                                 <div style="font-size: 1.25rem; font-weight: 600;">${data.outlets.reduce((sum, s) => sum + s.flow_rate, 0).toFixed(2)} mol/s</div>
                             </div>
                         </div>
@@ -1363,13 +1783,10 @@
             panel.classList.remove('hidden');
         }
 
-        // Attach click events to SVG elements
         document.getElementById('mb-inlet-group').addEventListener('click', () => showMbStreamDetail('inlet'));
         document.getElementById('mb-outlet1-group').addEventListener('click', () => showMbStreamDetail('outlet1'));
         document.getElementById('mb-outlet2-group').addEventListener('click', () => showMbStreamDetail('outlet2'));
         document.getElementById('mb-process-box').addEventListener('click', () => showMbStreamDetail('process'));
-
-        // Close detail panel
         document.getElementById('mb-close-detail').addEventListener('click', () => {
             document.getElementById('mb-detail-panel').classList.add('hidden');
         });
