@@ -3,63 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChemEng - Chemical Engineering Calculator</title>
+    <title>ChemEng — Chemical Engineering Laboratory</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Spectral:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --primary: #2563eb;
-            --primary-dark: #1d4ed8;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --bg: #f8fafc;
-            --card: #ffffff;
-            --text: #1e293b;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
+            --bg-deep: #0a0e14;
+            --bg-panel: rgba(15, 25, 35, 0.85);
+            --bg-card: rgba(20, 35, 50, 0.75);
+            --glass-border: rgba(80, 160, 180, 0.3);
+            --glass-glow: rgba(80, 200, 220, 0.15);
+            --accent-cyan: #00d4ff;
+            --accent-teal: #0fa;
+            --accent-amber: #ffa726;
+            --accent-rose: #ff6b9d;
+            --accent-violet: #a78bfa;
+            --text-bright: #e8f4f8;
+            --text-dim: #7a9aa8;
+            --text-muted: #4a6a78;
+            --success: #00e676;
+            --warning: #ffab40;
+            --danger: #ff5252;
+            --grid-line: rgba(80, 160, 180, 0.08);
+            --mono: 'DM Mono', monospace;
+            --serif: 'Spectral', Georgia, serif;
         }
 
-        [data-theme="dark"] {
-            --primary: #3b82f6;
-            --primary-dark: #2563eb;
-            --success: #34d399;
-            --warning: #fbbf24;
-            --danger: #f87171;
-            --bg: #0f172a;
-            --card: #1e293b;
-            --text: #f1f5f9;
-            --text-muted: #94a3b8;
-            --border: #334155;
+        [data-theme="light"] {
+            --bg-deep: #f0f4f8;
+            --bg-panel: rgba(255, 255, 255, 0.9);
+            --bg-card: rgba(240, 248, 255, 0.85);
+            --glass-border: rgba(60, 120, 160, 0.25);
+            --glass-glow: rgba(60, 160, 200, 0.1);
+            --accent-cyan: #0088cc;
+            --accent-teal: #00aa88;
+            --text-bright: #1a2a3a;
+            --text-dim: #5a7a8a;
+            --text-muted: #8a9aa8;
+            --grid-line: rgba(60, 120, 160, 0.06);
         }
 
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            font-family: var(--mono);
+            background: var(--bg-deep);
+            color: var(--text-bright);
+            min-height: 100vh;
+            overflow-x: hidden;
             line-height: 1.6;
-            transition: background 0.3s, color 0.3s;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
+        /* Animated Background Grid */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
         }
 
+        .bg-glow {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--glass-glow) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+            animation: floatGlow 20s ease-in-out infinite;
+        }
+
+        .bg-glow:nth-child(2) { top: -200px; left: -200px; }
+        .bg-glow:nth-child(3) { bottom: -300px; right: -200px; animation-delay: -10s; }
+
+        @keyframes floatGlow {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(50px, 30px) scale(1.1); }
+        }
+
+        /* Molecular Animation */
+        .molecule-bg {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.4;
+        }
+
+        .molecule-bg svg {
+            position: absolute;
+            animation: drift 30s linear infinite;
+        }
+
+        @keyframes drift {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+
+        /* Header */
         header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
+            position: relative;
+            z-index: 10;
             padding: 1.5rem 0;
-            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--glass-border);
+            background: var(--bg-panel);
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
         }
 
-        .header-content {
+        .header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -67,15 +138,49 @@
             gap: 1rem;
         }
 
-        header h1 {
-            font-size: 1.75rem;
-            font-weight: 700;
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
 
-        header p {
-            opacity: 0.9;
-            margin-top: 0.25rem;
-            font-size: 0.9rem;
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            position: relative;
+        }
+
+        .logo-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .logo-icon .ring {
+            animation: spin 8s linear infinite;
+            transform-origin: center;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .logo h1 {
+            font-family: var(--serif);
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-teal));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-subtitle {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-top: 0.15rem;
         }
 
         .header-controls {
@@ -84,445 +189,503 @@
             gap: 1rem;
         }
 
-        /* API Status */
-        .api-status {
+        /* Status Indicator */
+        .status-pill {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.4rem 0.75rem;
-            background: rgba(255,255,255,0.15);
-            border-radius: 20px;
-            font-size: 0.8rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 100px;
+            font-size: 0.75rem;
+            color: var(--text-dim);
         }
 
         .status-dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: #94a3b8;
+            background: var(--text-muted);
+            transition: all 0.3s;
         }
 
-        .status-dot.connected {
-            background: #34d399;
-            box-shadow: 0 0 6px #34d399;
+        .status-dot.online {
+            background: var(--success);
+            box-shadow: 0 0 12px var(--success);
+            animation: pulse 2s ease-in-out infinite;
         }
 
-        .status-dot.error {
-            background: #f87171;
-            box-shadow: 0 0 6px #f87171;
+        .status-dot.offline {
+            background: var(--danger);
+            box-shadow: 0 0 12px var(--danger);
         }
 
-        /* Dark Mode Toggle */
-        .theme-toggle {
-            background: rgba(255,255,255,0.15);
-            border: none;
-            padding: 0.5rem;
-            border-radius: 8px;
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Theme Toggle */
+        .theme-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            background: var(--bg-card);
+            color: var(--text-dim);
             cursor: pointer;
-            color: white;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.3s;
         }
 
-        .theme-toggle:hover {
-            background: rgba(255,255,255,0.25);
+        .theme-btn:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            box-shadow: 0 0 20px var(--glass-glow);
         }
 
-        .grid {
+        /* Main Layout */
+        main {
+            position: relative;
+            z-index: 5;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
             display: grid;
-            grid-template-columns: 350px 1fr;
+            grid-template-columns: 380px 1fr;
             gap: 2rem;
+            min-height: calc(100vh - 200px);
         }
 
-        @media (max-width: 900px) {
-            .grid {
+        @media (max-width: 1024px) {
+            main {
                 grid-template-columns: 1fr;
-            }
-            .container {
                 padding: 1rem;
             }
-            header h1 {
-                font-size: 1.5rem;
-            }
-            .header-content {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .tabs {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-            }
-            .result-grid {
-                grid-template-columns: 1fr;
-            }
         }
 
-        @media (max-width: 480px) {
-            .container {
-                padding: 0.75rem;
-            }
-            .card {
-                padding: 1rem;
-            }
-            header {
-                padding: 1rem 0;
-            }
-            .tabs {
-                grid-template-columns: 1fr;
-            }
-            .api-status {
-                font-size: 0.7rem;
-            }
-        }
-
-        /* Unit conversion helper */
-        .unit-helper {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.25rem;
-        }
-
-        .unit-chip {
-            padding: 0.2rem 0.5rem;
-            font-size: 0.75rem;
-            background: var(--border);
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            color: var(--text-muted);
-            transition: all 0.2s;
-        }
-
-        .unit-chip:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        .unit-chip.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        /* Export buttons */
-        .export-buttons {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-
-        .btn-export {
-            padding: 0.5rem 1rem;
-            font-size: 0.85rem;
-            border: 1px solid var(--border);
-            background: var(--card);
-            color: var(--text);
-            border-radius: 6px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.2s;
-        }
-
-        .btn-export:hover {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        /* Chart container */
-        .chart-container {
-            margin-top: 1.5rem;
-            padding: 1rem;
-            background: var(--bg);
-            border-radius: 8px;
-        }
-
-        .chart-controls {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .chart-controls label {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0;
-        }
-
-        .chart-controls input {
-            width: 80px;
-        }
-
-        .btn-chart {
-            padding: 0.4rem 0.75rem;
-            font-size: 0.85rem;
-            background: #10b981;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        .btn-chart:hover {
-            background: #059669;
-        }
-
-        /* Keyboard shortcut hint */
-        .shortcut-hint {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: 0.5rem;
-            text-align: center;
-        }
-
-        kbd {
-            padding: 0.15rem 0.4rem;
-            background: var(--border);
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 0.8rem;
-        }
-
-        .card {
-            background: var(--card);
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            padding: 1.5rem;
-        }
-
-        .card h2 {
-            font-size: 1.1rem;
-            color: var(--text);
-            margin-bottom: 1rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 2px solid var(--border);
-        }
-
-        .tabs {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .tab {
-            padding: 0.5rem 1rem;
-            border: none;
-            background: var(--border);
-            color: var(--text);
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-        }
-
-        .tab:hover {
-            background: var(--text-muted);
-            color: white;
-        }
-
-        .tab.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        label {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: var(--text-muted);
-            margin-bottom: 0.25rem;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 0.6rem 0.75rem;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 0.95rem;
-            transition: border-color 0.2s;
-            background: var(--card);
-            color: var(--text);
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-
-        /* Autocomplete */
-        .autocomplete-wrapper {
+        /* Glass Panel */
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+            overflow: hidden;
             position: relative;
         }
 
-        .autocomplete-list {
+        .panel::before {
+            content: '';
             position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 100;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            inset: 0;
+            background: linear-gradient(135deg, var(--glass-glow) 0%, transparent 50%);
+            pointer-events: none;
         }
 
-        .autocomplete-item {
-            padding: 0.5rem 0.75rem;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        .autocomplete-item:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn:hover {
-            background: var(--primary-dark);
-        }
-
-        .btn:disabled {
-            background: #94a3b8;
-            cursor: not-allowed;
-        }
-
-        /* Toast Notifications */
-        .toast-container {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .toast {
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            color: white;
-            font-size: 0.9rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            animation: slideIn 0.3s ease;
+        .panel-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--glass-border);
             display: flex;
             align-items: center;
             gap: 0.75rem;
         }
 
-        .toast.success {
-            background: var(--success);
+        .panel-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-teal));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bg-deep);
         }
 
-        .toast.error {
-            background: var(--danger);
+        .panel-title {
+            font-family: var(--serif);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-bright);
         }
 
-        .toast.warning {
-            background: var(--warning);
+        .panel-body {
+            padding: 1.5rem;
+            position: relative;
         }
 
-        .toast-close {
-            background: none;
-            border: none;
-            color: white;
+        /* Calculation Type Tabs */
+        .calc-tabs {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .calc-tab {
+            position: relative;
+            padding: 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
             cursor: pointer;
-            padding: 0;
-            margin-left: 0.5rem;
-            opacity: 0.8;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
         }
 
-        .toast-close:hover {
-            opacity: 1;
+        .calc-tab::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-teal));
+            opacity: 0;
+            transition: opacity 0.3s;
         }
 
-        @keyframes slideIn {
+        .calc-tab:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.15);
+        }
+
+        .calc-tab.active {
+            border-color: var(--accent-cyan);
+        }
+
+        .calc-tab.active::before {
+            opacity: 0.1;
+        }
+
+        .calc-tab-icon {
+            width: 28px;
+            height: 28px;
+            margin-bottom: 0.5rem;
+            color: var(--accent-cyan);
+            transition: transform 0.3s;
+        }
+
+        .calc-tab:hover .calc-tab-icon {
+            transform: scale(1.1);
+        }
+
+        .calc-tab-label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-bright);
+            position: relative;
+        }
+
+        .calc-tab-sublabel {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-top: 0.15rem;
+        }
+
+        /* Form Styles */
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+            animation: fadeSlideIn 0.4s ease;
+        }
+
+        @keyframes fadeSlideIn {
             from {
-                transform: translateX(100%);
                 opacity: 0;
+                transform: translateY(10px);
             }
             to {
-                transform: translateX(0);
                 opacity: 1;
+                transform: translateY(0);
             }
         }
 
-        /* History Panel */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            font-family: var(--mono);
+            font-size: 0.9rem;
+            color: var(--text-bright);
+            transition: all 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.15), 0 0 20px rgba(0, 212, 255, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        select.form-input {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a9aa8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            padding-right: 2.5rem;
+        }
+
+        /* Unit Chips */
+        .unit-row {
+            display: flex;
+            gap: 0.4rem;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .unit-chip {
+            padding: 0.35rem 0.65rem;
+            font-size: 0.7rem;
+            font-family: var(--mono);
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            border-radius: 6px;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .unit-chip:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .unit-chip.active {
+            background: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            color: var(--bg-deep);
+        }
+
+        /* Submit Button */
+        .submit-btn {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            margin-top: 0.5rem;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-teal));
+            border: none;
+            border-radius: 12px;
+            font-family: var(--mono);
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--bg-deep);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.5s;
+        }
+
+        .submit-btn:hover::before {
+            transform: translateX(100%);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .shortcut-hint {
+            text-align: center;
+            margin-top: 0.75rem;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        kbd {
+            padding: 0.2rem 0.4rem;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 4px;
+            font-family: var(--mono);
+            font-size: 0.65rem;
+        }
+
+        /* History Section */
         .history-toggle {
             display: flex;
             align-items: center;
             gap: 0.5rem;
             margin-top: 1.5rem;
             padding-top: 1rem;
-            border-top: 1px solid var(--border);
+            border-top: 1px solid var(--glass-border);
             cursor: pointer;
-            color: var(--text-muted);
-            font-size: 0.85rem;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            transition: color 0.3s;
         }
 
         .history-toggle:hover {
-            color: var(--primary);
+            color: var(--accent-cyan);
         }
 
         .history-list {
             margin-top: 0.75rem;
-            max-height: 200px;
+            max-height: 180px;
             overflow-y: auto;
         }
 
         .history-item {
-            padding: 0.5rem;
-            background: var(--bg);
-            border-radius: 6px;
+            padding: 0.75rem;
             margin-bottom: 0.5rem;
+            background: var(--bg-card);
+            border: 1px solid transparent;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 0.8rem;
+            transition: all 0.2s;
         }
 
         .history-item:hover {
-            background: var(--primary);
-            color: white;
+            border-color: var(--accent-cyan);
+            transform: translateX(4px);
         }
 
-        .history-item .history-type {
-            font-weight: 600;
+        .history-type {
+            font-size: 0.65rem;
             text-transform: uppercase;
-            font-size: 0.7rem;
-            opacity: 0.8;
+            letter-spacing: 0.05em;
+            color: var(--accent-cyan);
+            margin-bottom: 0.25rem;
         }
 
-        .history-item .history-params {
-            margin-top: 0.25rem;
+        .history-summary {
+            font-size: 0.8rem;
+            color: var(--text-dim);
         }
 
-        /* Results */
+        /* Results Panel */
+        .results-panel {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            text-align: center;
+        }
+
+        .empty-icon {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1.5rem;
+            color: var(--text-muted);
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-family: var(--serif);
+            font-size: 1.1rem;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Loading State */
+        .loading-state {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+        }
+
+        .loading-state.active {
+            display: flex;
+        }
+
+        .loader {
+            width: 60px;
+            height: 60px;
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .loader-ring {
+            position: absolute;
+            inset: 0;
+            border: 2px solid var(--glass-border);
+            border-top-color: var(--accent-cyan);
+            border-radius: 50%;
+            animation: loaderSpin 1s linear infinite;
+        }
+
+        .loader-ring:nth-child(2) {
+            inset: 8px;
+            border-top-color: var(--accent-teal);
+            animation-duration: 0.8s;
+            animation-direction: reverse;
+        }
+
+        .loader-ring:nth-child(3) {
+            inset: 16px;
+            border-top-color: var(--accent-amber);
+            animation-duration: 0.6s;
+        }
+
+        @keyframes loaderSpin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        /* Result Section */
         .result-section {
             display: none;
+            animation: fadeSlideIn 0.5s ease;
         }
 
         .result-section.active {
@@ -531,282 +694,644 @@
 
         .result-header {
             display: flex;
-            align-items: center;
-            gap: 0.75rem;
+            align-items: flex-start;
+            gap: 1rem;
             margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--glass-border);
         }
 
-        .result-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
+        .result-badge {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--success), var(--accent-teal));
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.5rem;
+            flex-shrink: 0;
         }
 
-        .result-icon.success {
-            background: #dcfce7;
-            color: var(--success);
-        }
-
-        [data-theme="dark"] .result-icon.success {
-            background: #064e3b;
-        }
-
-        .result-icon.error {
-            background: #fee2e2;
-            color: var(--danger);
+        .result-title-group {
+            flex: 1;
         }
 
         .result-title {
+            font-family: var(--serif);
             font-size: 1.25rem;
             font-weight: 600;
+            color: var(--text-bright);
+            margin-bottom: 0.25rem;
         }
 
         .result-subtitle {
             font-size: 0.85rem;
-            color: var(--text-muted);
+            color: var(--text-dim);
         }
 
+        /* Result Cards */
         .result-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 1rem;
             margin-bottom: 1.5rem;
         }
 
-        .result-item {
-            background: var(--bg);
-            padding: 1rem;
-            border-radius: 8px;
+        .result-card {
+            padding: 1.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .result-item .label {
-            font-size: 0.8rem;
-            color: var(--text-muted);
+        .result-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent-cyan);
+        }
+
+        .result-card.amber::after { background: var(--accent-amber); }
+        .result-card.rose::after { background: var(--accent-rose); }
+        .result-card.violet::after { background: var(--accent-violet); }
+
+        .result-label {
+            font-size: 0.65rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .result-item .value {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text);
-            margin-top: 0.25rem;
-        }
-
-        .result-item .unit {
-            font-size: 0.9rem;
+            letter-spacing: 0.1em;
             color: var(--text-muted);
-            font-weight: 400;
+            margin-bottom: 0.5rem;
         }
 
-        /* Distillation Diagram */
-        .column-diagram {
+        .result-value {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--text-bright);
+            font-family: var(--mono);
+        }
+
+        .result-unit {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-left: 0.25rem;
+        }
+
+        /* Export Buttons */
+        .export-row {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .export-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            font-family: var(--mono);
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .export-btn:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .export-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* Chart Container */
+        .chart-section {
+            margin-top: 1.5rem;
+            padding: 1.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+        }
+
+        .chart-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .chart-title {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .chart-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .chart-input-group {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .chart-input {
+            width: 70px;
+            padding: 0.4rem 0.6rem;
+            background: var(--bg-deep);
+            border: 1px solid var(--glass-border);
+            border-radius: 6px;
+            font-family: var(--mono);
+            font-size: 0.75rem;
+            color: var(--text-bright);
+        }
+
+        .chart-input:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+        }
+
+        .chart-btn {
+            padding: 0.5rem 1rem;
+            background: var(--accent-teal);
+            border: none;
+            border-radius: 6px;
+            font-family: var(--mono);
+            font-size: 0.75rem;
+            color: var(--bg-deep);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chart-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 255, 170, 0.3);
+        }
+
+        /* Steps Toggle */
+        .steps-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+            padding: 0.6rem 1rem;
+            background: var(--accent-violet);
+            border: none;
+            border-radius: 8px;
+            font-family: var(--mono);
+            font-size: 0.8rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .steps-toggle:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(167, 139, 250, 0.4);
+        }
+
+        .steps-content {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--bg-card);
+            border-radius: 10px;
+        }
+
+        .step-item {
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            background: var(--bg-deep);
+            border-left: 3px solid var(--accent-violet);
+            border-radius: 0 8px 8px 0;
+        }
+
+        .step-title {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--accent-violet);
+            margin-bottom: 0.4rem;
+        }
+
+        .step-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+        }
+
+        .step-formula {
+            font-family: var(--mono);
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            padding: 0.4rem;
+            background: var(--bg-panel);
+            border-radius: 4px;
+        }
+
+        /* SVG Diagrams */
+        .diagram-container {
             display: flex;
             justify-content: center;
-            margin: 2rem 0;
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: var(--bg-card);
+            border-radius: 12px;
         }
 
-        .column-svg {
+        .diagram-container svg {
             max-width: 100%;
             height: auto;
         }
 
-        /* Progress bar */
-        .progress-bar {
-            height: 8px;
-            background: var(--border);
-            border-radius: 4px;
-            overflow: hidden;
-            margin-top: 0.5rem;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--primary);
-            border-radius: 4px;
-            transition: width 0.3s;
-        }
-
-        /* Table */
-        .result-table {
+        /* Tables */
+        .data-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 1rem;
+            margin: 1rem 0;
+            font-size: 0.85rem;
         }
 
-        .result-table th,
-        .result-table td {
-            padding: 0.75rem;
+        .data-table th,
+        .data-table td {
+            padding: 0.75rem 1rem;
             text-align: left;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--glass-border);
         }
 
-        .result-table th {
-            font-size: 0.8rem;
+        .data-table th {
+            font-size: 0.7rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.05em;
             color: var(--text-muted);
             font-weight: 500;
         }
 
-        .result-table td {
-            font-size: 0.95rem;
+        .data-table td {
+            color: var(--text-dim);
         }
 
         /* Warnings */
-        .warnings {
-            background: #fef3c7;
-            border-left: 4px solid var(--warning);
-            padding: 1rem;
-            border-radius: 0 8px 8px 0;
+        .warning-box {
             margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255, 171, 64, 0.1);
+            border-left: 4px solid var(--warning);
+            border-radius: 0 8px 8px 0;
         }
 
-        [data-theme="dark"] .warnings {
-            background: #451a03;
-        }
-
-        .warnings h4 {
-            color: #92400e;
-            font-size: 0.9rem;
+        .warning-title {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--warning);
             margin-bottom: 0.5rem;
         }
 
-        [data-theme="dark"] .warnings h4 {
-            color: #fbbf24;
+        .warning-list {
+            margin: 0;
+            padding-left: 1rem;
+            font-size: 0.8rem;
+            color: var(--text-dim);
         }
 
-        .warnings ul {
-            margin: 0;
-            padding-left: 1.25rem;
-            color: #92400e;
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.25rem;
+            background: var(--bg-panel);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: toastIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             font-size: 0.85rem;
         }
 
-        [data-theme="dark"] .warnings ul {
-            color: #fcd34d;
+        .toast.success { border-left: 4px solid var(--success); }
+        .toast.error { border-left: 4px solid var(--danger); }
+        .toast.warning { border-left: 4px solid var(--warning); }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
-        /* Loading */
-        .loading {
-            text-align: center;
-            padding: 3rem;
-            color: var(--text-muted);
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid var(--border);
-            border-top-color: var(--primary);
+        .toast-icon {
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            flex-shrink: 0;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .toast.success .toast-icon { background: var(--success); color: var(--bg-deep); }
+        .toast.error .toast-icon { background: var(--danger); color: white; }
+        .toast.warning .toast-icon { background: var(--warning); color: var(--bg-deep); }
+
+        .toast-message {
+            color: var(--text-bright);
+            flex: 1;
         }
 
-        /* Empty state */
-        .empty-state {
-            text-align: center;
-            padding: 4rem 2rem;
+        .toast-close {
+            background: none;
+            border: none;
             color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.25rem;
+            transition: color 0.2s;
         }
 
-        .empty-state svg {
-            width: 64px;
-            height: 64px;
-            margin-bottom: 1rem;
-            opacity: 0.5;
+        .toast-close:hover {
+            color: var(--text-bright);
         }
 
-        .hidden {
-            display: none !important;
+        /* Autocomplete */
+        .autocomplete-wrapper {
+            position: relative;
+        }
+
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            margin-top: 0.25rem;
+            background: var(--bg-panel);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .autocomplete-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            transition: all 0.15s;
+        }
+
+        .autocomplete-item:hover {
+            background: var(--accent-cyan);
+            color: var(--bg-deep);
         }
 
         /* Footer */
         footer {
-            margin-top: 3rem;
-            padding: 1.5rem 0;
-            border-top: 1px solid var(--border);
+            position: relative;
+            z-index: 5;
+            padding: 2rem;
             text-align: center;
-            color: var(--text-muted);
-            font-size: 0.85rem;
+            border-top: 1px solid var(--glass-border);
+            background: var(--bg-panel);
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
         }
 
-        footer a {
-            color: var(--primary);
-            text-decoration: none;
-        }
-
-        footer a:hover {
-            text-decoration: underline;
+        .footer-brand {
+            font-family: var(--serif);
+            font-size: 1rem;
+            color: var(--text-bright);
+            margin-bottom: 0.5rem;
         }
 
         .footer-links {
             display: flex;
             justify-content: center;
-            gap: 1.5rem;
-            margin-top: 0.5rem;
+            gap: 2rem;
+            margin-top: 0.75rem;
+        }
+
+        .footer-link {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-link:hover {
+            color: var(--accent-cyan);
+        }
+
+        .footer-powered {
+            margin-top: 0.75rem;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        /* Utilities */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--glass-border);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 640px) {
+            .header-inner {
+                padding: 0 1rem;
+            }
+
+            .logo h1 {
+                font-size: 1.4rem;
+            }
+
+            .calc-tabs {
+                grid-template-columns: 1fr;
+            }
+
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .export-row {
+                flex-direction: column;
+            }
+
+            .export-btn {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Background Elements -->
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+    <div class="bg-glow"></div>
+
     <!-- Toast Container -->
     <div class="toast-container" id="toast-container"></div>
 
+    <!-- Header -->
     <header>
-        <div class="container">
-            <div class="header-content">
+        <div class="header-inner">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 48 48" fill="none">
+                        <circle cx="24" cy="24" r="20" stroke="url(#logoGrad)" stroke-width="2" class="ring"/>
+                        <circle cx="24" cy="24" r="8" fill="url(#logoGrad)"/>
+                        <circle cx="24" cy="8" r="3" fill="var(--accent-cyan)"/>
+                        <circle cx="38" cy="30" r="3" fill="var(--accent-teal)"/>
+                        <circle cx="10" cy="30" r="3" fill="var(--accent-amber)"/>
+                        <defs>
+                            <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="var(--accent-cyan)"/>
+                                <stop offset="100%" stop-color="var(--accent-teal)"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
                 <div>
                     <h1>ChemEng</h1>
-                    <p>化学工学計算モジュール / Chemical Engineering Calculator</p>
+                    <p class="logo-subtitle">Chemical Engineering Laboratory</p>
                 </div>
-                <div class="header-controls">
-                    <div class="api-status">
-                        <div class="status-dot" id="status-dot"></div>
-                        <span id="status-text">接続確認中...</span>
-                    </div>
-                    <button class="theme-toggle" id="theme-toggle" title="ダークモード切替">
-                        <svg id="theme-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                        </svg>
-                    </button>
+            </div>
+            <div class="header-controls">
+                <div class="status-pill">
+                    <span class="status-dot" id="status-dot"></span>
+                    <span id="status-text">Connecting...</span>
                 </div>
+                <button class="theme-btn" id="theme-toggle" title="Toggle Theme">
+                    <svg id="theme-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                </button>
             </div>
         </div>
     </header>
 
-    <div class="container">
-        <div class="grid">
-            <!-- Input Panel -->
-            <div class="card">
-                <h2>計算タイプ / Calculation Type</h2>
-                <div class="tabs">
-                    <button class="tab active" data-tab="property">物性推算</button>
-                    <button class="tab" data-tab="distillation">蒸留塔設計</button>
-                    <button class="tab" data-tab="mass_balance">物質収支</button>
-                    <button class="tab" data-tab="heat_balance">熱収支</button>
+    <!-- Main Content -->
+    <main>
+        <!-- Input Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                </div>
+                <span class="panel-title">Calculation Parameters</span>
+            </div>
+            <div class="panel-body">
+                <!-- Calculation Type Tabs -->
+                <div class="calc-tabs">
+                    <div class="calc-tab active" data-tab="property">
+                        <svg class="calc-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M9 3h6l3 7-6 11-6-11 3-7z"/>
+                            <circle cx="12" cy="12" r="2"/>
+                        </svg>
+                        <div class="calc-tab-label">物性推算</div>
+                        <div class="calc-tab-sublabel">Property Estimation</div>
+                    </div>
+                    <div class="calc-tab" data-tab="distillation">
+                        <svg class="calc-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="7" y="4" width="10" height="16" rx="1"/>
+                            <line x1="7" y1="8" x2="17" y2="8"/>
+                            <line x1="7" y1="12" x2="17" y2="12"/>
+                            <line x1="7" y1="16" x2="17" y2="16"/>
+                            <path d="M4 8h3M4 16h3M17 8h3M17 16h3"/>
+                        </svg>
+                        <div class="calc-tab-label">蒸留塔設計</div>
+                        <div class="calc-tab-sublabel">Distillation Column</div>
+                    </div>
+                    <div class="calc-tab" data-tab="mass_balance">
+                        <svg class="calc-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="12" cy="12" r="8"/>
+                            <path d="M4 12h4M16 12h4"/>
+                            <path d="M12 4v4M12 16v4"/>
+                        </svg>
+                        <div class="calc-tab-label">物質収支</div>
+                        <div class="calc-tab-sublabel">Mass Balance</div>
+                    </div>
+                    <div class="calc-tab" data-tab="heat_balance">
+                        <svg class="calc-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 2v4M12 18v4"/>
+                            <path d="M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83"/>
+                            <path d="M2 12h4M18 12h4"/>
+                            <path d="M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                            <circle cx="12" cy="12" r="4"/>
+                        </svg>
+                        <div class="calc-tab-label">熱収支</div>
+                        <div class="calc-tab-sublabel">Heat Balance</div>
+                    </div>
                 </div>
 
-                <!-- Property Estimation Form -->
-                <form id="property-form" class="calc-form">
+                <!-- Property Form -->
+                <form id="property-form" class="form-section active">
                     <div class="form-group">
-                        <label>物質名 / Substance</label>
+                        <label class="form-label">Substance / 物質名</label>
                         <div class="autocomplete-wrapper">
-                            <input type="text" name="substance" value="ethanol" required autocomplete="off" class="substance-input">
-                            <div class="autocomplete-list hidden" id="substance-autocomplete-1"></div>
+                            <input type="text" name="substance" class="form-input substance-input" value="ethanol" required autocomplete="off" placeholder="Enter substance name...">
+                            <div class="autocomplete-dropdown hidden" id="autocomplete-1"></div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>物性 / Property</label>
-                        <select name="property">
+                        <label class="form-label">Property / 物性</label>
+                        <select name="property" class="form-input">
                             <option value="vapor_pressure">蒸気圧 / Vapor Pressure</option>
                             <option value="liquid_density">液密度 / Liquid Density</option>
                             <option value="liquid_viscosity">液粘度 / Liquid Viscosity</option>
@@ -816,500 +1341,459 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>温度 / Temperature (K)</label>
-                        <input type="number" name="temperature" id="prop-temp-input" value="350" step="any">
-                        <div class="unit-helper">
-                            <button type="button" class="unit-chip active" data-unit="K" data-target="prop-temp-input">K</button>
-                            <button type="button" class="unit-chip" data-unit="C" data-target="prop-temp-input">°C</button>
-                            <button type="button" class="unit-chip" data-unit="F" data-target="prop-temp-input">°F</button>
+                        <label class="form-label">Temperature / 温度</label>
+                        <input type="number" name="temperature" id="prop-temp" class="form-input" value="350" step="any">
+                        <div class="unit-row">
+                            <button type="button" class="unit-chip active" data-unit="K" data-target="prop-temp">K</button>
+                            <button type="button" class="unit-chip" data-unit="C" data-target="prop-temp">°C</button>
+                            <button type="button" class="unit-chip" data-unit="F" data-target="prop-temp">°F</button>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>圧力 / Pressure (Pa)</label>
-                        <input type="number" name="pressure" id="prop-press-input" value="101325" step="100">
-                        <div class="unit-helper">
-                            <button type="button" class="unit-chip active" data-unit="Pa" data-target="prop-press-input">Pa</button>
-                            <button type="button" class="unit-chip" data-unit="kPa" data-target="prop-press-input">kPa</button>
-                            <button type="button" class="unit-chip" data-unit="atm" data-target="prop-press-input">atm</button>
-                            <button type="button" class="unit-chip" data-unit="bar" data-target="prop-press-input">bar</button>
+                        <label class="form-label">Pressure / 圧力</label>
+                        <input type="number" name="pressure" id="prop-press" class="form-input" value="101325" step="any">
+                        <div class="unit-row">
+                            <button type="button" class="unit-chip active" data-unit="Pa" data-target="prop-press">Pa</button>
+                            <button type="button" class="unit-chip" data-unit="kPa" data-target="prop-press">kPa</button>
+                            <button type="button" class="unit-chip" data-unit="atm" data-target="prop-press">atm</button>
+                            <button type="button" class="unit-chip" data-unit="bar" data-target="prop-press">bar</button>
                         </div>
                     </div>
-                    <button type="submit" class="btn">計算実行 / Calculate</button>
-                    <div class="shortcut-hint"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> で計算実行</div>
+                    <button type="submit" class="submit-btn">Calculate Property</button>
+                    <div class="shortcut-hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd></div>
                 </form>
 
                 <!-- Distillation Form -->
-                <form id="distillation-form" class="calc-form hidden">
+                <form id="distillation-form" class="form-section">
                     <div class="form-group">
-                        <label>軽沸成分 / Light Component</label>
+                        <label class="form-label">Light Component / 軽沸成分</label>
                         <div class="autocomplete-wrapper">
-                            <input type="text" name="light_component" value="ethanol" required autocomplete="off" class="substance-input">
-                            <div class="autocomplete-list hidden" id="substance-autocomplete-2"></div>
+                            <input type="text" name="light_component" class="form-input substance-input" value="ethanol" required autocomplete="off">
+                            <div class="autocomplete-dropdown hidden" id="autocomplete-2"></div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>重沸成分 / Heavy Component</label>
+                        <label class="form-label">Heavy Component / 重沸成分</label>
                         <div class="autocomplete-wrapper">
-                            <input type="text" name="heavy_component" value="water" required autocomplete="off" class="substance-input">
-                            <div class="autocomplete-list hidden" id="substance-autocomplete-3"></div>
+                            <input type="text" name="heavy_component" class="form-input substance-input" value="water" required autocomplete="off">
+                            <div class="autocomplete-dropdown hidden" id="autocomplete-3"></div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>原料流量 / Feed Flow Rate (kmol/h)</label>
-                        <input type="number" name="feed_flow_rate" value="100" step="1" required>
+                        <label class="form-label">Feed Flow Rate / 原料流量 (kmol/h)</label>
+                        <input type="number" name="feed_flow_rate" class="form-input" value="100" step="1" required>
                     </div>
                     <div class="form-group">
-                        <label>原料組成 / Feed Composition (軽沸成分モル分率)</label>
-                        <input type="number" name="feed_composition" value="0.4" step="0.01" min="0" max="1" required>
+                        <label class="form-label">Feed Composition / 原料組成 (mol frac)</label>
+                        <input type="number" name="feed_composition" class="form-input" value="0.4" step="0.01" min="0" max="1" required>
                     </div>
                     <div class="form-group">
-                        <label>留出液純度 / Distillate Purity (軽沸成分モル分率)</label>
-                        <input type="number" name="distillate_purity" value="0.95" step="0.01" min="0" max="1" required>
+                        <label class="form-label">Distillate Purity / 留出液純度</label>
+                        <input type="number" name="distillate_purity" class="form-input" value="0.95" step="0.01" min="0" max="1" required>
                     </div>
                     <div class="form-group">
-                        <label>缶出液純度 / Bottoms Purity (重沸成分モル分率)</label>
-                        <input type="number" name="bottoms_purity" value="0.98" step="0.01" min="0" max="1" required>
+                        <label class="form-label">Bottoms Purity / 缶出液純度</label>
+                        <input type="number" name="bottoms_purity" class="form-input" value="0.98" step="0.01" min="0" max="1" required>
                     </div>
                     <div class="form-group">
-                        <label>還流比係数 / Reflux Ratio Factor (R/Rmin)</label>
-                        <input type="number" name="reflux_ratio_factor" value="1.3" step="0.1" min="1" required>
+                        <label class="form-label">Reflux Ratio Factor / 還流比係数 (R/Rmin)</label>
+                        <input type="number" name="reflux_ratio_factor" class="form-input" value="1.3" step="0.1" min="1" required>
                     </div>
-                    <button type="submit" class="btn">塔設計 / Design Column</button>
+                    <button type="submit" class="submit-btn">Design Column</button>
                 </form>
 
                 <!-- Mass Balance Form -->
-                <form id="mass_balance-form" class="calc-form hidden">
+                <form id="mass_balance-form" class="form-section">
                     <div class="form-group">
-                        <label>成分リスト / Components (カンマ区切り)</label>
-                        <input type="text" name="components" value="ethanol, water" required>
+                        <label class="form-label">Components / 成分リスト (comma-separated)</label>
+                        <input type="text" name="components" class="form-input" value="ethanol, water" required>
                     </div>
                     <div class="form-group">
-                        <label>原料流量 / Feed Flow Rate (mol/s)</label>
-                        <input type="number" name="feed_flow_rate" value="100" step="1" required>
+                        <label class="form-label">Feed Flow Rate / 原料流量 (mol/s)</label>
+                        <input type="number" name="feed_flow_rate" class="form-input" value="100" step="1" required>
                     </div>
                     <div class="form-group">
-                        <label>原料組成 / Feed Composition (第1成分モル分率)</label>
-                        <input type="number" name="feed_composition" value="0.4" step="0.01" min="0" max="1" required>
+                        <label class="form-label">Feed Composition / 原料組成</label>
+                        <input type="number" name="feed_composition" class="form-input" value="0.4" step="0.01" min="0" max="1" required>
                     </div>
                     <div class="form-group">
-                        <label>留出液組成 / Distillate Composition (第1成分)</label>
-                        <input type="number" name="distillate_composition" value="0.95" step="0.01" min="0" max="1" required>
+                        <label class="form-label">Distillate Composition / 留出液組成</label>
+                        <input type="number" name="distillate_composition" class="form-input" value="0.95" step="0.01" min="0" max="1" required>
                     </div>
                     <div class="form-group">
-                        <label>缶出液組成 / Bottoms Composition (第1成分)</label>
-                        <input type="number" name="bottoms_composition" value="0.05" step="0.01" min="0" max="1" required>
+                        <label class="form-label">Bottoms Composition / 缶出液組成</label>
+                        <input type="number" name="bottoms_composition" class="form-input" value="0.05" step="0.01" min="0" max="1" required>
                     </div>
-                    <button type="submit" class="btn">収支計算 / Calculate Balance</button>
+                    <button type="submit" class="submit-btn">Calculate Balance</button>
                 </form>
 
                 <!-- Heat Balance Form -->
-                <form id="heat_balance-form" class="calc-form hidden">
+                <form id="heat_balance-form" class="form-section">
                     <div class="form-group">
-                        <label>物質名 / Substance</label>
+                        <label class="form-label">Substance / 物質名</label>
                         <div class="autocomplete-wrapper">
-                            <input type="text" name="substance" value="water" required autocomplete="off" class="substance-input">
-                            <div class="autocomplete-list hidden" id="substance-autocomplete-4"></div>
+                            <input type="text" name="substance" class="form-input substance-input" value="water" required autocomplete="off">
+                            <div class="autocomplete-dropdown hidden" id="autocomplete-4"></div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>流量 / Flow Rate (mol/s)</label>
-                        <input type="number" name="flow_rate" value="100" step="0.1" required>
+                        <label class="form-label">Flow Rate / 流量 (mol/s)</label>
+                        <input type="number" name="flow_rate" class="form-input" value="100" step="0.1" required>
                     </div>
                     <div class="form-group">
-                        <label>入口温度 / Inlet Temperature (K)</label>
-                        <input type="number" name="inlet_temperature" value="300" step="0.1" required>
+                        <label class="form-label">Inlet Temperature / 入口温度 (K)</label>
+                        <input type="number" name="inlet_temperature" class="form-input" value="300" step="0.1" required>
                     </div>
                     <div class="form-group">
-                        <label>出口温度 / Outlet Temperature (K)</label>
-                        <input type="number" name="outlet_temperature" value="400" step="0.1" required>
+                        <label class="form-label">Outlet Temperature / 出口温度 (K)</label>
+                        <input type="number" name="outlet_temperature" class="form-input" value="400" step="0.1" required>
                     </div>
                     <div class="form-group">
-                        <label>圧力 / Pressure (Pa)</label>
-                        <input type="number" name="pressure" value="101325" step="100">
+                        <label class="form-label">Pressure / 圧力 (Pa)</label>
+                        <input type="number" name="pressure" class="form-input" value="101325" step="100">
                     </div>
                     <div class="form-group">
-                        <label>熱効率 / Efficiency (0-1)</label>
-                        <input type="number" name="efficiency" value="0.85" step="0.01" min="0" max="1">
+                        <label class="form-label">Efficiency / 熱効率 (0-1)</label>
+                        <input type="number" name="efficiency" class="form-input" value="0.85" step="0.01" min="0" max="1">
                     </div>
-                    <button type="submit" class="btn">熱負荷計算 / Calculate Heat Duty</button>
+                    <button type="submit" class="submit-btn">Calculate Heat Duty</button>
                 </form>
 
-                <!-- History Section -->
+                <!-- History -->
                 <div class="history-toggle" id="history-toggle">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
                     </svg>
-                    <span>計算履歴 / History (<span id="history-count">0</span>)</span>
+                    <span>History (<span id="history-count">0</span>)</span>
                 </div>
                 <div class="history-list hidden" id="history-list"></div>
             </div>
+        </div>
 
-            <!-- Results Panel -->
-            <div class="card">
-                <div id="empty-state" class="empty-state">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        <!-- Results Panel -->
+        <div class="panel results-panel">
+            <div class="panel-header">
+                <div class="panel-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
                     </svg>
-                    <p>計算タイプを選択してパラメータを入力してください<br>Select a calculation type and enter parameters</p>
+                </div>
+                <span class="panel-title">Analysis Results</span>
+            </div>
+            <div class="panel-body">
+                <!-- Empty State -->
+                <div class="empty-state" id="empty-state">
+                    <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M9 3h6l2 4h4v14H3V7h4l2-4z"/>
+                        <path d="M9 14l2 2 4-4"/>
+                    </svg>
+                    <div class="empty-title">Ready for Analysis</div>
+                    <div class="empty-desc">Configure parameters and run calculation</div>
                 </div>
 
-                <div id="loading" class="loading hidden">
-                    <div class="spinner"></div>
-                    <p>計算中... / Calculating...</p>
+                <!-- Loading State -->
+                <div class="loading-state" id="loading-state">
+                    <div class="loader">
+                        <div class="loader-ring"></div>
+                        <div class="loader-ring"></div>
+                        <div class="loader-ring"></div>
+                    </div>
+                    <div class="loading-text">Processing calculation...</div>
                 </div>
 
                 <!-- Property Result -->
                 <div id="property-result" class="result-section">
                     <div class="result-header">
-                        <div class="result-icon success">&#x2713;</div>
-                        <div>
-                            <div class="result-title">物性推算結果 / Property Estimation</div>
-                            <div class="result-subtitle" id="property-substance">-</div>
+                        <div class="result-badge">✓</div>
+                        <div class="result-title-group">
+                            <div class="result-title">Property Estimation</div>
+                            <div class="result-subtitle" id="prop-substance">-</div>
                         </div>
                     </div>
                     <div class="result-grid">
-                        <div class="result-item">
-                            <div class="label" id="property-name">物性値</div>
-                            <div class="value"><span id="property-value">-</span> <span class="unit" id="property-unit"></span></div>
+                        <div class="result-card">
+                            <div class="result-label" id="prop-name">Property</div>
+                            <div class="result-value"><span id="prop-value">-</span><span class="result-unit" id="prop-unit"></span></div>
                         </div>
-                        <div class="result-item">
-                            <div class="label">温度 / Temperature</div>
-                            <div class="value"><span id="property-temp">-</span> <span class="unit">K</span></div>
+                        <div class="result-card amber">
+                            <div class="result-label">Temperature</div>
+                            <div class="result-value"><span id="prop-temp-result">-</span><span class="result-unit">K</span></div>
                         </div>
-                        <div class="result-item">
-                            <div class="label">圧力 / Pressure</div>
-                            <div class="value"><span id="property-pressure">-</span> <span class="unit">kPa</span></div>
+                        <div class="result-card rose">
+                            <div class="result-label">Pressure</div>
+                            <div class="result-value"><span id="prop-press-result">-</span><span class="result-unit">kPa</span></div>
                         </div>
                     </div>
-                    <!-- Export Buttons -->
-                    <div class="export-buttons">
-                        <button type="button" class="btn-export" id="prop-export-json">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                <polyline points="14 2 14 8 20 8"></polyline>
+                    <div class="export-row">
+                        <button type="button" class="export-btn" id="export-json">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <path d="M14 2v6h6"/>
                             </svg>
-                            JSON
+                            Export JSON
                         </button>
-                        <button type="button" class="btn-export" id="prop-export-csv">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                <polyline points="14 2 14 8 20 8"></polyline>
+                        <button type="button" class="export-btn" id="export-csv">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <path d="M14 2v6h6"/>
                             </svg>
-                            CSV
+                            Export CSV
                         </button>
                     </div>
-
-                    <!-- Temperature Chart -->
-                    <div class="chart-container">
-                        <h4 style="margin-bottom: 0.75rem; font-size: 0.9rem;">温度依存性グラフ / Temperature Dependence</h4>
-                        <div class="chart-controls">
-                            <label>
-                                <span>T_min:</span>
-                                <input type="number" id="chart-temp-min" value="280" step="10">K
-                            </label>
-                            <label>
-                                <span>T_max:</span>
-                                <input type="number" id="chart-temp-max" value="400" step="10">K
-                            </label>
-                            <button type="button" class="btn-chart" id="generate-chart">グラフ生成</button>
+                    <div class="chart-section">
+                        <div class="chart-header">
+                            <div class="chart-title">Temperature Dependence</div>
+                            <div class="chart-controls">
+                                <div class="chart-input-group">
+                                    <span>T_min:</span>
+                                    <input type="number" id="chart-tmin" class="chart-input" value="280">
+                                    <span>K</span>
+                                </div>
+                                <div class="chart-input-group">
+                                    <span>T_max:</span>
+                                    <input type="number" id="chart-tmax" class="chart-input" value="400">
+                                    <span>K</span>
+                                </div>
+                                <button type="button" class="chart-btn" id="gen-chart">Generate</button>
+                            </div>
                         </div>
-                        <canvas id="property-chart" height="200"></canvas>
+                        <canvas id="prop-chart" height="180"></canvas>
                     </div>
-
-                    <div style="margin-top: 1.5rem;">
-                        <button id="prop-toggle-steps" class="btn" style="background: #6366f1; width: auto; padding: 0.5rem 1rem; font-size: 0.9rem;">
-                            計算過程を表示 / Show Steps ▼
-                        </button>
-                        <div id="prop-steps" class="hidden" style="margin-top: 1rem; background: var(--bg); border-radius: 8px; padding: 1rem;">
-                            <div id="prop-steps-content"></div>
-                        </div>
-                    </div>
+                    <button type="button" class="steps-toggle" id="prop-steps-toggle">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14M5 12h14"/>
+                        </svg>
+                        Show Calculation Steps
+                    </button>
+                    <div id="prop-steps" class="steps-content hidden"></div>
                 </div>
 
                 <!-- Distillation Result -->
                 <div id="distillation-result" class="result-section">
                     <div class="result-header">
-                        <div class="result-icon success">&#x2713;</div>
-                        <div>
-                            <div class="result-title">蒸留塔設計結果 / Distillation Column Design</div>
-                            <div class="result-subtitle" id="distillation-system">-</div>
+                        <div class="result-badge">✓</div>
+                        <div class="result-title-group">
+                            <div class="result-title">Distillation Column Design</div>
+                            <div class="result-subtitle" id="dist-system">-</div>
                         </div>
                     </div>
-
-                    <div class="column-diagram">
-                        <svg class="column-svg" width="300" height="400" viewBox="0 0 300 400">
-                            <rect x="100" y="50" width="100" height="280" rx="5" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2"/>
-                            <g id="trays-group"></g>
-                            <ellipse cx="150" cy="30" rx="40" ry="15" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
-                            <text x="150" y="35" text-anchor="middle" font-size="9" fill="#1e40af">凝縮器</text>
-                            <ellipse cx="150" cy="350" rx="40" ry="15" fill="#fecaca" stroke="#dc2626" stroke-width="2"/>
-                            <text x="150" y="355" text-anchor="middle" font-size="9" fill="#991b1b">再沸器</text>
-                            <line x1="50" y1="180" x2="100" y2="180" stroke="#10b981" stroke-width="3" marker-end="url(#arrowhead)"/>
-                            <text x="20" y="175" font-size="10" fill="#047857">原料</text>
-                            <text x="20" y="188" font-size="9" fill="#6b7280" id="feed-flow">F = 100</text>
-                            <line x1="150" y1="15" x2="150" y2="0" stroke="#2563eb" stroke-width="2"/>
-                            <line x1="150" y1="0" x2="250" y2="0" stroke="#2563eb" stroke-width="2" marker-end="url(#arrowhead)"/>
-                            <text x="255" y="5" font-size="10" fill="#1d4ed8">留出液</text>
-                            <text x="255" y="18" font-size="9" fill="#6b7280" id="distillate-flow">D = 40</text>
-                            <line x1="150" y1="365" x2="150" y2="385" stroke="#dc2626" stroke-width="2" marker-end="url(#arrowhead)"/>
-                            <text x="160" y="395" font-size="10" fill="#991b1b">缶出液</text>
-                            <text x="160" y="382" font-size="9" fill="#6b7280" id="bottoms-flow">B = 60</text>
+                    <div class="diagram-container">
+                        <svg width="320" height="420" viewBox="0 0 320 420">
                             <defs>
-                                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                                    <polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/>
+                                <linearGradient id="columnGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="var(--accent-cyan)" stop-opacity="0.3"/>
+                                    <stop offset="100%" stop-color="var(--accent-teal)" stop-opacity="0.1"/>
+                                </linearGradient>
+                                <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="var(--text-muted)"/>
                                 </marker>
                             </defs>
-                            <circle cx="100" cy="180" r="6" fill="#10b981" id="feed-stage-dot"/>
+                            <rect x="110" y="60" width="100" height="280" rx="8" fill="url(#columnGrad)" stroke="var(--accent-cyan)" stroke-width="2"/>
+                            <g id="dist-trays"></g>
+                            <ellipse cx="160" cy="40" rx="45" ry="18" fill="rgba(0, 212, 255, 0.15)" stroke="var(--accent-cyan)" stroke-width="1.5"/>
+                            <text x="160" y="44" text-anchor="middle" font-size="10" fill="var(--accent-cyan)">Condenser</text>
+                            <ellipse cx="160" cy="360" rx="45" ry="18" fill="rgba(255, 107, 157, 0.15)" stroke="var(--accent-rose)" stroke-width="1.5"/>
+                            <text x="160" y="364" text-anchor="middle" font-size="10" fill="var(--accent-rose)">Reboiler</text>
+                            <line x1="40" y1="190" x2="105" y2="190" stroke="var(--accent-teal)" stroke-width="3" marker-end="url(#arrow)"/>
+                            <text x="15" y="180" font-size="11" fill="var(--accent-teal)">Feed</text>
+                            <text x="15" y="205" font-size="9" fill="var(--text-muted)" id="dist-feed-label">F = 100</text>
+                            <path d="M160 22 V5 H270" stroke="var(--accent-cyan)" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+                            <text x="275" y="10" font-size="11" fill="var(--accent-cyan)">Distillate</text>
+                            <text x="275" y="25" font-size="9" fill="var(--text-muted)" id="dist-d-label">D = 40</text>
+                            <line x1="160" y1="378" x2="160" y2="405" stroke="var(--accent-rose)" stroke-width="2" marker-end="url(#arrow)"/>
+                            <text x="175" y="410" font-size="11" fill="var(--accent-rose)">Bottoms</text>
+                            <text x="175" y="395" font-size="9" fill="var(--text-muted)" id="dist-b-label">B = 60</text>
+                            <circle cx="110" cy="190" r="6" fill="var(--accent-teal)" id="dist-feed-dot"/>
                         </svg>
                     </div>
-
                     <div class="result-grid">
-                        <div class="result-item">
-                            <div class="label">理論段数 / Stages</div>
-                            <div class="value" id="dist-stages">-</div>
+                        <div class="result-card">
+                            <div class="result-label">Theoretical Stages</div>
+                            <div class="result-value" id="dist-stages">-</div>
                         </div>
-                        <div class="result-item">
-                            <div class="label">原料段 / Feed Stage</div>
-                            <div class="value" id="dist-feed-stage">-</div>
+                        <div class="result-card amber">
+                            <div class="result-label">Feed Stage</div>
+                            <div class="result-value" id="dist-feed-stage">-</div>
                         </div>
-                        <div class="result-item">
-                            <div class="label">還流比 / Reflux Ratio</div>
-                            <div class="value" id="dist-reflux">-</div>
+                        <div class="result-card rose">
+                            <div class="result-label">Reflux Ratio</div>
+                            <div class="result-value" id="dist-reflux">-</div>
                         </div>
-                        <div class="result-item">
-                            <div class="label">塔径 / Diameter</div>
-                            <div class="value"><span id="dist-diameter">-</span> <span class="unit">m</span></div>
+                        <div class="result-card violet">
+                            <div class="result-label">Column Diameter</div>
+                            <div class="result-value"><span id="dist-diam">-</span><span class="result-unit">m</span></div>
                         </div>
                     </div>
-
-                    <h3 style="font-size: 1rem; margin: 1.5rem 0 0.5rem;">熱負荷 / Heat Duties</h3>
-                    <table class="result-table">
-                        <tr>
-                            <th>機器 / Equipment</th>
-                            <th>熱負荷 / Duty</th>
-                        </tr>
-                        <tr>
-                            <td>凝縮器 / Condenser (Qc)</td>
-                            <td id="dist-qc">-</td>
-                        </tr>
-                        <tr>
-                            <td>再沸器 / Reboiler (Qr)</td>
-                            <td id="dist-qr">-</td>
-                        </tr>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>Equipment</th><th>Heat Duty</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Condenser (Qc)</td><td id="dist-qc">-</td></tr>
+                            <tr><td>Reboiler (Qr)</td><td id="dist-qr">-</td></tr>
+                        </tbody>
                     </table>
-
-                    <div id="dist-warnings" class="warnings hidden">
-                        <h4>警告 / Warnings</h4>
-                        <ul id="dist-warnings-list"></ul>
+                    <div id="dist-warnings" class="warning-box hidden">
+                        <div class="warning-title">⚠ Warnings</div>
+                        <ul class="warning-list" id="dist-warn-list"></ul>
                     </div>
-
-                    <div style="margin-top: 1.5rem;">
-                        <button id="dist-toggle-steps" class="btn" style="background: #6366f1; width: auto; padding: 0.5rem 1rem; font-size: 0.9rem;">
-                            計算過程を表示 / Show Steps ▼
-                        </button>
-                        <div id="dist-steps" class="hidden" style="margin-top: 1rem; background: var(--bg); border-radius: 8px; padding: 1rem;">
-                            <div id="dist-steps-content"></div>
-                        </div>
-                    </div>
+                    <button type="button" class="steps-toggle" id="dist-steps-toggle">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14M5 12h14"/>
+                        </svg>
+                        Show Calculation Steps
+                    </button>
+                    <div id="dist-steps" class="steps-content hidden"></div>
                 </div>
 
                 <!-- Mass Balance Result -->
                 <div id="mass_balance-result" class="result-section">
                     <div class="result-header">
-                        <div class="result-icon success">&#x2713;</div>
-                        <div>
-                            <div class="result-title">物質収支結果 / Mass Balance</div>
-                            <div class="result-subtitle" id="mb-components">-</div>
+                        <div class="result-badge">✓</div>
+                        <div class="result-title-group">
+                            <div class="result-title">Mass Balance Analysis</div>
+                            <div class="result-subtitle" id="mb-comps">-</div>
                         </div>
                     </div>
-
-                    <div class="mass-balance-diagram" style="display: flex; justify-content: center; margin: 1.5rem 0;">
-                        <svg width="450" height="200" viewBox="0 0 450 200">
+                    <div class="diagram-container">
+                        <svg width="460" height="200" viewBox="0 0 460 200">
                             <defs>
-                                <marker id="arrow-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                                    <polygon points="0 0, 10 3.5, 0 7" fill="#10b981"/>
+                                <marker id="arr-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="var(--accent-teal)"/>
                                 </marker>
-                                <marker id="arrow-blue-mb" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                                    <polygon points="0 0, 10 3.5, 0 7" fill="#2563eb"/>
+                                <marker id="arr-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="var(--accent-cyan)"/>
                                 </marker>
-                                <marker id="arrow-red-mb" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                                    <polygon points="0 0, 10 3.5, 0 7" fill="#dc2626"/>
+                                <marker id="arr-rose" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="var(--accent-rose)"/>
                                 </marker>
                             </defs>
-
-                            <rect id="mb-process-box" x="150" y="50" width="150" height="100"
-                                  rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"
-                                  style="cursor: pointer;" class="mb-clickable"/>
-                            <text x="225" y="90" text-anchor="middle" font-size="14" fill="#0369a1" font-weight="600">プロセス</text>
-                            <text x="225" y="108" text-anchor="middle" font-size="10" fill="#0284c7">Process Unit</text>
-                            <text x="225" y="135" text-anchor="middle" font-size="9" fill="#64748b" id="mb-svg-closure">閉合率: --%</text>
-
-                            <g id="mb-inlet-group" style="cursor: pointer;" class="mb-clickable">
-                                <line x1="30" y1="100" x2="145" y2="100" stroke="#10b981" stroke-width="4" marker-end="url(#arrow-green)"/>
-                                <text x="10" y="80" font-size="11" fill="#047857" font-weight="500">入口 Feed</text>
-                                <text id="mb-svg-inlet-flow" x="10" y="125" font-size="9" fill="#6b7280">- mol/s</text>
-                            </g>
-
-                            <g id="mb-outlet1-group" style="cursor: pointer;" class="mb-clickable">
-                                <line x1="305" y1="70" x2="400" y2="35" stroke="#2563eb" stroke-width="3" marker-end="url(#arrow-blue-mb)"/>
-                                <text x="340" y="25" font-size="11" fill="#1d4ed8" font-weight="500">留出液</text>
-                                <text x="340" y="40" font-size="9" fill="#3b82f6">Distillate</text>
-                                <text id="mb-svg-outlet1-flow" x="405" y="40" font-size="9" fill="#6b7280">- mol/s</text>
-                            </g>
-
-                            <g id="mb-outlet2-group" style="cursor: pointer;" class="mb-clickable">
-                                <line x1="305" y1="130" x2="400" y2="165" stroke="#dc2626" stroke-width="3" marker-end="url(#arrow-red-mb)"/>
-                                <text x="340" y="185" font-size="11" fill="#991b1b" font-weight="500">缶出液</text>
-                                <text x="340" y="170" font-size="9" fill="#dc2626">Bottoms</text>
-                                <text id="mb-svg-outlet2-flow" x="405" y="165" font-size="9" fill="#6b7280">- mol/s</text>
-                            </g>
+                            <rect x="160" y="50" width="140" height="100" rx="12" fill="rgba(0, 212, 255, 0.1)" stroke="var(--accent-cyan)" stroke-width="2" id="mb-box"/>
+                            <text x="230" y="90" text-anchor="middle" font-size="14" fill="var(--accent-cyan)" font-weight="600">Process</text>
+                            <text x="230" y="108" text-anchor="middle" font-size="10" fill="var(--text-muted)">Unit</text>
+                            <text x="230" y="135" text-anchor="middle" font-size="9" fill="var(--text-dim)" id="mb-closure-svg">Closure: --%</text>
+                            <line x1="30" y1="100" x2="155" y2="100" stroke="var(--accent-teal)" stroke-width="4" marker-end="url(#arr-green)"/>
+                            <text x="10" y="80" font-size="11" fill="var(--accent-teal)" font-weight="500">Feed</text>
+                            <text x="10" y="125" font-size="9" fill="var(--text-muted)" id="mb-in-label">- mol/s</text>
+                            <line x1="305" y1="70" x2="410" y2="35" stroke="var(--accent-cyan)" stroke-width="3" marker-end="url(#arr-blue)"/>
+                            <text x="350" y="25" font-size="11" fill="var(--accent-cyan)" font-weight="500">Distillate</text>
+                            <text x="415" y="40" font-size="9" fill="var(--text-muted)" id="mb-out1-label">- mol/s</text>
+                            <line x1="305" y1="130" x2="410" y2="165" stroke="var(--accent-rose)" stroke-width="3" marker-end="url(#arr-rose)"/>
+                            <text x="350" y="180" font-size="11" fill="var(--accent-rose)" font-weight="500">Bottoms</text>
+                            <text x="415" y="165" font-size="9" fill="var(--text-muted)" id="mb-out2-label">- mol/s</text>
                         </svg>
                     </div>
-
-                    <div id="mb-detail-panel" class="hidden" style="margin: 1rem 0; padding: 1rem; background: var(--bg); border: 2px solid #0284c7; border-radius: 8px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                            <h4 id="mb-detail-title" style="margin: 0; color: #0369a1;">ストリーム詳細</h4>
-                            <button id="mb-close-detail" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted);">&times;</button>
-                        </div>
-                        <div id="mb-detail-content"></div>
-                    </div>
-
-                    <div class="result-item" style="margin-top: 1rem; background: #dcfce7;">
-                        <div class="label">収支閉合率 / Mass Closure</div>
-                        <div class="value" style="color: #047857;"><span id="mb-closure">-</span> <span class="unit">%</span></div>
-                    </div>
-
-                    <div style="margin-top: 1.5rem;">
-                        <button id="mb-toggle-steps" class="btn" style="background: #6366f1; width: auto; padding: 0.5rem 1rem; font-size: 0.9rem;">
-                            計算過程を表示 / Show Steps ▼
-                        </button>
-                        <div id="mb-steps" class="hidden" style="margin-top: 1rem; background: var(--bg); border-radius: 8px; padding: 1rem;">
-                            <div id="mb-steps-content"></div>
+                    <div class="result-grid">
+                        <div class="result-card" style="grid-column: span 2; background: linear-gradient(135deg, rgba(0, 230, 118, 0.1), rgba(0, 255, 170, 0.05));">
+                            <div class="result-label">Mass Closure</div>
+                            <div class="result-value" style="color: var(--success);"><span id="mb-closure">-</span><span class="result-unit">%</span></div>
                         </div>
                     </div>
+                    <button type="button" class="steps-toggle" id="mb-steps-toggle">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14M5 12h14"/>
+                        </svg>
+                        Show Calculation Steps
+                    </button>
+                    <div id="mb-steps" class="steps-content hidden"></div>
                 </div>
 
                 <!-- Heat Balance Result -->
                 <div id="heat_balance-result" class="result-section">
                     <div class="result-header">
-                        <div class="result-icon success">&#x2713;</div>
-                        <div>
-                            <div class="result-title">熱収支結果 / Heat Balance</div>
-                            <div class="result-subtitle" id="hb-substance">-</div>
+                        <div class="result-badge">✓</div>
+                        <div class="result-title-group">
+                            <div class="result-title">Heat Balance Analysis</div>
+                            <div class="result-subtitle" id="hb-sub">-</div>
                         </div>
                     </div>
-
-                    <div class="heat-diagram" style="display: flex; justify-content: center; margin: 1.5rem 0;">
-                        <svg width="400" height="180" viewBox="0 0 400 180">
-                            <rect x="120" y="40" width="160" height="100" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
-                            <text x="200" y="90" text-anchor="middle" font-size="14" fill="#92400e" font-weight="600">熱交換器</text>
-                            <text x="200" y="108" text-anchor="middle" font-size="10" fill="#b45309">Heat Exchanger</text>
-
-                            <line x1="30" y1="90" x2="120" y2="90" stroke="#2563eb" stroke-width="3" marker-end="url(#arrow-blue)"/>
-                            <text x="20" y="75" font-size="10" fill="#1d4ed8">入口 / Inlet</text>
-                            <text x="20" y="115" font-size="9" fill="#6b7280" id="hb-inlet-temp">T = 300 K</text>
-
-                            <line x1="280" y1="90" x2="370" y2="90" stroke="#dc2626" stroke-width="3" marker-end="url(#arrow-red)"/>
-                            <text x="330" y="75" font-size="10" fill="#991b1b">出口 / Outlet</text>
-                            <text x="330" y="115" font-size="9" fill="#6b7280" id="hb-outlet-temp">T = 400 K</text>
-
-                            <line x1="200" y1="170" x2="200" y2="140" stroke="#f59e0b" stroke-width="3" marker-end="url(#arrow-orange)"/>
-                            <text x="200" y="178" text-anchor="middle" font-size="10" fill="#b45309" id="hb-q-label">Q = 0 kW</text>
-
+                    <div class="diagram-container">
+                        <svg width="420" height="180" viewBox="0 0 420 180">
                             <defs>
-                                <marker id="arrow-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                                    <polygon points="0 0, 10 3.5, 0 7" fill="#2563eb"/>
+                                <marker id="arr-in" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="var(--accent-cyan)"/>
                                 </marker>
-                                <marker id="arrow-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                                    <polygon points="0 0, 10 3.5, 0 7" fill="#dc2626"/>
+                                <marker id="arr-out" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="var(--accent-rose)"/>
                                 </marker>
-                                <marker id="arrow-orange" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                                    <polygon points="0 0, 10 3.5, 0 7" fill="#f59e0b"/>
+                                <marker id="arr-q" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="var(--accent-amber)"/>
                                 </marker>
                             </defs>
+                            <rect x="130" y="40" width="160" height="100" rx="12" fill="rgba(255, 167, 38, 0.1)" stroke="var(--accent-amber)" stroke-width="2"/>
+                            <text x="210" y="85" text-anchor="middle" font-size="14" fill="var(--accent-amber)" font-weight="600">Heat Exchanger</text>
+                            <text x="210" y="105" text-anchor="middle" font-size="10" fill="var(--text-muted)">熱交換器</text>
+                            <line x1="30" y1="90" x2="125" y2="90" stroke="var(--accent-cyan)" stroke-width="3" marker-end="url(#arr-in)"/>
+                            <text x="20" y="75" font-size="10" fill="var(--accent-cyan)">Inlet</text>
+                            <text x="20" y="115" font-size="9" fill="var(--text-muted)" id="hb-t-in">T = 300 K</text>
+                            <line x1="295" y1="90" x2="390" y2="90" stroke="var(--accent-rose)" stroke-width="3" marker-end="url(#arr-out)"/>
+                            <text x="350" y="75" font-size="10" fill="var(--accent-rose)">Outlet</text>
+                            <text x="350" y="115" font-size="9" fill="var(--text-muted)" id="hb-t-out">T = 400 K</text>
+                            <line x1="210" y1="170" x2="210" y2="145" stroke="var(--accent-amber)" stroke-width="3" marker-end="url(#arr-q)"/>
+                            <text x="210" y="178" text-anchor="middle" font-size="10" fill="var(--accent-amber)" id="hb-q-label">Q = 0 kW</text>
                         </svg>
                     </div>
-
                     <div class="result-grid">
-                        <div class="result-item">
-                            <div class="label">顕熱 / Sensible Heat</div>
-                            <div class="value"><span id="hb-sensible">-</span> <span class="unit">kW</span></div>
+                        <div class="result-card">
+                            <div class="result-label">Sensible Heat</div>
+                            <div class="result-value"><span id="hb-sens">-</span><span class="result-unit">kW</span></div>
                         </div>
-                        <div class="result-item">
-                            <div class="label">潜熱 / Latent Heat</div>
-                            <div class="value"><span id="hb-latent">-</span> <span class="unit">kW</span></div>
+                        <div class="result-card amber">
+                            <div class="result-label">Latent Heat</div>
+                            <div class="result-value"><span id="hb-lat">-</span><span class="result-unit">kW</span></div>
                         </div>
-                        <div class="result-item">
-                            <div class="label">合計熱負荷 / Total Duty</div>
-                            <div class="value" style="color: var(--warning);"><span id="hb-total">-</span> <span class="unit">kW</span></div>
+                        <div class="result-card rose">
+                            <div class="result-label">Total Duty</div>
+                            <div class="result-value"><span id="hb-total">-</span><span class="result-unit">kW</span></div>
                         </div>
-                        <div class="result-item">
-                            <div class="label">実熱負荷 / Actual Duty</div>
-                            <div class="value" style="color: var(--danger);"><span id="hb-actual">-</span> <span class="unit">kW</span></div>
+                        <div class="result-card violet">
+                            <div class="result-label">Actual Duty</div>
+                            <div class="result-value"><span id="hb-actual">-</span><span class="result-unit">kW</span></div>
                         </div>
                     </div>
-
-                    <h3 style="font-size: 1rem; margin: 1.5rem 0 0.5rem;">相情報 / Phase Information</h3>
-                    <table class="result-table">
-                        <tr>
-                            <th>項目 / Item</th>
-                            <th>値 / Value</th>
-                        </tr>
-                        <tr>
-                            <td>入口相 / Inlet Phase</td>
-                            <td id="hb-inlet-phase">-</td>
-                        </tr>
-                        <tr>
-                            <td>出口相 / Outlet Phase</td>
-                            <td id="hb-outlet-phase">-</td>
-                        </tr>
-                        <tr>
-                            <td>沸点 / Boiling Point</td>
-                            <td id="hb-boiling">-</td>
-                        </tr>
-                        <tr>
-                            <td>相変化 / Phase Change</td>
-                            <td id="hb-phase-change">-</td>
-                        </tr>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>Phase Information</th><th>Value</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Inlet Phase</td><td id="hb-phase-in">-</td></tr>
+                            <tr><td>Outlet Phase</td><td id="hb-phase-out">-</td></tr>
+                            <tr><td>Boiling Point</td><td id="hb-bp">-</td></tr>
+                            <tr><td>Phase Change</td><td id="hb-pc">-</td></tr>
+                        </tbody>
                     </table>
-
-                    <div id="hb-warnings" class="warnings hidden">
-                        <h4>警告 / Warnings</h4>
-                        <ul id="hb-warnings-list"></ul>
+                    <div id="hb-warnings" class="warning-box hidden">
+                        <div class="warning-title">⚠ Warnings</div>
+                        <ul class="warning-list" id="hb-warn-list"></ul>
                     </div>
-
-                    <div style="margin-top: 1.5rem;">
-                        <button id="hb-toggle-steps" class="btn" style="background: #6366f1; width: auto; padding: 0.5rem 1rem; font-size: 0.9rem;">
-                            計算過程を表示 / Show Steps ▼
-                        </button>
-                        <div id="hb-steps" class="hidden" style="margin-top: 1rem; background: var(--bg); border-radius: 8px; padding: 1rem;">
-                            <div id="hb-steps-content"></div>
-                        </div>
-                    </div>
+                    <button type="button" class="steps-toggle" id="hb-steps-toggle">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14M5 12h14"/>
+                        </svg>
+                        Show Calculation Steps
+                    </button>
+                    <div id="hb-steps" class="steps-content hidden"></div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <!-- Footer -->
     <footer>
-        <div class="container">
-            <p><strong>ChemEng</strong> v0.2.0 - 化学工学計算モジュール</p>
-            <div class="footer-links">
-                <a href="https://github.com/Taguchi-1989/chemEng" target="_blank">GitHub</a>
-                <a href="/docs" target="_blank">API Docs</a>
-                <span>Powered by thermo/chemicals</span>
-            </div>
+        <div class="footer-brand">ChemEng <span style="font-size: 0.75rem; color: var(--text-muted);">v0.2.0</span></div>
+        <div class="footer-links">
+            <a href="https://github.com/Taguchi-1989/chemEng" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub</a>
+            <a href="/docs" target="_blank" rel="noopener" class="footer-link">API Documentation</a>
         </div>
+        <div class="footer-powered">Powered by thermo/chemicals</div>
     </footer>
 
     <script>
         // ==================== Configuration ====================
         const API_BASE = '/api/v1';
 
-        // Common substances for autocomplete
-        const COMMON_SUBSTANCES = [
+        const SUBSTANCES = [
             'water', 'ethanol', 'methanol', 'acetone', 'benzene', 'toluene',
             'hexane', 'heptane', 'octane', 'propane', 'butane', 'pentane',
             'ammonia', 'nitrogen', 'oxygen', 'hydrogen', 'carbon dioxide',
@@ -1318,689 +1802,16 @@
             'dimethyl sulfoxide', 'acetonitrile', 'cyclohexane', 'xylene'
         ];
 
-        // Property names mapping
-        const propertyNames = {
-            'vapor_pressure': { name: '蒸気圧 / Vapor Pressure', unit: 'kPa', factor: 0.001 },
-            'liquid_density': { name: '液密度 / Liquid Density', unit: 'kg/m³', factor: 1 },
-            'liquid_viscosity': { name: '液粘度 / Liquid Viscosity', unit: 'mPa·s', factor: 1000 },
-            'heat_of_vaporization': { name: '蒸発熱 / Heat of Vaporization', unit: 'kJ/mol', factor: 0.001 },
-            'surface_tension': { name: '表面張力 / Surface Tension', unit: 'mN/m', factor: 1000 },
-            'boiling_point': { name: '沸点 / Boiling Point', unit: 'K', factor: 1 }
+        const PROPERTIES = {
+            'vapor_pressure': { name: 'Vapor Pressure', unit: 'kPa', factor: 0.001 },
+            'liquid_density': { name: 'Liquid Density', unit: 'kg/m³', factor: 1 },
+            'liquid_viscosity': { name: 'Liquid Viscosity', unit: 'mPa·s', factor: 1000 },
+            'heat_of_vaporization': { name: 'Heat of Vaporization', unit: 'kJ/mol', factor: 0.001 },
+            'surface_tension': { name: 'Surface Tension', unit: 'mN/m', factor: 1000 },
+            'boiling_point': { name: 'Boiling Point', unit: 'K', factor: 1 }
         };
 
-        // ==================== Toast Notifications ====================
-        function showToast(message, type = 'success', duration = 4000) {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-
-            const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : '⚠';
-            toast.innerHTML = `
-                <span>${icon}</span>
-                <span>${message}</span>
-                <button class="toast-close">&times;</button>
-            `;
-
-            container.appendChild(toast);
-
-            const closeBtn = toast.querySelector('.toast-close');
-            closeBtn.addEventListener('click', () => toast.remove());
-
-            setTimeout(() => toast.remove(), duration);
-        }
-
-        // ==================== API Status Check ====================
-        async function checkApiStatus() {
-            const dot = document.getElementById('status-dot');
-            const text = document.getElementById('status-text');
-
-            try {
-                const res = await fetch('/api');
-                const data = await res.json();
-
-                dot.className = 'status-dot connected';
-                text.textContent = `${data.mode || 'connected'}`;
-
-                if (data.available_engines && data.available_engines.length > 0) {
-                    text.textContent += ` (${data.available_engines.join(', ')})`;
-                }
-            } catch (err) {
-                dot.className = 'status-dot error';
-                text.textContent = 'オフライン / Offline';
-            }
-        }
-
-        // Check API status on load and periodically
-        checkApiStatus();
-        setInterval(checkApiStatus, 30000);
-
-        // ==================== Dark Mode ====================
-        function initTheme() {
-            const saved = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-            if (saved === 'dark' || (!saved && prefersDark)) {
-                document.documentElement.setAttribute('data-theme', 'dark');
-                updateThemeIcon(true);
-            }
-        }
-
-        function updateThemeIcon(isDark) {
-            const icon = document.getElementById('theme-icon');
-            if (isDark) {
-                icon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
-            } else {
-                icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
-            }
-        }
-
-        document.getElementById('theme-toggle').addEventListener('click', () => {
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-
-            if (isDark) {
-                document.documentElement.removeAttribute('data-theme');
-                localStorage.setItem('theme', 'light');
-                updateThemeIcon(false);
-            } else {
-                document.documentElement.setAttribute('data-theme', 'dark');
-                localStorage.setItem('theme', 'dark');
-                updateThemeIcon(true);
-            }
-        });
-
-        initTheme();
-
-        // ==================== Autocomplete ====================
-        function setupAutocomplete() {
-            document.querySelectorAll('.substance-input').forEach((input, index) => {
-                const listId = `substance-autocomplete-${index + 1}`;
-                let list = input.parentElement.querySelector('.autocomplete-list');
-                if (!list) {
-                    list = document.createElement('div');
-                    list.className = 'autocomplete-list hidden';
-                    list.id = listId;
-                    input.parentElement.appendChild(list);
-                }
-
-                input.addEventListener('input', () => {
-                    const value = input.value.toLowerCase();
-                    if (value.length < 1) {
-                        list.classList.add('hidden');
-                        return;
-                    }
-
-                    const matches = COMMON_SUBSTANCES.filter(s =>
-                        s.toLowerCase().includes(value)
-                    ).slice(0, 8);
-
-                    if (matches.length === 0) {
-                        list.classList.add('hidden');
-                        return;
-                    }
-
-                    list.innerHTML = matches.map(s =>
-                        `<div class="autocomplete-item">${s}</div>`
-                    ).join('');
-                    list.classList.remove('hidden');
-
-                    list.querySelectorAll('.autocomplete-item').forEach(item => {
-                        item.addEventListener('click', () => {
-                            input.value = item.textContent;
-                            list.classList.add('hidden');
-                        });
-                    });
-                });
-
-                input.addEventListener('blur', () => {
-                    setTimeout(() => list.classList.add('hidden'), 200);
-                });
-            });
-        }
-
-        setupAutocomplete();
-
-        // ==================== History ====================
-        function getHistory() {
-            const data = localStorage.getItem('chemeng_history');
-            return data ? JSON.parse(data) : [];
-        }
-
-        function saveToHistory(type, params, result) {
-            const history = getHistory();
-            history.unshift({
-                type,
-                params,
-                timestamp: new Date().toISOString(),
-                summary: getSummary(type, params, result)
-            });
-
-            // Keep only last 20 entries
-            if (history.length > 20) history.pop();
-
-            localStorage.setItem('chemeng_history', JSON.stringify(history));
-            updateHistoryUI();
-        }
-
-        function getSummary(type, params, result) {
-            switch (type) {
-                case 'property':
-                    return `${params.substance}: ${params.property}`;
-                case 'distillation':
-                    return `${params.light_component}/${params.heavy_component}`;
-                case 'mass_balance':
-                    return `${params.components?.join('/')}`;
-                case 'heat_balance':
-                    return `${params.substance}: ${params.inlet_temperature}→${params.outlet_temperature}K`;
-                default:
-                    return type;
-            }
-        }
-
-        function updateHistoryUI() {
-            const history = getHistory();
-            document.getElementById('history-count').textContent = history.length;
-
-            const list = document.getElementById('history-list');
-            list.innerHTML = history.map((item, i) => `
-                <div class="history-item" data-index="${i}">
-                    <div class="history-type">${item.type}</div>
-                    <div class="history-params">${item.summary}</div>
-                </div>
-            `).join('');
-
-            list.querySelectorAll('.history-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    const index = parseInt(item.dataset.index);
-                    const entry = history[index];
-                    loadFromHistory(entry);
-                });
-            });
-        }
-
-        function loadFromHistory(entry) {
-            // Switch to correct tab
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelector(`[data-tab="${entry.type}"]`)?.classList.add('active');
-
-            document.querySelectorAll('.calc-form').forEach(form => form.classList.add('hidden'));
-            document.getElementById(`${entry.type}-form`)?.classList.remove('hidden');
-
-            // Fill form
-            const form = document.getElementById(`${entry.type}-form`);
-            if (form && entry.params) {
-                Object.entries(entry.params).forEach(([key, value]) => {
-                    const input = form.querySelector(`[name="${key}"]`);
-                    if (input) {
-                        if (Array.isArray(value)) {
-                            input.value = value.join(', ');
-                        } else {
-                            input.value = value;
-                        }
-                    }
-                });
-            }
-
-            showToast('履歴から読み込みました / Loaded from history', 'success');
-        }
-
-        document.getElementById('history-toggle').addEventListener('click', () => {
-            const list = document.getElementById('history-list');
-            list.classList.toggle('hidden');
-        });
-
-        updateHistoryUI();
-
-        // ==================== Tab Switching ====================
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-
-                const tabName = tab.dataset.tab;
-                document.querySelectorAll('.calc-form').forEach(form => form.classList.add('hidden'));
-                document.getElementById(`${tabName}-form`).classList.remove('hidden');
-            });
-        });
-
-        // ==================== UI Helpers ====================
-        function showLoading() {
-            document.getElementById('empty-state').classList.add('hidden');
-            document.getElementById('loading').classList.remove('hidden');
-            document.querySelectorAll('.result-section').forEach(s => s.classList.remove('active'));
-        }
-
-        function hideLoading() {
-            document.getElementById('loading').classList.add('hidden');
-        }
-
-        function showResult(type) {
-            hideLoading();
-            document.getElementById(`${type}-result`).classList.add('active');
-        }
-
-        function renderSteps(steps) {
-            return steps.map(step => `
-                <div style="margin-bottom: 1rem; padding: 0.75rem; background: var(--card); border-radius: 6px; border-left: 3px solid #6366f1;">
-                    <div style="font-weight: 600; color: #6366f1; margin-bottom: 0.5rem;">
-                        Step ${step.step}: ${step.title}
-                    </div>
-                    ${step.description ? `<div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">${step.description}</div>` : ''}
-                    <div style="font-family: 'Courier New', monospace; font-size: 0.85rem; background: var(--bg); padding: 0.5rem; border-radius: 4px;">
-                        ${step.formulas.map(f => `<div style="margin: 0.25rem 0;">${f}</div>`).join('')}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // ==================== Property Estimation ====================
-        document.getElementById('property-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            showLoading();
-
-            const formData = new FormData(e.target);
-            // Use unit conversion to get base units
-            const tempUnit = currentUnits['prop-temp-input'] || 'K';
-            const pressUnit = currentUnits['prop-press-input'] || 'Pa';
-            const tempValue = parseFloat(formData.get('temperature'));
-            const pressValue = parseFloat(formData.get('pressure'));
-
-            const params = {
-                substance: formData.get('substance'),
-                property: formData.get('property'),
-                temperature: unitConversions.temperature[tempUnit].toBase(tempValue),
-                pressure: unitConversions.pressure[pressUnit].toBase(pressValue)
-            };
-
-            try {
-                const res = await fetch(`${API_BASE}/calculate/property_estimation`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ parameters: params })
-                });
-                const data = await res.json();
-
-                if (data.success) {
-                    const out = data.outputs;
-                    const propInfo = propertyNames[params.property] || { name: params.property, unit: '', factor: 1 };
-                    document.getElementById('property-substance').textContent = out.substance || params.substance;
-                    document.getElementById('property-name').textContent = propInfo.name;
-                    document.getElementById('property-value').textContent = (out.value * propInfo.factor).toFixed(4);
-                    document.getElementById('property-unit').textContent = propInfo.unit;
-                    document.getElementById('property-temp').textContent = params.temperature.toFixed(1);
-                    document.getElementById('property-pressure').textContent = (params.pressure / 1000).toFixed(1);
-
-                    if (out.calculation_steps?.length > 0) {
-                        document.getElementById('prop-steps-content').innerHTML = renderSteps(out.calculation_steps);
-                    }
-
-                    // Store for export
-                    lastPropertyResult = { params, outputs: out };
-
-                    // Set chart temperature range around current temperature
-                    document.getElementById('chart-temp-min').value = Math.max(250, params.temperature - 50);
-                    document.getElementById('chart-temp-max').value = Math.min(500, params.temperature + 50);
-
-                    saveToHistory('property', params, out);
-                    showResult('property');
-                    showToast('計算完了 / Calculation complete', 'success');
-                } else {
-                    showToast('エラー: ' + (data.errors?.join(', ') || 'Unknown error'), 'error');
-                    hideLoading();
-                }
-            } catch (err) {
-                showToast('接続エラー: ' + err.message, 'error');
-                hideLoading();
-            }
-        });
-
-        // ==================== Distillation ====================
-        document.getElementById('distillation-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            showLoading();
-
-            const formData = new FormData(e.target);
-            const params = {
-                light_component: formData.get('light_component'),
-                heavy_component: formData.get('heavy_component'),
-                feed_flow_rate: parseFloat(formData.get('feed_flow_rate')),
-                feed_composition: parseFloat(formData.get('feed_composition')),
-                distillate_purity: parseFloat(formData.get('distillate_purity')),
-                bottoms_purity: parseFloat(formData.get('bottoms_purity')),
-                reflux_ratio_factor: parseFloat(formData.get('reflux_ratio_factor'))
-            };
-
-            try {
-                const res = await fetch(`${API_BASE}/calculate/distillation`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ parameters: params })
-                });
-                const data = await res.json();
-
-                if (data.success) {
-                    const out = data.outputs;
-
-                    document.getElementById('distillation-system').textContent =
-                        `${params.light_component} / ${params.heavy_component}`;
-                    document.getElementById('dist-stages').textContent = out.actual_stages;
-                    document.getElementById('dist-feed-stage').textContent = out.feed_stage;
-                    document.getElementById('dist-reflux').textContent = out.actual_reflux_ratio.toFixed(2);
-                    document.getElementById('dist-diameter').textContent = out.column_diameter.toFixed(2);
-
-                    const formatDuty = (kw) => kw > 1000 ? `${(kw/1000).toFixed(1)} MW` : `${kw.toFixed(0)} kW`;
-                    document.getElementById('dist-qc').textContent = formatDuty(out.condenser_duty);
-                    document.getElementById('dist-qr').textContent = formatDuty(out.reboiler_duty);
-
-                    document.getElementById('feed-flow').textContent = `F = ${params.feed_flow_rate}`;
-                    document.getElementById('distillate-flow').textContent = `D = ${out.distillate_flow_rate.toFixed(1)}`;
-                    document.getElementById('bottoms-flow').textContent = `B = ${out.bottoms_flow_rate.toFixed(1)}`;
-
-                    // Draw trays
-                    const traysGroup = document.getElementById('trays-group');
-                    traysGroup.innerHTML = '';
-                    const numTrays = out.actual_stages - 1;
-                    const traySpacing = 260 / (numTrays + 1);
-                    for (let i = 1; i <= numTrays; i++) {
-                        const y = 60 + i * traySpacing;
-                        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                        line.setAttribute('x1', '110');
-                        line.setAttribute('y1', y);
-                        line.setAttribute('x2', '190');
-                        line.setAttribute('y2', y);
-                        line.setAttribute('stroke', '#94a3b8');
-                        line.setAttribute('stroke-width', '1');
-                        traysGroup.appendChild(line);
-                    }
-
-                    const feedY = 60 + out.feed_stage * traySpacing;
-                    document.getElementById('feed-stage-dot').setAttribute('cy', feedY);
-
-                    if (data.warnings?.length > 0) {
-                        document.getElementById('dist-warnings').classList.remove('hidden');
-                        document.getElementById('dist-warnings-list').innerHTML =
-                            data.warnings.map(w => `<li>${w}</li>`).join('');
-                    } else {
-                        document.getElementById('dist-warnings').classList.add('hidden');
-                    }
-
-                    if (out.calculation_steps?.length > 0) {
-                        document.getElementById('dist-steps-content').innerHTML = renderSteps(out.calculation_steps);
-                    }
-
-                    saveToHistory('distillation', params, out);
-                    showResult('distillation');
-                    showToast('塔設計完了 / Column design complete', 'success');
-                } else {
-                    showToast('エラー: ' + (data.errors?.join(', ') || 'Unknown error'), 'error');
-                    hideLoading();
-                }
-            } catch (err) {
-                showToast('接続エラー: ' + err.message, 'error');
-                hideLoading();
-            }
-        });
-
-        // ==================== Mass Balance ====================
-        document.getElementById('mass_balance-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            showLoading();
-
-            const formData = new FormData(e.target);
-            const components = formData.get('components').split(',').map(c => c.trim());
-            const feedComp = parseFloat(formData.get('feed_composition'));
-            const distComp = parseFloat(formData.get('distillate_composition'));
-            const bottComp = parseFloat(formData.get('bottoms_composition'));
-
-            const params = {
-                components: components,
-                inlet_streams: [{
-                    name: 'Feed',
-                    flow_rate: parseFloat(formData.get('feed_flow_rate')),
-                    composition: {
-                        [components[0]]: feedComp,
-                        [components[1]]: 1 - feedComp
-                    }
-                }],
-                outlet_streams: [
-                    { name: 'Distillate', composition: { [components[0]]: distComp, [components[1]]: 1 - distComp } },
-                    { name: 'Bottoms', composition: { [components[0]]: bottComp, [components[1]]: 1 - bottComp } }
-                ]
-            };
-
-            try {
-                const res = await fetch(`${API_BASE}/calculate/mass_balance`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ parameters: params })
-                });
-                const data = await res.json();
-
-                if (data.success) {
-                    const out = data.outputs;
-
-                    window.mbStreamData = {
-                        inlet: out.inlet_total,
-                        outlets: out.outlet_streams,
-                        closure: out.closure,
-                        components: components
-                    };
-
-                    document.getElementById('mb-components').textContent = components.join(' / ');
-                    document.getElementById('mb-svg-inlet-flow').textContent = `${out.inlet_total.flow_rate.toFixed(1)} mol/s`;
-                    document.getElementById('mb-svg-closure').textContent = `閉合率: ${out.closure.toFixed(1)}%`;
-
-                    if (out.outlet_streams.length >= 1) {
-                        document.getElementById('mb-svg-outlet1-flow').textContent = `${out.outlet_streams[0].flow_rate.toFixed(1)} mol/s`;
-                    }
-                    if (out.outlet_streams.length >= 2) {
-                        document.getElementById('mb-svg-outlet2-flow').textContent = `${out.outlet_streams[1].flow_rate.toFixed(1)} mol/s`;
-                    }
-
-                    document.getElementById('mb-detail-panel').classList.add('hidden');
-                    document.getElementById('mb-closure').textContent = out.closure.toFixed(2);
-
-                    if (out.calculation_steps?.length > 0) {
-                        document.getElementById('mb-steps-content').innerHTML = renderSteps(out.calculation_steps);
-                    }
-
-                    saveToHistory('mass_balance', { components, feed_flow_rate: params.inlet_streams[0].flow_rate }, out);
-                    showResult('mass_balance');
-                    showToast('収支計算完了 / Balance calculation complete', 'success');
-                } else {
-                    showToast('エラー: ' + (data.errors?.join(', ') || 'Unknown error'), 'error');
-                    hideLoading();
-                }
-            } catch (err) {
-                showToast('接続エラー: ' + err.message, 'error');
-                hideLoading();
-            }
-        });
-
-        // ==================== Heat Balance ====================
-        document.getElementById('heat_balance-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            showLoading();
-
-            const formData = new FormData(e.target);
-            const params = {
-                substance: formData.get('substance'),
-                flow_rate: parseFloat(formData.get('flow_rate')),
-                inlet_temperature: parseFloat(formData.get('inlet_temperature')),
-                outlet_temperature: parseFloat(formData.get('outlet_temperature')),
-                pressure: parseFloat(formData.get('pressure')),
-                efficiency: parseFloat(formData.get('efficiency')),
-                phase_change: true
-            };
-
-            try {
-                const res = await fetch(`${API_BASE}/calculate/heat_balance`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ parameters: params })
-                });
-                const data = await res.json();
-
-                if (data.success) {
-                    const out = data.outputs;
-                    const phaseJa = { 'liquid': '液相', 'vapor': '気相', 'unknown': '不明' };
-
-                    document.getElementById('hb-substance').textContent =
-                        `${params.substance} (${params.flow_rate} mol/s)`;
-
-                    document.getElementById('hb-sensible').textContent = out.sensible_heat.toFixed(1);
-                    document.getElementById('hb-latent').textContent = out.latent_heat.toFixed(1);
-                    document.getElementById('hb-total').textContent = out.total_heat_duty.toFixed(1);
-                    document.getElementById('hb-actual').textContent = out.actual_heat_duty.toFixed(1);
-
-                    document.getElementById('hb-inlet-temp').textContent = `T = ${params.inlet_temperature} K`;
-                    document.getElementById('hb-outlet-temp').textContent = `T = ${params.outlet_temperature} K`;
-                    const qLabel = out.total_heat_duty > 1000
-                        ? `Q = ${(out.total_heat_duty/1000).toFixed(1)} MW`
-                        : `Q = ${out.total_heat_duty.toFixed(0)} kW`;
-                    document.getElementById('hb-q-label').textContent = qLabel;
-
-                    const inletPhase = out.phase_info.inlet_phase;
-                    const outletPhase = out.phase_info.outlet_phase;
-                    document.getElementById('hb-inlet-phase').textContent =
-                        `${phaseJa[inletPhase] || inletPhase} / ${inletPhase}`;
-                    document.getElementById('hb-outlet-phase').textContent =
-                        `${phaseJa[outletPhase] || outletPhase} / ${outletPhase}`;
-                    document.getElementById('hb-boiling').textContent =
-                        out.phase_info.boiling_point ? `${out.phase_info.boiling_point.toFixed(1)} K` : '-';
-                    document.getElementById('hb-phase-change').textContent =
-                        out.phase_info.has_phase_change ? 'あり / Yes' : 'なし / No';
-
-                    if (data.warnings?.length > 0) {
-                        document.getElementById('hb-warnings').classList.remove('hidden');
-                        document.getElementById('hb-warnings-list').innerHTML =
-                            data.warnings.map(w => `<li>${w}</li>`).join('');
-                    } else {
-                        document.getElementById('hb-warnings').classList.add('hidden');
-                    }
-
-                    if (out.calculation_steps?.length > 0) {
-                        document.getElementById('hb-steps-content').innerHTML = renderSteps(out.calculation_steps);
-                    }
-
-                    saveToHistory('heat_balance', params, out);
-                    showResult('heat_balance');
-                    showToast('熱負荷計算完了 / Heat duty calculation complete', 'success');
-                } else {
-                    showToast('エラー: ' + (data.errors?.join(', ') || 'Unknown error'), 'error');
-                    hideLoading();
-                }
-            } catch (err) {
-                showToast('接続エラー: ' + err.message, 'error');
-                hideLoading();
-            }
-        });
-
-        // ==================== Toggle Steps ====================
-        ['prop', 'dist', 'mb', 'hb'].forEach(prefix => {
-            document.getElementById(`${prefix}-toggle-steps`).addEventListener('click', () => {
-                const steps = document.getElementById(`${prefix}-steps`);
-                const btn = document.getElementById(`${prefix}-toggle-steps`);
-                if (steps.classList.contains('hidden')) {
-                    steps.classList.remove('hidden');
-                    btn.textContent = '計算過程を隠す / Hide Steps ▲';
-                } else {
-                    steps.classList.add('hidden');
-                    btn.textContent = '計算過程を表示 / Show Steps ▼';
-                }
-            });
-        });
-
-        // ==================== Mass Balance SVG Click Handlers ====================
-        function showMbStreamDetail(streamType) {
-            const data = window.mbStreamData;
-            if (!data) return;
-
-            const panel = document.getElementById('mb-detail-panel');
-            const title = document.getElementById('mb-detail-title');
-            const content = document.getElementById('mb-detail-content');
-
-            let streamData, streamName, color;
-
-            switch (streamType) {
-                case 'inlet':
-                    streamData = data.inlet;
-                    streamName = '入口 Feed';
-                    color = '#10b981';
-                    break;
-                case 'outlet1':
-                    streamData = data.outlets[0];
-                    streamName = '留出液 Distillate';
-                    color = '#2563eb';
-                    break;
-                case 'outlet2':
-                    streamData = data.outlets[1];
-                    streamName = '缶出液 Bottoms';
-                    color = '#dc2626';
-                    break;
-                case 'process':
-                    title.textContent = 'プロセス収支 / Process Balance';
-                    content.innerHTML = `
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                            <div>
-                                <div style="font-weight: 500; color: #10b981;">入口 / Inlet</div>
-                                <div style="font-size: 1.25rem; font-weight: 600;">${data.inlet.flow_rate.toFixed(2)} mol/s</div>
-                            </div>
-                            <div>
-                                <div style="font-weight: 500; color: var(--text-muted);">出口合計 / Outlet Total</div>
-                                <div style="font-size: 1.25rem; font-weight: 600;">${data.outlets.reduce((sum, s) => sum + s.flow_rate, 0).toFixed(2)} mol/s</div>
-                            </div>
-                        </div>
-                        <div style="margin-top: 1rem; padding: 0.75rem; background: #dcfce7; border-radius: 6px;">
-                            <div style="font-weight: 500; color: #047857;">閉合率 / Mass Closure</div>
-                            <div style="font-size: 1.5rem; font-weight: 700; color: #047857;">${data.closure.toFixed(2)}%</div>
-                        </div>
-                    `;
-                    panel.classList.remove('hidden');
-                    return;
-            }
-
-            if (!streamData) return;
-
-            title.textContent = streamName;
-            title.style.color = color;
-
-            let html = `
-                <div style="margin-bottom: 0.75rem;">
-                    <span style="font-weight: 500;">流量 / Flow Rate:</span>
-                    <span style="font-size: 1.25rem; font-weight: 600; margin-left: 0.5rem;">${streamData.flow_rate.toFixed(2)} mol/s</span>
-                </div>
-                <div style="font-weight: 500; margin-bottom: 0.5rem;">組成 / Composition:</div>
-            `;
-
-            for (const [comp, frac] of Object.entries(streamData.composition)) {
-                const flow = streamData.component_flows ? streamData.component_flows[comp] : (streamData.flow_rate * frac);
-                html += `
-                    <div style="margin-bottom: 0.5rem;">
-                        <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
-                            <span>${comp}</span>
-                            <span>${(frac * 100).toFixed(1)}% (${flow.toFixed(2)} mol/s)</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${frac * 100}%; background: ${color};"></div>
-                        </div>
-                    </div>
-                `;
-            }
-
-            content.innerHTML = html;
-            panel.classList.remove('hidden');
-        }
-
-        document.getElementById('mb-inlet-group').addEventListener('click', () => showMbStreamDetail('inlet'));
-        document.getElementById('mb-outlet1-group').addEventListener('click', () => showMbStreamDetail('outlet1'));
-        document.getElementById('mb-outlet2-group').addEventListener('click', () => showMbStreamDetail('outlet2'));
-        document.getElementById('mb-process-box').addEventListener('click', () => showMbStreamDetail('process'));
-        document.getElementById('mb-close-detail').addEventListener('click', () => {
-            document.getElementById('mb-detail-panel').classList.add('hidden');
-        });
-
-        // ==================== Unit Conversion ====================
-        const unitConversions = {
+        const UNITS = {
             temperature: {
                 K: { toBase: v => v, fromBase: v => v },
                 C: { toBase: v => v + 273.15, fromBase: v => v - 273.15 },
@@ -2014,195 +1825,507 @@
             }
         };
 
-        const currentUnits = {
-            'prop-temp-input': 'K',
-            'prop-press-input': 'Pa'
+        const activeUnits = { 'prop-temp': 'K', 'prop-press': 'Pa' };
+        let lastResult = null;
+        let propChart = null;
+
+        // ==================== Toast System ====================
+        function toast(msg, type = 'success', duration = 4000) {
+            const container = document.getElementById('toast-container');
+            const el = document.createElement('div');
+            el.className = `toast ${type}`;
+            const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : '⚠';
+            el.innerHTML = `
+                <span class="toast-icon">${icon}</span>
+                <span class="toast-message">${msg}</span>
+                <button class="toast-close">×</button>
+            `;
+            container.appendChild(el);
+            el.querySelector('.toast-close').onclick = () => el.remove();
+            setTimeout(() => el.remove(), duration);
+        }
+
+        // ==================== API Status ====================
+        async function checkStatus() {
+            const dot = document.getElementById('status-dot');
+            const text = document.getElementById('status-text');
+            try {
+                const res = await fetch('/api');
+                const data = await res.json();
+                dot.className = 'status-dot online';
+                text.textContent = data.mode || 'Online';
+            } catch {
+                dot.className = 'status-dot offline';
+                text.textContent = 'Offline';
+            }
+        }
+        checkStatus();
+        setInterval(checkStatus, 30000);
+
+        // ==================== Theme ====================
+        function initTheme() {
+            const saved = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (saved === 'light' || (!saved && !prefersDark)) {
+                document.documentElement.setAttribute('data-theme', 'light');
+                updateThemeIcon(false);
+            } else {
+                updateThemeIcon(true);
+            }
+        }
+
+        function updateThemeIcon(isDark) {
+            const icon = document.getElementById('theme-icon');
+            icon.innerHTML = isDark
+                ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+                : '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+        }
+
+        document.getElementById('theme-toggle').onclick = () => {
+            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            if (isLight) {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'dark');
+                updateThemeIcon(true);
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+                updateThemeIcon(false);
+            }
         };
+        initTheme();
 
-        document.querySelectorAll('.unit-chip').forEach(chip => {
-            chip.addEventListener('click', () => {
-                const targetId = chip.dataset.target;
-                const newUnit = chip.dataset.unit;
-                const input = document.getElementById(targetId);
-                const currentValue = parseFloat(input.value) || 0;
-                const currentUnit = currentUnits[targetId];
-
-                // Determine conversion type
-                const isTemp = ['K', 'C', 'F'].includes(newUnit);
-                const convType = isTemp ? 'temperature' : 'pressure';
-
-                // Convert: current unit -> base (K or Pa) -> new unit
-                const baseValue = unitConversions[convType][currentUnit].toBase(currentValue);
-                const newValue = unitConversions[convType][newUnit].fromBase(baseValue);
-
-                input.value = newValue.toFixed(isTemp ? 2 : 0);
-                currentUnits[targetId] = newUnit;
-
-                // Update active state
-                chip.parentElement.querySelectorAll('.unit-chip').forEach(c => c.classList.remove('active'));
-                chip.classList.add('active');
-            });
+        // ==================== Tabs ====================
+        document.querySelectorAll('.calc-tab').forEach(tab => {
+            tab.onclick = () => {
+                document.querySelectorAll('.calc-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const name = tab.dataset.tab;
+                document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
+                document.getElementById(`${name}-form`).classList.add('active');
+            };
         });
 
-        // Ensure we always submit in base units (K, Pa)
-        function getBaseTemperature(inputId) {
-            const input = document.getElementById(inputId);
-            const value = parseFloat(input.value) || 0;
-            const unit = currentUnits[inputId];
-            return unitConversions.temperature[unit].toBase(value);
+        // ==================== Autocomplete ====================
+        document.querySelectorAll('.substance-input').forEach((input, i) => {
+            const dropdown = document.getElementById(`autocomplete-${i + 1}`) || input.parentElement.querySelector('.autocomplete-dropdown');
+            if (!dropdown) return;
+
+            input.oninput = () => {
+                const val = input.value.toLowerCase();
+                if (val.length < 1) { dropdown.classList.add('hidden'); return; }
+                const matches = SUBSTANCES.filter(s => s.includes(val)).slice(0, 8);
+                if (!matches.length) { dropdown.classList.add('hidden'); return; }
+                dropdown.innerHTML = matches.map(s => `<div class="autocomplete-item">${s}</div>`).join('');
+                dropdown.classList.remove('hidden');
+                dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+                    item.onclick = () => { input.value = item.textContent; dropdown.classList.add('hidden'); };
+                });
+            };
+            input.onblur = () => setTimeout(() => dropdown.classList.add('hidden'), 150);
+        });
+
+        // ==================== Unit Conversion ====================
+        document.querySelectorAll('.unit-chip').forEach(chip => {
+            chip.onclick = () => {
+                const target = chip.dataset.target;
+                const newUnit = chip.dataset.unit;
+                const input = document.getElementById(target);
+                const currentVal = parseFloat(input.value) || 0;
+                const currentUnit = activeUnits[target];
+                const isTemp = ['K', 'C', 'F'].includes(newUnit);
+                const type = isTemp ? 'temperature' : 'pressure';
+                const base = UNITS[type][currentUnit].toBase(currentVal);
+                const newVal = UNITS[type][newUnit].fromBase(base);
+                input.value = newVal.toFixed(isTemp ? 2 : 0);
+                activeUnits[target] = newUnit;
+                chip.parentElement.querySelectorAll('.unit-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+            };
+        });
+
+        // ==================== History ====================
+        function getHistory() {
+            return JSON.parse(localStorage.getItem('chemeng_history') || '[]');
         }
 
-        function getBasePressure(inputId) {
-            const input = document.getElementById(inputId);
-            const value = parseFloat(input.value) || 0;
-            const unit = currentUnits[inputId];
-            return unitConversions.pressure[unit].toBase(value);
+        function saveHistory(type, params, result) {
+            const h = getHistory();
+            const summary = type === 'property' ? `${params.substance}: ${params.property}`
+                : type === 'distillation' ? `${params.light_component}/${params.heavy_component}`
+                : type === 'mass_balance' ? params.components?.join('/')
+                : `${params.substance}: ${params.inlet_temperature}→${params.outlet_temperature}K`;
+            h.unshift({ type, params, summary, timestamp: new Date().toISOString() });
+            if (h.length > 20) h.pop();
+            localStorage.setItem('chemeng_history', JSON.stringify(h));
+            updateHistoryUI();
         }
 
-        // ==================== Keyboard Shortcuts ====================
-        document.addEventListener('keydown', (e) => {
+        function updateHistoryUI() {
+            const h = getHistory();
+            document.getElementById('history-count').textContent = h.length;
+            const list = document.getElementById('history-list');
+            list.innerHTML = h.map((item, i) => `
+                <div class="history-item" data-idx="${i}">
+                    <div class="history-type">${item.type}</div>
+                    <div class="history-summary">${item.summary}</div>
+                </div>
+            `).join('');
+            list.querySelectorAll('.history-item').forEach(el => {
+                el.onclick = () => {
+                    const entry = h[parseInt(el.dataset.idx)];
+                    document.querySelectorAll('.calc-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelector(`[data-tab="${entry.type}"]`)?.classList.add('active');
+                    document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
+                    const form = document.getElementById(`${entry.type}-form`);
+                    form?.classList.add('active');
+                    if (form && entry.params) {
+                        Object.entries(entry.params).forEach(([k, v]) => {
+                            const inp = form.querySelector(`[name="${k}"]`);
+                            if (inp) inp.value = Array.isArray(v) ? v.join(', ') : v;
+                        });
+                    }
+                    toast('Loaded from history');
+                };
+            });
+        }
+
+        document.getElementById('history-toggle').onclick = () => {
+            document.getElementById('history-list').classList.toggle('hidden');
+        };
+        updateHistoryUI();
+
+        // ==================== UI Helpers ====================
+        function showLoading() {
+            document.getElementById('empty-state').classList.add('hidden');
+            document.getElementById('loading-state').classList.add('active');
+            document.querySelectorAll('.result-section').forEach(s => s.classList.remove('active'));
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-state').classList.remove('active');
+        }
+
+        function showResult(type) {
+            hideLoading();
+            document.getElementById(`${type}-result`).classList.add('active');
+        }
+
+        function renderSteps(steps) {
+            return steps.map(s => `
+                <div class="step-item">
+                    <div class="step-title">Step ${s.step}: ${s.title}</div>
+                    ${s.description ? `<div class="step-desc">${s.description}</div>` : ''}
+                    <div class="step-formula">${s.formulas.join('<br>')}</div>
+                </div>
+            `).join('');
+        }
+
+        // ==================== Keyboard Shortcut ====================
+        document.addEventListener('keydown', e => {
             if (e.ctrlKey && e.key === 'Enter') {
                 e.preventDefault();
-                // Find the active form and submit it
-                const activeTab = document.querySelector('.tab.active');
-                if (activeTab) {
-                    const formId = `${activeTab.dataset.tab}-form`;
-                    const form = document.getElementById(formId);
-                    if (form && !form.classList.contains('hidden')) {
-                        form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-                    }
+                const active = document.querySelector('.calc-tab.active');
+                if (active) {
+                    const form = document.getElementById(`${active.dataset.tab}-form`);
+                    if (form) form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
                 }
             }
         });
 
-        // ==================== Export Functions ====================
-        let lastPropertyResult = null;
-
-        function downloadFile(content, filename, type) {
+        // ==================== Export ====================
+        function download(content, filename, type) {
             const blob = new Blob([content], { type });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            a.click();
+            a.href = url; a.download = filename; a.click();
             URL.revokeObjectURL(url);
-            showToast(`${filename} をダウンロードしました`, 'success');
+            toast(`Downloaded ${filename}`);
         }
 
-        document.getElementById('prop-export-json').addEventListener('click', () => {
-            if (!lastPropertyResult) {
-                showToast('エクスポートするデータがありません', 'warning');
-                return;
-            }
-            const json = JSON.stringify(lastPropertyResult, null, 2);
-            downloadFile(json, `chemeng_property_${Date.now()}.json`, 'application/json');
-        });
+        document.getElementById('export-json').onclick = () => {
+            if (!lastResult) return toast('No data to export', 'warning');
+            download(JSON.stringify(lastResult, null, 2), `chemeng_${Date.now()}.json`, 'application/json');
+        };
 
-        document.getElementById('prop-export-csv').addEventListener('click', () => {
-            if (!lastPropertyResult) {
-                showToast('エクスポートするデータがありません', 'warning');
-                return;
-            }
-            const { params, outputs } = lastPropertyResult;
-            const propInfo = propertyNames[params.property] || { name: params.property, unit: '', factor: 1 };
-            const csv = [
-                'Substance,Property,Value,Unit,Temperature (K),Pressure (Pa)',
-                `${params.substance},${propInfo.name},${(outputs.value * propInfo.factor).toFixed(4)},${propInfo.unit},${params.temperature},${params.pressure}`
-            ].join('\n');
-            downloadFile(csv, `chemeng_property_${Date.now()}.csv`, 'text/csv');
-        });
+        document.getElementById('export-csv').onclick = () => {
+            if (!lastResult) return toast('No data to export', 'warning');
+            const { params, outputs } = lastResult;
+            const p = PROPERTIES[params.property] || { name: params.property, unit: '', factor: 1 };
+            const csv = `Substance,Property,Value,Unit,Temperature (K),Pressure (Pa)\n${params.substance},${p.name},${(outputs.value * p.factor).toFixed(4)},${p.unit},${params.temperature},${params.pressure}`;
+            download(csv, `chemeng_${Date.now()}.csv`, 'text/csv');
+        };
 
-        // ==================== Temperature Chart ====================
-        let propertyChart = null;
+        // ==================== Chart ====================
+        document.getElementById('gen-chart').onclick = async () => {
+            if (!lastResult) return toast('Run calculation first', 'warning');
+            const tMin = parseFloat(document.getElementById('chart-tmin').value) || 280;
+            const tMax = parseFloat(document.getElementById('chart-tmax').value) || 400;
+            const { params } = lastResult;
+            toast('Generating chart data...');
 
-        document.getElementById('generate-chart').addEventListener('click', async () => {
-            if (!lastPropertyResult) {
-                showToast('先に計算を実行してください', 'warning');
-                return;
-            }
-
-            const tMin = parseFloat(document.getElementById('chart-temp-min').value) || 280;
-            const tMax = parseFloat(document.getElementById('chart-temp-max').value) || 400;
-            const { params } = lastPropertyResult;
-
-            showToast('グラフデータを計算中...', 'success');
-
-            const temperatures = [];
-            const values = [];
+            const temps = [], vals = [];
             const step = (tMax - tMin) / 20;
-
             for (let t = tMin; t <= tMax; t += step) {
-                temperatures.push(t);
+                temps.push(t);
                 try {
                     const res = await fetch(`${API_BASE}/calculate/property_estimation`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            parameters: {
-                                substance: params.substance,
-                                property: params.property,
-                                temperature: t,
-                                pressure: params.pressure
-                            }
-                        })
+                        body: JSON.stringify({ parameters: { substance: params.substance, property: params.property, temperature: t, pressure: params.pressure }})
                     });
                     const data = await res.json();
-                    if (data.success) {
-                        const propInfo = propertyNames[params.property] || { factor: 1 };
-                        values.push(data.outputs.value * propInfo.factor);
-                    } else {
-                        values.push(null);
-                    }
-                } catch {
-                    values.push(null);
-                }
+                    const p = PROPERTIES[params.property] || { factor: 1 };
+                    vals.push(data.success ? data.outputs.value * p.factor : null);
+                } catch { vals.push(null); }
             }
 
-            const ctx = document.getElementById('property-chart').getContext('2d');
-            const propInfo = propertyNames[params.property] || { name: params.property, unit: '' };
+            const ctx = document.getElementById('prop-chart').getContext('2d');
+            const p = PROPERTIES[params.property] || { name: params.property, unit: '' };
+            if (propChart) propChart.destroy();
 
-            if (propertyChart) {
-                propertyChart.destroy();
-            }
+            const isDark = !document.documentElement.hasAttribute('data-theme') || document.documentElement.getAttribute('data-theme') === 'dark';
+            const gridColor = isDark ? 'rgba(80, 160, 180, 0.15)' : 'rgba(60, 120, 160, 0.1)';
+            const textColor = isDark ? '#7a9aa8' : '#5a7a8a';
 
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-
-            propertyChart = new Chart(ctx, {
+            propChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: temperatures.map(t => t.toFixed(0)),
-                    datasets: [{
-                        label: `${propInfo.name} (${propInfo.unit})`,
-                        data: values,
-                        borderColor: '#2563eb',
-                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                        tension: 0.3,
-                        fill: true
-                    }]
+                    labels: temps.map(t => t.toFixed(0)),
+                    datasets: [{ label: `${p.name} (${p.unit})`, data: vals, borderColor: '#00d4ff', backgroundColor: 'rgba(0, 212, 255, 0.1)', tension: 0.4, fill: true, borderWidth: 2, pointRadius: 0 }]
                 },
                 options: {
                     responsive: true,
-                    plugins: {
-                        legend: {
-                            labels: { color: isDark ? '#f1f5f9' : '#1e293b' }
-                        }
-                    },
+                    interaction: { intersect: false, mode: 'index' },
+                    plugins: { legend: { labels: { color: textColor, font: { family: 'DM Mono' }}}},
                     scales: {
-                        x: {
-                            title: { display: true, text: 'Temperature (K)', color: isDark ? '#94a3b8' : '#64748b' },
-                            ticks: { color: isDark ? '#94a3b8' : '#64748b' },
-                            grid: { color: isDark ? '#334155' : '#e2e8f0' }
-                        },
-                        y: {
-                            title: { display: true, text: propInfo.unit, color: isDark ? '#94a3b8' : '#64748b' },
-                            ticks: { color: isDark ? '#94a3b8' : '#64748b' },
-                            grid: { color: isDark ? '#334155' : '#e2e8f0' }
-                        }
+                        x: { title: { display: true, text: 'Temperature (K)', color: textColor }, ticks: { color: textColor }, grid: { color: gridColor }},
+                        y: { title: { display: true, text: p.unit, color: textColor }, ticks: { color: textColor }, grid: { color: gridColor }}
                     }
                 }
             });
+            toast('Chart generated');
+        };
 
-            showToast('グラフを生成しました', 'success');
+        // ==================== Property Form ====================
+        document.getElementById('property-form').onsubmit = async e => {
+            e.preventDefault();
+            showLoading();
+            const fd = new FormData(e.target);
+            const tempU = activeUnits['prop-temp'] || 'K';
+            const pressU = activeUnits['prop-press'] || 'Pa';
+            const params = {
+                substance: fd.get('substance'),
+                property: fd.get('property'),
+                temperature: UNITS.temperature[tempU].toBase(parseFloat(fd.get('temperature'))),
+                pressure: UNITS.pressure[pressU].toBase(parseFloat(fd.get('pressure')))
+            };
+            try {
+                const res = await fetch(`${API_BASE}/calculate/property_estimation`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ parameters: params })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const out = data.outputs;
+                    const p = PROPERTIES[params.property] || { name: params.property, unit: '', factor: 1 };
+                    document.getElementById('prop-substance').textContent = out.substance || params.substance;
+                    document.getElementById('prop-name').textContent = p.name;
+                    document.getElementById('prop-value').textContent = (out.value * p.factor).toFixed(4);
+                    document.getElementById('prop-unit').textContent = p.unit;
+                    document.getElementById('prop-temp-result').textContent = params.temperature.toFixed(1);
+                    document.getElementById('prop-press-result').textContent = (params.pressure / 1000).toFixed(1);
+                    if (out.calculation_steps?.length) document.getElementById('prop-steps').innerHTML = renderSteps(out.calculation_steps);
+                    lastResult = { params, outputs: out };
+                    document.getElementById('chart-tmin').value = Math.max(250, params.temperature - 50);
+                    document.getElementById('chart-tmax').value = Math.min(500, params.temperature + 50);
+                    saveHistory('property', params, out);
+                    showResult('property');
+                    toast('Calculation complete');
+                } else {
+                    toast('Error: ' + (data.errors?.join(', ') || 'Unknown'), 'error');
+                    hideLoading();
+                }
+            } catch (err) {
+                toast('Connection error: ' + err.message, 'error');
+                hideLoading();
+            }
+        };
+
+        // ==================== Distillation Form ====================
+        document.getElementById('distillation-form').onsubmit = async e => {
+            e.preventDefault();
+            showLoading();
+            const fd = new FormData(e.target);
+            const params = {
+                light_component: fd.get('light_component'),
+                heavy_component: fd.get('heavy_component'),
+                feed_flow_rate: parseFloat(fd.get('feed_flow_rate')),
+                feed_composition: parseFloat(fd.get('feed_composition')),
+                distillate_purity: parseFloat(fd.get('distillate_purity')),
+                bottoms_purity: parseFloat(fd.get('bottoms_purity')),
+                reflux_ratio_factor: parseFloat(fd.get('reflux_ratio_factor'))
+            };
+            try {
+                const res = await fetch(`${API_BASE}/calculate/distillation`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ parameters: params })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const out = data.outputs;
+                    document.getElementById('dist-system').textContent = `${params.light_component} / ${params.heavy_component}`;
+                    document.getElementById('dist-stages').textContent = out.actual_stages;
+                    document.getElementById('dist-feed-stage').textContent = out.feed_stage;
+                    document.getElementById('dist-reflux').textContent = out.actual_reflux_ratio.toFixed(2);
+                    document.getElementById('dist-diam').textContent = out.column_diameter.toFixed(2);
+                    const fmt = kw => kw > 1000 ? `${(kw/1000).toFixed(1)} MW` : `${kw.toFixed(0)} kW`;
+                    document.getElementById('dist-qc').textContent = fmt(out.condenser_duty);
+                    document.getElementById('dist-qr').textContent = fmt(out.reboiler_duty);
+                    document.getElementById('dist-feed-label').textContent = `F = ${params.feed_flow_rate}`;
+                    document.getElementById('dist-d-label').textContent = `D = ${out.distillate_flow_rate.toFixed(1)}`;
+                    document.getElementById('dist-b-label').textContent = `B = ${out.bottoms_flow_rate.toFixed(1)}`;
+                    const trays = document.getElementById('dist-trays');
+                    trays.innerHTML = '';
+                    const num = out.actual_stages - 1;
+                    const spacing = 260 / (num + 1);
+                    for (let i = 1; i <= num; i++) {
+                        const y = 70 + i * spacing;
+                        trays.innerHTML += `<line x1="120" y1="${y}" x2="200" y2="${y}" stroke="var(--glass-border)" stroke-width="1"/>`;
+                    }
+                    document.getElementById('dist-feed-dot').setAttribute('cy', 70 + out.feed_stage * spacing);
+                    const warn = document.getElementById('dist-warnings');
+                    if (data.warnings?.length) {
+                        warn.classList.remove('hidden');
+                        document.getElementById('dist-warn-list').innerHTML = data.warnings.map(w => `<li>${w}</li>`).join('');
+                    } else warn.classList.add('hidden');
+                    if (out.calculation_steps?.length) document.getElementById('dist-steps').innerHTML = renderSteps(out.calculation_steps);
+                    saveHistory('distillation', params, out);
+                    showResult('distillation');
+                    toast('Column design complete');
+                } else {
+                    toast('Error: ' + (data.errors?.join(', ') || 'Unknown'), 'error');
+                    hideLoading();
+                }
+            } catch (err) {
+                toast('Connection error: ' + err.message, 'error');
+                hideLoading();
+            }
+        };
+
+        // ==================== Mass Balance Form ====================
+        document.getElementById('mass_balance-form').onsubmit = async e => {
+            e.preventDefault();
+            showLoading();
+            const fd = new FormData(e.target);
+            const comps = fd.get('components').split(',').map(c => c.trim());
+            const feedComp = parseFloat(fd.get('feed_composition'));
+            const distComp = parseFloat(fd.get('distillate_composition'));
+            const bottComp = parseFloat(fd.get('bottoms_composition'));
+            const params = {
+                components: comps,
+                inlet_streams: [{ name: 'Feed', flow_rate: parseFloat(fd.get('feed_flow_rate')), composition: { [comps[0]]: feedComp, [comps[1]]: 1 - feedComp }}],
+                outlet_streams: [
+                    { name: 'Distillate', composition: { [comps[0]]: distComp, [comps[1]]: 1 - distComp }},
+                    { name: 'Bottoms', composition: { [comps[0]]: bottComp, [comps[1]]: 1 - bottComp }}
+                ]
+            };
+            try {
+                const res = await fetch(`${API_BASE}/calculate/mass_balance`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ parameters: params })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const out = data.outputs;
+                    document.getElementById('mb-comps').textContent = comps.join(' / ');
+                    document.getElementById('mb-in-label').textContent = `${out.inlet_total.flow_rate.toFixed(1)} mol/s`;
+                    document.getElementById('mb-closure-svg').textContent = `Closure: ${out.closure.toFixed(1)}%`;
+                    if (out.outlet_streams[0]) document.getElementById('mb-out1-label').textContent = `${out.outlet_streams[0].flow_rate.toFixed(1)} mol/s`;
+                    if (out.outlet_streams[1]) document.getElementById('mb-out2-label').textContent = `${out.outlet_streams[1].flow_rate.toFixed(1)} mol/s`;
+                    document.getElementById('mb-closure').textContent = out.closure.toFixed(2);
+                    if (out.calculation_steps?.length) document.getElementById('mb-steps').innerHTML = renderSteps(out.calculation_steps);
+                    saveHistory('mass_balance', { components: comps, feed_flow_rate: params.inlet_streams[0].flow_rate }, out);
+                    showResult('mass_balance');
+                    toast('Balance calculation complete');
+                } else {
+                    toast('Error: ' + (data.errors?.join(', ') || 'Unknown'), 'error');
+                    hideLoading();
+                }
+            } catch (err) {
+                toast('Connection error: ' + err.message, 'error');
+                hideLoading();
+            }
+        };
+
+        // ==================== Heat Balance Form ====================
+        document.getElementById('heat_balance-form').onsubmit = async e => {
+            e.preventDefault();
+            showLoading();
+            const fd = new FormData(e.target);
+            const params = {
+                substance: fd.get('substance'),
+                flow_rate: parseFloat(fd.get('flow_rate')),
+                inlet_temperature: parseFloat(fd.get('inlet_temperature')),
+                outlet_temperature: parseFloat(fd.get('outlet_temperature')),
+                pressure: parseFloat(fd.get('pressure')),
+                efficiency: parseFloat(fd.get('efficiency')),
+                phase_change: true
+            };
+            try {
+                const res = await fetch(`${API_BASE}/calculate/heat_balance`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ parameters: params })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const out = data.outputs;
+                    const phaseJa = { liquid: '液相', vapor: '気相', unknown: '不明' };
+                    document.getElementById('hb-sub').textContent = `${params.substance} (${params.flow_rate} mol/s)`;
+                    document.getElementById('hb-sens').textContent = out.sensible_heat.toFixed(1);
+                    document.getElementById('hb-lat').textContent = out.latent_heat.toFixed(1);
+                    document.getElementById('hb-total').textContent = out.total_heat_duty.toFixed(1);
+                    document.getElementById('hb-actual').textContent = out.actual_heat_duty.toFixed(1);
+                    document.getElementById('hb-t-in').textContent = `T = ${params.inlet_temperature} K`;
+                    document.getElementById('hb-t-out').textContent = `T = ${params.outlet_temperature} K`;
+                    document.getElementById('hb-q-label').textContent = out.total_heat_duty > 1000 ? `Q = ${(out.total_heat_duty/1000).toFixed(1)} MW` : `Q = ${out.total_heat_duty.toFixed(0)} kW`;
+                    document.getElementById('hb-phase-in').textContent = `${phaseJa[out.phase_info.inlet_phase] || out.phase_info.inlet_phase} / ${out.phase_info.inlet_phase}`;
+                    document.getElementById('hb-phase-out').textContent = `${phaseJa[out.phase_info.outlet_phase] || out.phase_info.outlet_phase} / ${out.phase_info.outlet_phase}`;
+                    document.getElementById('hb-bp').textContent = out.phase_info.boiling_point ? `${out.phase_info.boiling_point.toFixed(1)} K` : '-';
+                    document.getElementById('hb-pc').textContent = out.phase_info.has_phase_change ? 'Yes' : 'No';
+                    const warn = document.getElementById('hb-warnings');
+                    if (data.warnings?.length) {
+                        warn.classList.remove('hidden');
+                        document.getElementById('hb-warn-list').innerHTML = data.warnings.map(w => `<li>${w}</li>`).join('');
+                    } else warn.classList.add('hidden');
+                    if (out.calculation_steps?.length) document.getElementById('hb-steps').innerHTML = renderSteps(out.calculation_steps);
+                    saveHistory('heat_balance', params, out);
+                    showResult('heat_balance');
+                    toast('Heat duty calculation complete');
+                } else {
+                    toast('Error: ' + (data.errors?.join(', ') || 'Unknown'), 'error');
+                    hideLoading();
+                }
+            } catch (err) {
+                toast('Connection error: ' + err.message, 'error');
+                hideLoading();
+            }
+        };
+
+        // ==================== Steps Toggles ====================
+        ['prop', 'dist', 'mb', 'hb'].forEach(prefix => {
+            const btn = document.getElementById(`${prefix}-steps-toggle`);
+            if (btn) {
+                btn.onclick = () => {
+                    const steps = document.getElementById(`${prefix}-steps`);
+                    const hidden = steps.classList.toggle('hidden');
+                    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="${hidden ? 'M12 5v14M5 12h14' : 'M5 12h14'}"/></svg> ${hidden ? 'Show' : 'Hide'} Calculation Steps`;
+                };
+            }
         });
     </script>
 </body>
