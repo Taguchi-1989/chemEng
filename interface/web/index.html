@@ -945,6 +945,341 @@
             border-radius: 4px;
         }
 
+        /* Dashboard Styles */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .dashboard-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--accent-violet);
+        }
+
+        .dashboard-clear-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.8rem;
+            background: transparent;
+            border: 1px solid var(--danger);
+            border-radius: 6px;
+            font-family: var(--mono);
+            font-size: 0.7rem;
+            color: var(--danger);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .dashboard-clear-btn:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .dashboard-filter {
+            margin-bottom: 1rem;
+        }
+
+        .dashboard-case-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        .dashboard-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .dashboard-empty p {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .dashboard-empty-hint {
+            font-size: 0.75rem !important;
+            opacity: 0.7;
+        }
+
+        .dashboard-case-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .dashboard-case-item:hover {
+            border-color: var(--accent-violet);
+        }
+
+        .dashboard-case-item.selected {
+            border-color: var(--accent-violet);
+            background: rgba(167, 139, 250, 0.1);
+        }
+
+        .case-checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent-violet);
+        }
+
+        .case-info {
+            flex: 1;
+        }
+
+        .case-name {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-bright);
+        }
+
+        .case-meta {
+            display: flex;
+            gap: 0.5rem;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .case-type-badge {
+            padding: 0.15rem 0.4rem;
+            background: var(--accent-cyan);
+            color: var(--bg-deep);
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 500;
+        }
+
+        .case-value {
+            font-family: var(--mono);
+            font-size: 0.85rem;
+            color: var(--accent-teal);
+        }
+
+        .case-delete {
+            padding: 0.3rem;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .case-delete:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .dashboard-actions {
+            margin-top: 1rem;
+        }
+
+        /* Dashboard Result Panel */
+        .dashboard-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .dashboard-summary-card {
+            padding: 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .summary-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+        }
+
+        .summary-value {
+            font-family: var(--mono);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent-violet);
+        }
+
+        .dashboard-chart-container {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .chart-title {
+            font-size: 0.85rem;
+            color: var(--text-bright);
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .chart-type-btn {
+            padding: 0.4rem 0.6rem;
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            border-radius: 6px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chart-type-btn:hover {
+            border-color: var(--accent-violet);
+            color: var(--accent-violet);
+        }
+
+        .chart-type-btn.active {
+            background: var(--accent-violet);
+            border-color: var(--accent-violet);
+            color: white;
+        }
+
+        .dashboard-table-container {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .table-header {
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .table-title {
+            font-size: 0.85rem;
+            color: var(--text-bright);
+        }
+
+        .table-scroll {
+            overflow-x: auto;
+        }
+
+        .dashboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .dashboard-table th,
+        .dashboard-table td {
+            padding: 0.6rem 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .dashboard-table th {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 500;
+            background: var(--bg-panel);
+        }
+
+        .dashboard-table td {
+            color: var(--text-dim);
+        }
+
+        .dashboard-table tbody tr:hover {
+            background: rgba(167, 139, 250, 0.05);
+        }
+
+        .dashboard-export {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .export-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.6rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            font-family: var(--mono);
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .export-btn:hover {
+            border-color: var(--accent-violet);
+            color: var(--accent-violet);
+        }
+
+        .save-dashboard-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 0.8rem;
+            background: var(--accent-violet);
+            border: none;
+            border-radius: 6px;
+            font-family: var(--mono);
+            font-size: 0.75rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .save-dashboard-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(167, 139, 250, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-summary {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .dashboard-export {
+                flex-direction: column;
+            }
+        }
+
         /* SVG Diagrams */
         .diagram-container {
             display: flex;
@@ -1917,6 +2252,27 @@
                         <div class="calc-tab-label">ガス吸収</div>
                         <div class="calc-tab-sublabel">Gas Absorption</div>
                     </div>
+                    <div class="calc-tab" data-tab="lcoh">
+                        <svg class="calc-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M12 2v4M12 18v4"/>
+                            <path d="M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83"/>
+                            <path d="M2 12h4M18 12h4"/>
+                            <path d="M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                        </svg>
+                        <div class="calc-tab-label">水素原価</div>
+                        <div class="calc-tab-sublabel">LCOH</div>
+                    </div>
+                    <div class="calc-tab" data-tab="dashboard" style="background: linear-gradient(135deg, rgba(167, 139, 250, 0.1), rgba(255, 107, 157, 0.1)); border-color: var(--accent-violet);">
+                        <svg class="calc-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--accent-violet);">
+                            <rect x="3" y="3" width="7" height="7" rx="1"/>
+                            <rect x="14" y="3" width="7" height="7" rx="1"/>
+                            <rect x="3" y="14" width="7" height="7" rx="1"/>
+                            <rect x="14" y="14" width="7" height="7" rx="1"/>
+                        </svg>
+                        <div class="calc-tab-label" style="color: var(--accent-violet);">ダッシュボード</div>
+                        <div class="calc-tab-sublabel">Dashboard</div>
+                    </div>
                 </div>
 
                 <!-- Property Form -->
@@ -2181,6 +2537,111 @@
                     <button type="submit" class="submit-btn">Calculate Absorption</button>
                 </form>
 
+                <!-- LCOH Form -->
+                <form id="lcoh-form" class="form-section">
+                    <div class="form-group">
+                        <label class="form-label">Production Method / 製造方法</label>
+                        <select name="production_method" class="form-input" id="lcoh-method">
+                            <option value="pem_electrolysis">PEM電解 / PEM Electrolysis</option>
+                            <option value="alkaline_electrolysis">アルカリ電解 / Alkaline Electrolysis</option>
+                            <option value="soec_electrolysis">SOEC電解 / SOEC Electrolysis</option>
+                            <option value="smr">SMR (グレー水素) / SMR (Gray H2)</option>
+                            <option value="smr_ccs">SMR+CCS (ブルー水素) / SMR+CCS (Blue H2)</option>
+                            <option value="atr_ccs">ATR+CCS (ブルー水素) / ATR+CCS (Blue H2)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Capacity / 設備容量 (MW)</label>
+                        <input type="number" name="capacity" class="form-input" value="10" step="0.1" min="0.1" max="1000" required>
+                    </div>
+                    <div class="form-group" id="lcoh-capex-group">
+                        <label class="form-label">CAPEX / 設備投資単価 (EUR/kW)</label>
+                        <input type="number" name="capex_per_kw" class="form-input" placeholder="Default based on method" step="10" min="100" max="5000">
+                    </div>
+                    <div class="form-group" id="lcoh-elec-group">
+                        <label class="form-label">Electricity Price / 電力単価 (EUR/MWh)</label>
+                        <input type="number" name="electricity_price" class="form-input" value="50" step="1" min="0" max="500">
+                    </div>
+                    <div class="form-group hidden" id="lcoh-gas-group">
+                        <label class="form-label">Natural Gas Price / 天然ガス価格 (EUR/MWh)</label>
+                        <input type="number" name="natural_gas_price" class="form-input" value="30" step="1" min="0" max="200">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Operating Hours / 年間稼働時間 (h/year)</label>
+                        <input type="number" name="operating_hours" class="form-input" value="4000" step="100" min="1000" max="8760">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">OPEX / 年間運転費 (% of CAPEX)</label>
+                        <input type="number" name="opex_percent" class="form-input" value="3" step="0.1" min="0.5" max="10">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Discount Rate / 割引率 (%)</label>
+                        <input type="number" name="discount_rate" class="form-input" value="6" step="0.5" min="2" max="15">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Project Lifetime / プロジェクト寿命 (years)</label>
+                        <input type="number" name="project_lifetime" class="form-input" value="20" step="1" min="10" max="40">
+                    </div>
+                    <div class="form-group" id="lcoh-carbon-group">
+                        <label class="form-label">Carbon Price / 炭素価格 (EUR/ton CO₂)</label>
+                        <input type="number" name="carbon_price" class="form-input" value="0" step="10" min="0" max="500">
+                    </div>
+                    <button type="submit" class="submit-btn">Calculate LCOH</button>
+                </form>
+
+                <!-- Dashboard Form -->
+                <div id="dashboard-form" class="form-section">
+                    <div class="dashboard-header">
+                        <div class="dashboard-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-violet)" stroke-width="2">
+                                <path d="M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z"/>
+                            </svg>
+                            Saved Cases / 保存済みケース
+                        </div>
+                        <button type="button" class="dashboard-clear-btn" onclick="clearAllDashboardCases()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                            Clear All
+                        </button>
+                    </div>
+
+                    <div class="dashboard-filter">
+                        <select id="dashboard-type-filter" class="form-input" style="font-size: 0.8rem; padding: 0.5rem;">
+                            <option value="all">All Types / 全種類</option>
+                            <option value="lcoh">LCOH / 水素原価</option>
+                            <option value="property">Property / 物性</option>
+                            <option value="distillation">Distillation / 蒸留</option>
+                            <option value="extraction">Extraction / 抽出</option>
+                            <option value="absorption">Absorption / 吸収</option>
+                        </select>
+                    </div>
+
+                    <div id="dashboard-case-list" class="dashboard-case-list">
+                        <div class="dashboard-empty">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1">
+                                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                                <rect x="14" y="14" width="7" height="7" rx="1"/>
+                            </svg>
+                            <p>No saved cases</p>
+                            <p class="dashboard-empty-hint">Run calculations and click "Save to Dashboard" to compare results</p>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-actions">
+                        <button type="button" class="submit-btn" onclick="compareDashboardCases()" id="compare-btn" disabled>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+                                <path d="M3 3v18h18"/>
+                                <rect x="7" y="10" width="3" height="8"/>
+                                <rect x="14" y="6" width="3" height="12"/>
+                            </svg>
+                            Compare Selected
+                        </button>
+                    </div>
+                </div>
+
                 <!-- History -->
                 <div class="history-toggle" id="history-toggle">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2282,12 +2743,26 @@
                         </div>
                         <canvas id="prop-chart" height="180"></canvas>
                     </div>
-                    <button type="button" class="steps-toggle" id="prop-steps-toggle">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 5v14M5 12h14"/>
-                        </svg>
-                        Show Calculation Steps
-                    </button>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                        <button type="button" class="steps-toggle" id="prop-steps-toggle">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 5v14M5 12h14"/>
+                            </svg>
+                            Show Calculation Steps
+                        </button>
+                        <button type="button" class="steps-toggle" onclick="downloadReport('property')" style="background: var(--accent-amber);">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Download Report
+                        </button>
+                        <button type="button" class="save-dashboard-btn" onclick="saveToDashboard('property')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                            </svg>
+                            Save to Dashboard
+                        </button>
+                    </div>
                     <div id="prop-steps" class="steps-content hidden"></div>
                 </div>
 
@@ -2360,12 +2835,26 @@
                         <div class="warning-title">⚠ Warnings</div>
                         <ul class="warning-list" id="dist-warn-list"></ul>
                     </div>
-                    <button type="button" class="steps-toggle" id="dist-steps-toggle">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 5v14M5 12h14"/>
-                        </svg>
-                        Show Calculation Steps
-                    </button>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                        <button type="button" class="steps-toggle" id="dist-steps-toggle">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 5v14M5 12h14"/>
+                            </svg>
+                            Show Calculation Steps
+                        </button>
+                        <button type="button" class="steps-toggle" onclick="downloadReport('distillation')" style="background: var(--accent-amber);">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Download Report
+                        </button>
+                        <button type="button" class="save-dashboard-btn" onclick="saveToDashboard('distillation')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                            </svg>
+                            Save to Dashboard
+                        </button>
+                    </div>
                     <div id="dist-steps" class="steps-content hidden"></div>
                 </div>
 
@@ -2412,12 +2901,26 @@
                             <div class="result-value" style="color: var(--success);"><span id="mb-closure">-</span><span class="result-unit">%</span></div>
                         </div>
                     </div>
-                    <button type="button" class="steps-toggle" id="mb-steps-toggle">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 5v14M5 12h14"/>
-                        </svg>
-                        Show Calculation Steps
-                    </button>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                        <button type="button" class="steps-toggle" id="mb-steps-toggle">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 5v14M5 12h14"/>
+                            </svg>
+                            Show Calculation Steps
+                        </button>
+                        <button type="button" class="steps-toggle" onclick="downloadReport('mass_balance')" style="background: var(--accent-amber);">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Download Report
+                        </button>
+                        <button type="button" class="save-dashboard-btn" onclick="saveToDashboard('mass_balance')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                            </svg>
+                            Save to Dashboard
+                        </button>
+                    </div>
                     <div id="mb-steps" class="steps-content hidden"></div>
                 </div>
 
@@ -2489,12 +2992,26 @@
                         <div class="warning-title">⚠ Warnings</div>
                         <ul class="warning-list" id="hb-warn-list"></ul>
                     </div>
-                    <button type="button" class="steps-toggle" id="hb-steps-toggle">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 5v14M5 12h14"/>
-                        </svg>
-                        Show Calculation Steps
-                    </button>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                        <button type="button" class="steps-toggle" id="hb-steps-toggle">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 5v14M5 12h14"/>
+                            </svg>
+                            Show Calculation Steps
+                        </button>
+                        <button type="button" class="steps-toggle" onclick="downloadReport('heat_balance')" style="background: var(--accent-amber);">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Download Report
+                        </button>
+                        <button type="button" class="save-dashboard-btn" onclick="saveToDashboard('heat_balance')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                            </svg>
+                            Save to Dashboard
+                        </button>
+                    </div>
                     <div id="hb-steps" class="steps-content hidden"></div>
                 </div>
 
@@ -2583,12 +3100,26 @@
                         <div class="warning-title">⚠ Warnings</div>
                         <ul class="warning-list" id="ext-warn-list"></ul>
                     </div>
-                    <button type="button" class="steps-toggle" id="ext-steps-toggle">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 5v14M5 12h14"/>
-                        </svg>
-                        Show Calculation Steps
-                    </button>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                        <button type="button" class="steps-toggle" id="ext-steps-toggle">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 5v14M5 12h14"/>
+                            </svg>
+                            Show Calculation Steps
+                        </button>
+                        <button type="button" class="steps-toggle" onclick="downloadReport('extraction')" style="background: var(--accent-amber);">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Download Report
+                        </button>
+                        <button type="button" class="save-dashboard-btn" onclick="saveToDashboard('extraction')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                            </svg>
+                            Save to Dashboard
+                        </button>
+                    </div>
                     <div id="ext-steps" class="steps-content hidden"></div>
                 </div>
 
@@ -2682,13 +3213,211 @@
                         <div class="warning-title">⚠ Warnings</div>
                         <ul class="warning-list" id="abs-warn-list"></ul>
                     </div>
-                    <button type="button" class="steps-toggle" id="abs-steps-toggle">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 5v14M5 12h14"/>
-                        </svg>
-                        Show Calculation Steps
-                    </button>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                        <button type="button" class="steps-toggle" id="abs-steps-toggle">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 5v14M5 12h14"/>
+                            </svg>
+                            Show Calculation Steps
+                        </button>
+                        <button type="button" class="steps-toggle" onclick="downloadReport('absorption')" style="background: var(--accent-amber);">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Download Report
+                        </button>
+                        <button type="button" class="save-dashboard-btn" onclick="saveToDashboard('absorption')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                            </svg>
+                            Save to Dashboard
+                        </button>
+                    </div>
                     <div id="abs-steps" class="steps-content hidden"></div>
+                </div>
+
+                <!-- LCOH Result -->
+                <div id="lcoh-result" class="result-section">
+                    <div class="result-header">
+                        <div class="result-status success">✓</div>
+                        <div class="result-info">
+                            <div class="result-title">LCOH (水素製造原価)</div>
+                            <div class="result-subtitle" id="lcoh-method-label">PEM Electrolysis</div>
+                        </div>
+                    </div>
+
+                    <!-- Main LCOH Value -->
+                    <div class="result-grid" style="margin-bottom: 1.5rem;">
+                        <div class="result-card" style="grid-column: span 2; background: linear-gradient(135deg, var(--accent-teal) 0%, var(--accent-cyan) 100%); color: white;">
+                            <div class="result-label" style="color: rgba(255,255,255,0.8);">Levelized Cost of Hydrogen</div>
+                            <div class="result-value" style="font-size: 2.5rem;"><span id="lcoh-value">-</span><span class="result-unit" style="font-size: 1rem; color: rgba(255,255,255,0.8);"> EUR/kg H₂</span></div>
+                        </div>
+                    </div>
+
+                    <!-- LCOH Breakdown Chart -->
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Cost Breakdown / コスト内訳</div>
+                        <div id="lcoh-breakdown-chart" style="height: 200px; background: var(--card-bg); border-radius: 8px; padding: 1rem; border: 1px solid var(--glass-border);">
+                            <!-- Bar chart will be rendered here -->
+                        </div>
+                    </div>
+
+                    <div class="result-grid">
+                        <div class="result-card">
+                            <div class="result-label">Annual Production / 年間生産量</div>
+                            <div class="result-value"><span id="lcoh-production">-</span><span class="result-unit">ton/year</span></div>
+                        </div>
+                        <div class="result-card amber">
+                            <div class="result-label">Total CAPEX / 総投資額</div>
+                            <div class="result-value"><span id="lcoh-capex">-</span><span class="result-unit">M EUR</span></div>
+                        </div>
+                        <div class="result-card rose">
+                            <div class="result-label">Energy Efficiency / エネルギー効率</div>
+                            <div class="result-value"><span id="lcoh-efficiency">-</span><span class="result-unit">%</span></div>
+                        </div>
+                        <div class="result-card violet">
+                            <div class="result-label">CO₂ Intensity / CO₂排出原単位</div>
+                            <div class="result-value"><span id="lcoh-carbon">-</span><span class="result-unit">kg/kg H₂</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Cost Breakdown Table -->
+                    <table class="data-table" style="margin-top: 1rem;">
+                        <thead>
+                            <tr><th>Cost Component / コスト項目</th><th>EUR/kg H₂</th><th>Share / 割合</th></tr>
+                        </thead>
+                        <tbody id="lcoh-breakdown-table">
+                            <tr><td>CAPEX (設備投資)</td><td id="lcoh-tbl-capex">-</td><td id="lcoh-tbl-capex-pct">-</td></tr>
+                            <tr><td>Energy (エネルギー)</td><td id="lcoh-tbl-energy">-</td><td id="lcoh-tbl-energy-pct">-</td></tr>
+                            <tr><td>OPEX (運転費)</td><td id="lcoh-tbl-opex">-</td><td id="lcoh-tbl-opex-pct">-</td></tr>
+                            <tr><td>Stack Replacement (スタック交換)</td><td id="lcoh-tbl-stack">-</td><td id="lcoh-tbl-stack-pct">-</td></tr>
+                            <tr><td>Carbon Cost (炭素コスト)</td><td id="lcoh-tbl-carbon">-</td><td id="lcoh-tbl-carbon-pct">-</td></tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Sensitivity Analysis -->
+                    <div style="margin-top: 1.5rem;">
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Sensitivity Analysis / 感度分析</div>
+                        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <button type="button" class="unit-chip active" id="sens-elec-btn" data-sens="electricity">Electricity Price</button>
+                            <button type="button" class="unit-chip" id="sens-capex-btn" data-sens="capex">CAPEX</button>
+                            <button type="button" class="unit-chip" id="sens-hours-btn" data-sens="hours">Operating Hours</button>
+                        </div>
+                        <div id="lcoh-sensitivity-chart" style="height: 220px; background: var(--card-bg); border-radius: 8px; padding: 1rem; border: 1px solid var(--glass-border);">
+                            <!-- Sensitivity chart will be rendered here -->
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                        <button type="button" class="steps-toggle" id="lcoh-steps-toggle">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 5v14M5 12h14"/>
+                            </svg>
+                            Show Calculation Steps
+                        </button>
+                        <button type="button" class="steps-toggle" onclick="downloadReport('lcoh')" style="background: var(--accent-amber);">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Download Report
+                        </button>
+                        <button type="button" class="save-dashboard-btn" onclick="saveToDashboard('lcoh')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                            </svg>
+                            Save to Dashboard
+                        </button>
+                    </div>
+                    <div id="lcoh-steps" class="steps-content hidden"></div>
+                </div>
+
+                <!-- Dashboard Result -->
+                <div id="dashboard-result" class="result-section">
+                    <div class="result-header" style="border-bottom: 2px solid var(--accent-violet);">
+                        <div class="result-badge" style="background: var(--accent-violet);">📊</div>
+                        <div class="result-title-group">
+                            <div class="result-title" style="color: var(--accent-violet);">Case Comparison Dashboard</div>
+                            <div class="result-subtitle" id="dashboard-subtitle">Select cases to compare</div>
+                        </div>
+                    </div>
+
+                    <!-- Comparison Summary Cards -->
+                    <div class="dashboard-summary" id="dashboard-summary">
+                        <div class="dashboard-summary-card">
+                            <div class="summary-label">Cases Selected</div>
+                            <div class="summary-value" id="dash-case-count">0</div>
+                        </div>
+                        <div class="dashboard-summary-card">
+                            <div class="summary-label">Best Case</div>
+                            <div class="summary-value" id="dash-best-case">-</div>
+                        </div>
+                        <div class="dashboard-summary-card">
+                            <div class="summary-label">Average</div>
+                            <div class="summary-value" id="dash-average">-</div>
+                        </div>
+                        <div class="dashboard-summary-card">
+                            <div class="summary-label">Range</div>
+                            <div class="summary-value" id="dash-range">-</div>
+                        </div>
+                    </div>
+
+                    <!-- Comparison Chart -->
+                    <div class="dashboard-chart-container">
+                        <div class="chart-header">
+                            <span class="chart-title">Cost Breakdown Comparison / コスト比較</span>
+                            <div class="chart-controls">
+                                <button type="button" class="chart-type-btn active" data-chart-type="bar" onclick="setDashboardChartType('bar')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="10" width="4" height="11"/><rect x="10" y="6" width="4" height="15"/><rect x="17" y="3" width="4" height="18"/>
+                                    </svg>
+                                </button>
+                                <button type="button" class="chart-type-btn" data-chart-type="stacked" onclick="setDashboardChartType('stacked')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="3" width="4" height="18"/><rect x="10" y="3" width="4" height="18"/><rect x="17" y="3" width="4" height="18"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <canvas id="dashboard-chart" height="300"></canvas>
+                    </div>
+
+                    <!-- Comparison Table -->
+                    <div class="dashboard-table-container">
+                        <div class="table-header">
+                            <span class="table-title">Detailed Comparison / 詳細比較</span>
+                        </div>
+                        <div class="table-scroll">
+                            <table class="dashboard-table" id="dashboard-table">
+                                <thead>
+                                    <tr>
+                                        <th>Case Name</th>
+                                        <th>Type</th>
+                                        <th>Main Result</th>
+                                        <th>Details</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashboard-table-body">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Export Options -->
+                    <div class="dashboard-export">
+                        <button type="button" class="export-btn" onclick="exportDashboardCSV()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Export CSV
+                        </button>
+                        <button type="button" class="export-btn" onclick="exportDashboardPNG()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
+                            </svg>
+                            Export Chart
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2858,6 +3587,12 @@
                 const name = tab.dataset.tab;
                 document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
                 document.getElementById(`${name}-form`).classList.add('active');
+
+                // If dashboard tab, show dashboard result and render case list
+                if (name === 'dashboard') {
+                    showResult('dashboard');
+                    renderDashboardCaseList();
+                }
             };
         });
 
@@ -2971,10 +3706,16 @@
         }
 
         function saveHistory(type, params, result) {
+            // Save for report generation
+            lastCalculationData[type] = { params, result, timestamp: new Date().toISOString() };
+
             const h = getHistory();
             const summary = type === 'property' ? `${params.substance}: ${params.property}`
                 : type === 'distillation' ? `${params.light_component}/${params.heavy_component}`
                 : type === 'mass_balance' ? params.components?.join('/')
+                : type === 'extraction' ? `${params.solute}: ${params.carrier}→${params.solvent}`
+                : type === 'absorption' ? `${params.gas_component}: into ${params.solvent}`
+                : type === 'lcoh' ? `${params.production_method}: ${params.capacity}MW`
                 : `${params.substance}: ${params.inlet_temperature}→${params.outlet_temperature}K`;
             h.unshift({ type, params, summary, timestamp: new Date().toISOString() });
             if (h.length > 20) h.pop();
@@ -3029,6 +3770,11 @@
 
         function showResult(type) {
             hideLoading();
+            // Clear all result sections first
+            document.querySelectorAll('.result-section').forEach(s => s.classList.remove('active'));
+            // Hide empty state
+            document.getElementById('empty-state').classList.add('hidden');
+            // Show the specified result
             document.getElementById(`${type}-result`).classList.add('active');
         }
 
@@ -3040,6 +3786,384 @@
                     <div class="step-formula">${s.formulas.join('<br>')}</div>
                 </div>
             `).join('');
+        }
+
+        // ==================== Report Generation ====================
+        // Store last calculation results for report generation
+        let lastCalculationData = {};
+
+        function generateReport(type) {
+            const data = lastCalculationData[type];
+            if (!data) {
+                toast('No calculation data available', 'error');
+                return;
+            }
+
+            const timestamp = new Date().toLocaleString('ja-JP');
+            const typeLabels = {
+                'property': '物性推算 / Property Estimation',
+                'distillation': '蒸留塔設計 / Distillation Column Design',
+                'mass_balance': '物質収支 / Mass Balance',
+                'heat_balance': '熱収支 / Heat Balance',
+                'extraction': '液液抽出 / Liquid-Liquid Extraction',
+                'absorption': 'ガス吸収 / Gas Absorption',
+                'lcoh': '水素製造原価 / LCOH (Levelized Cost of Hydrogen)'
+            };
+
+            let html = `<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChemEng Report - ${typeLabels[type] || type}</title>
+    <style>
+        :root {
+            --primary: #14b8a6;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', 'Hiragino Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+        .report-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .report-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--primary);
+        }
+        .report-header h1 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        .report-header .subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        .section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
+        }
+        .section-title {
+            color: var(--primary);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.5rem 0;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+        td {
+            font-family: 'Consolas', monospace;
+        }
+        .highlight {
+            background: linear-gradient(135deg, var(--primary), #06b6d4);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .highlight-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        .highlight-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        .step {
+            background: rgba(20, 184, 166, 0.1);
+            border-left: 3px solid var(--primary);
+            padding: 1rem;
+            margin: 0.75rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .step-title {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        .step-formula {
+            font-family: 'Consolas', monospace;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        .step-result {
+            color: var(--primary);
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+        .footer {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+        @media print {
+            body { background: white; color: #1e293b; }
+            .section { border: 1px solid #e2e8f0; }
+            .highlight { background: #14b8a6; }
+        }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <div class="report-header">
+            <h1>ChemEng 計算レポート</h1>
+            <div class="subtitle">${typeLabels[type] || type}</div>
+            <div class="subtitle">Generated: ${timestamp}</div>
+        </div>
+`;
+            // Add type-specific content
+            html += generateReportContent(type, data);
+
+            html += `
+        <div class="footer">
+            <p>Generated by ChemEng - Chemical Engineering Laboratory</p>
+            <p>Powered by thermo/chemicals library</p>
+        </div>
+    </div>
+</body>
+</html>`;
+
+            return html;
+        }
+
+        function generateReportContent(type, data) {
+            const { params, result } = data;
+            let html = '';
+
+            // Input Parameters Section
+            html += '<div class="section"><div class="section-title">📥 入力パラメータ / Input Parameters</div><table>';
+            const paramLabels = getParamLabels(type);
+            for (const [key, value] of Object.entries(params)) {
+                const label = paramLabels[key] || key;
+                html += `<tr><th>${label}</th><td>${formatValue(value)}</td></tr>`;
+            }
+            html += '</table></div>';
+
+            // Main Result (type-specific)
+            html += generateMainResult(type, result);
+
+            // Output Parameters Section
+            if (result) {
+                html += '<div class="section"><div class="section-title">📊 計算結果詳細 / Detailed Results</div><table>';
+                const outputLabels = getOutputLabels(type);
+                for (const [key, value] of Object.entries(result)) {
+                    if (key === 'calculation_steps' || key === 'sensitivity_data' || key === 'lcoh_breakdown' || key === 'annual_costs') continue;
+                    if (typeof value === 'object') continue;
+                    const label = outputLabels[key] || key;
+                    html += `<tr><th>${label}</th><td>${formatValue(value)}</td></tr>`;
+                }
+                html += '</table></div>';
+            }
+
+            // Calculation Steps
+            if (result?.calculation_steps?.length) {
+                html += '<div class="section"><div class="section-title">📝 計算過程 / Calculation Steps</div>';
+                result.calculation_steps.forEach((step, i) => {
+                    html += `<div class="step">
+                        <div class="step-title">Step ${i + 1}: ${step.step || step.title || ''}</div>
+                        ${step.description ? `<div>${step.description}</div>` : ''}
+                        ${step.formula ? `<div class="step-formula">${step.formula}</div>` : ''}
+                        ${step.formulas ? `<div class="step-formula">${step.formulas.join('<br>')}</div>` : ''}
+                        ${step.values ? `<div class="step-formula">${Object.entries(step.values).map(([k,v]) => `${k}: ${v}`).join(', ')}</div>` : ''}
+                        ${step.result ? `<div class="step-result">→ ${step.result}</div>` : ''}
+                    </div>`;
+                });
+                html += '</div>';
+            }
+
+            return html;
+        }
+
+        function generateMainResult(type, result) {
+            if (!result) return '';
+            let html = '';
+
+            switch(type) {
+                case 'property':
+                    html += `<div class="highlight">
+                        <div class="highlight-label">${result.property || 'Result'}</div>
+                        <div class="highlight-value">${formatValue(result.value)} ${result.unit || ''}</div>
+                    </div>`;
+                    break;
+                case 'distillation':
+                    html += `<div class="highlight">
+                        <div class="highlight-label">理論段数 / Theoretical Stages</div>
+                        <div class="highlight-value">${result.actual_stages || result.theoretical_stages || '-'}</div>
+                    </div>`;
+                    break;
+                case 'extraction':
+                    html += `<div class="highlight">
+                        <div class="highlight-label">抽出率 / Recovery</div>
+                        <div class="highlight-value">${((result.recovery || 0) * 100).toFixed(1)}%</div>
+                    </div>`;
+                    break;
+                case 'absorption':
+                    html += `<div class="highlight">
+                        <div class="highlight-label">除去率 / Removal Efficiency</div>
+                        <div class="highlight-value">${((result.removal_efficiency || 0) * 100).toFixed(1)}%</div>
+                    </div>`;
+                    break;
+                case 'lcoh':
+                    html += `<div class="highlight">
+                        <div class="highlight-label">Levelized Cost of Hydrogen</div>
+                        <div class="highlight-value">${result.lcoh?.toFixed(2) || '-'} EUR/kg H₂</div>
+                    </div>`;
+                    // Cost breakdown
+                    if (result.lcoh_breakdown) {
+                        html += '<div class="section"><div class="section-title">💰 コスト内訳 / Cost Breakdown</div><table>';
+                        const breakdownLabels = {
+                            capex: 'CAPEX (設備投資)',
+                            energy: 'Energy (エネルギー)',
+                            opex: 'OPEX (運転費)',
+                            stack_replacement: 'Stack Replacement (スタック交換)',
+                            water: 'Water (水)',
+                            carbon: 'Carbon Cost (炭素コスト)',
+                            revenue_offset: 'Revenue Offset (収入控除)'
+                        };
+                        for (const [key, value] of Object.entries(result.lcoh_breakdown)) {
+                            if (key === 'total') continue;
+                            html += `<tr><th>${breakdownLabels[key] || key}</th><td>${value?.toFixed(3) || 0} EUR/kg H₂</td></tr>`;
+                        }
+                        html += '</table></div>';
+                    }
+                    break;
+                default:
+                    break;
+            }
+            return html;
+        }
+
+        function getParamLabels(type) {
+            const common = {
+                substance: '物質名 / Substance',
+                temperature: '温度 / Temperature (K)',
+                pressure: '圧力 / Pressure (Pa)',
+                components: '成分 / Components'
+            };
+            const specific = {
+                property: { property: '物性 / Property' },
+                distillation: {
+                    light_component: '軽沸成分 / Light Component',
+                    heavy_component: '重沸成分 / Heavy Component',
+                    feed_composition: '原料組成 / Feed Composition',
+                    distillate_composition: '留出液組成 / Distillate Composition',
+                    bottoms_composition: '缶出液組成 / Bottoms Composition',
+                    feed_flow_rate: '原料流量 / Feed Flow Rate',
+                    reflux_ratio: '還流比 / Reflux Ratio'
+                },
+                extraction: {
+                    solute: '溶質 / Solute',
+                    carrier: 'キャリア / Carrier',
+                    solvent: '溶媒 / Solvent',
+                    feed_flow: '原料流量 / Feed Flow',
+                    solvent_flow: '溶媒流量 / Solvent Flow'
+                },
+                absorption: {
+                    gas_component: 'ガス成分 / Gas Component',
+                    carrier_gas: 'キャリアガス / Carrier Gas',
+                    solvent: '吸収液 / Solvent',
+                    gas_flow_rate: 'ガス流量 / Gas Flow Rate'
+                },
+                lcoh: {
+                    production_method: '製造方法 / Production Method',
+                    capacity: '設備容量 / Capacity (MW)',
+                    electricity_price: '電力単価 / Electricity Price (EUR/MWh)',
+                    natural_gas_price: 'ガス単価 / Gas Price (EUR/MWh)',
+                    operating_hours: '稼働時間 / Operating Hours (h/year)',
+                    capex_per_kw: 'CAPEX単価 / CAPEX (EUR/kW)',
+                    opex_percent: 'OPEX率 / OPEX (%)',
+                    discount_rate: '割引率 / Discount Rate (%)',
+                    project_lifetime: 'プロジェクト寿命 / Project Lifetime (years)',
+                    carbon_price: '炭素価格 / Carbon Price (EUR/ton)'
+                }
+            };
+            return { ...common, ...(specific[type] || {}) };
+        }
+
+        function getOutputLabels(type) {
+            return {
+                lcoh: 'LCOH (EUR/kg H₂)',
+                annual_h2_production: '年間生産量 / Annual Production (kg/year)',
+                total_capex: '総CAPEX / Total CAPEX (EUR)',
+                energy_efficiency: 'エネルギー効率 / Energy Efficiency (%)',
+                carbon_intensity: 'CO₂原単位 / Carbon Intensity (kg CO₂/kg H₂)',
+                production_method: '製造方法 / Production Method',
+                capacity_mw: '設備容量 / Capacity (MW)',
+                operating_hours: '稼働時間 / Operating Hours (h/year)',
+                theoretical_stages: '理論段数 / Theoretical Stages',
+                actual_stages: '実際段数 / Actual Stages',
+                minimum_reflux_ratio: '最小還流比 / Minimum Reflux Ratio',
+                actual_reflux_ratio: '実際還流比 / Actual Reflux Ratio',
+                recovery: '抽出率 / Recovery',
+                stages: '段数 / Stages',
+                removal_efficiency: '除去率 / Removal Efficiency',
+                absorption_factor: '吸収係数 / Absorption Factor',
+                liquid_gas_ratio: '液ガス比 / L/G Ratio',
+                ntu: 'NTU',
+                value: '値 / Value'
+            };
+        }
+
+        function formatValue(val) {
+            if (val === null || val === undefined) return '-';
+            if (typeof val === 'number') {
+                if (Number.isInteger(val)) return val.toLocaleString();
+                return val.toFixed(4).replace(/\.?0+$/, '');
+            }
+            if (Array.isArray(val)) return val.join(', ');
+            return String(val);
+        }
+
+        function downloadReport(type) {
+            const html = generateReport(type);
+            if (!html) return;
+
+            const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+            a.download = `chemeng_${type}_report_${timestamp}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            toast('Report downloaded');
         }
 
         // ==================== Keyboard Shortcut ====================
@@ -3638,8 +4762,679 @@
             }
         };
 
+        // ==================== LCOH Form ====================
+        // Method-dependent field visibility
+        document.getElementById('lcoh-method').onchange = function() {
+            const method = this.value;
+            const isElec = method.includes('electrolysis');
+            document.getElementById('lcoh-elec-group').classList.toggle('hidden', !isElec);
+            document.getElementById('lcoh-gas-group').classList.toggle('hidden', isElec);
+        };
+
+        // Store sensitivity data globally for chart updates
+        let lcohSensitivityData = null;
+        let currentSensChart = 'electricity';
+
+        document.getElementById('lcoh-form').onsubmit = async e => {
+            e.preventDefault();
+            showLoading();
+            const fd = new FormData(e.target);
+            const method = fd.get('production_method');
+            const params = {
+                production_method: method,
+                capacity: parseFloat(fd.get('capacity')),
+                operating_hours: parseFloat(fd.get('operating_hours')),
+                opex_percent: parseFloat(fd.get('opex_percent')),
+                discount_rate: parseFloat(fd.get('discount_rate')),
+                project_lifetime: parseInt(fd.get('project_lifetime')),
+                carbon_price: parseFloat(fd.get('carbon_price'))
+            };
+
+            // Optional CAPEX
+            const capexVal = fd.get('capex_per_kw');
+            if (capexVal && capexVal.trim() !== '') {
+                params.capex_per_kw = parseFloat(capexVal);
+            }
+
+            // Method-specific parameters
+            if (method.includes('electrolysis')) {
+                params.electricity_price = parseFloat(fd.get('electricity_price'));
+            } else {
+                params.natural_gas_price = parseFloat(fd.get('natural_gas_price'));
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/calculate/lcoh`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ parameters: params })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const out = data.outputs;
+                    lcohSensitivityData = out.sensitivity_data;
+
+                    // Method label
+                    const methodLabels = {
+                        'pem_electrolysis': 'PEM Electrolysis',
+                        'alkaline_electrolysis': 'Alkaline Electrolysis',
+                        'soec_electrolysis': 'SOEC Electrolysis',
+                        'smr': 'SMR (Gray H₂)',
+                        'smr_ccs': 'SMR + CCS (Blue H₂)',
+                        'atr_ccs': 'ATR + CCS (Blue H₂)'
+                    };
+                    document.getElementById('lcoh-method-label').textContent = methodLabels[method] || method;
+
+                    // Main LCOH value
+                    document.getElementById('lcoh-value').textContent = out.lcoh.toFixed(2);
+
+                    // Summary cards
+                    document.getElementById('lcoh-production').textContent = (out.annual_h2_production / 1000).toFixed(1);
+                    document.getElementById('lcoh-capex').textContent = (out.total_capex / 1000000).toFixed(2);
+                    document.getElementById('lcoh-efficiency').textContent = out.energy_efficiency.toFixed(1);
+                    document.getElementById('lcoh-carbon').textContent = out.carbon_intensity.toFixed(2);
+
+                    // Cost breakdown
+                    const bd = out.lcoh_breakdown;
+                    const totalPositive = bd.capex + bd.energy + bd.opex + bd.stack_replacement + bd.carbon + bd.water;
+                    document.getElementById('lcoh-tbl-capex').textContent = bd.capex.toFixed(3);
+                    document.getElementById('lcoh-tbl-capex-pct').textContent = ((bd.capex / totalPositive) * 100).toFixed(1) + '%';
+                    document.getElementById('lcoh-tbl-energy').textContent = bd.energy.toFixed(3);
+                    document.getElementById('lcoh-tbl-energy-pct').textContent = ((bd.energy / totalPositive) * 100).toFixed(1) + '%';
+                    document.getElementById('lcoh-tbl-opex').textContent = bd.opex.toFixed(3);
+                    document.getElementById('lcoh-tbl-opex-pct').textContent = ((bd.opex / totalPositive) * 100).toFixed(1) + '%';
+                    document.getElementById('lcoh-tbl-stack').textContent = bd.stack_replacement.toFixed(3);
+                    document.getElementById('lcoh-tbl-stack-pct').textContent = ((bd.stack_replacement / totalPositive) * 100).toFixed(1) + '%';
+                    document.getElementById('lcoh-tbl-carbon').textContent = bd.carbon.toFixed(3);
+                    document.getElementById('lcoh-tbl-carbon-pct').textContent = ((bd.carbon / totalPositive) * 100).toFixed(1) + '%';
+
+                    // Draw breakdown chart
+                    drawLcohBreakdownChart(bd, totalPositive);
+
+                    // Draw sensitivity chart
+                    currentSensChart = method.includes('electrolysis') ? 'electricity' : 'gas';
+                    drawLcohSensitivityChart();
+
+                    // Steps (LCOH has different step format)
+                    if (out.calculation_steps?.length) {
+                        const stepsHtml = out.calculation_steps.map(s => `
+                            <div class="step-item">
+                                <div class="step-title">${s.step}</div>
+                                ${s.description ? `<div class="step-desc">${s.description}</div>` : ''}
+                                ${s.formula ? `<div class="step-formula">${s.formula}</div>` : ''}
+                                ${s.values ? `<div class="step-values" style="font-size: 0.8rem; color: var(--text-muted); margin: 0.25rem 0;">${Object.entries(s.values).map(([k,v]) => `${k}: ${v}`).join(', ')}</div>` : ''}
+                                ${s.result ? `<div class="step-result" style="font-weight: 500; color: var(--accent-teal);">→ ${s.result}</div>` : ''}
+                            </div>
+                        `).join('');
+                        document.getElementById('lcoh-steps').innerHTML = stepsHtml;
+                    }
+
+                    saveHistory('lcoh', params, out);
+                    showResult('lcoh');
+                    toast('LCOH calculation complete');
+                } else {
+                    toast('Error: ' + (data.errors?.join(', ') || 'Unknown'), 'error');
+                    hideLoading();
+                }
+            } catch (err) {
+                toast('Connection error: ' + err.message, 'error');
+                hideLoading();
+            }
+        };
+
+        // LCOH Breakdown Bar Chart
+        function drawLcohBreakdownChart(breakdown, total) {
+            const container = document.getElementById('lcoh-breakdown-chart');
+            const items = [
+                { label: 'CAPEX', value: breakdown.capex, color: 'var(--accent-teal)' },
+                { label: 'Energy', value: breakdown.energy, color: 'var(--accent-amber)' },
+                { label: 'OPEX', value: breakdown.opex, color: 'var(--accent-cyan)' },
+                { label: 'Stack', value: breakdown.stack_replacement, color: 'var(--accent-rose)' },
+                { label: 'Carbon', value: breakdown.carbon, color: 'var(--accent-violet)' }
+            ].filter(i => i.value > 0.001);
+
+            let html = '<div style="display: flex; flex-direction: column; gap: 0.5rem; height: 100%;">';
+            items.forEach(item => {
+                const pct = (item.value / total) * 100;
+                html += `
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="width: 70px; font-size: 0.75rem; color: var(--text-muted);">${item.label}</div>
+                        <div style="flex: 1; height: 24px; background: var(--glass-bg); border-radius: 4px; overflow: hidden;">
+                            <div style="width: ${pct}%; height: 100%; background: ${item.color}; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px;">
+                                <span style="font-size: 0.7rem; color: white; font-weight: 500;">${item.value.toFixed(2)}</span>
+                            </div>
+                        </div>
+                        <div style="width: 45px; text-align: right; font-size: 0.75rem; color: var(--text-dim);">${pct.toFixed(1)}%</div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // LCOH Sensitivity Chart
+        function drawLcohSensitivityChart() {
+            if (!lcohSensitivityData) return;
+
+            const container = document.getElementById('lcoh-sensitivity-chart');
+            let data, xLabel, xUnit;
+
+            if (currentSensChart === 'electricity' && lcohSensitivityData.electricity_price) {
+                data = lcohSensitivityData.electricity_price;
+                xLabel = 'Electricity Price';
+                xUnit = 'EUR/MWh';
+            } else if (currentSensChart === 'gas' && lcohSensitivityData.natural_gas_price) {
+                data = lcohSensitivityData.natural_gas_price;
+                xLabel = 'Gas Price';
+                xUnit = 'EUR/MWh';
+            } else if (currentSensChart === 'capex' && lcohSensitivityData.capex) {
+                data = lcohSensitivityData.capex;
+                xLabel = 'CAPEX';
+                xUnit = 'EUR/kW';
+            } else if (currentSensChart === 'hours' && lcohSensitivityData.operating_hours) {
+                data = lcohSensitivityData.operating_hours;
+                xLabel = 'Operating Hours';
+                xUnit = 'h/year';
+            } else {
+                // Fallback
+                const available = Object.keys(lcohSensitivityData)[0];
+                if (available) {
+                    data = lcohSensitivityData[available];
+                    xLabel = available;
+                    xUnit = '';
+                }
+            }
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-muted);">No sensitivity data</div>';
+                return;
+            }
+
+            // Get min/max for scaling
+            const lcohValues = data.map(d => d.lcoh);
+            const minLcoh = Math.min(...lcohValues) * 0.9;
+            const maxLcoh = Math.max(...lcohValues) * 1.1;
+
+            // Draw SVG chart
+            const width = container.clientWidth - 20;
+            const height = 180;
+            const padding = { left: 50, right: 20, top: 20, bottom: 30 };
+            const chartWidth = width - padding.left - padding.right;
+            const chartHeight = height - padding.top - padding.bottom;
+
+            let svg = `<svg width="${width}" height="${height}" style="overflow: visible;">`;
+
+            // Y-axis labels
+            const yTicks = 5;
+            for (let i = 0; i <= yTicks; i++) {
+                const y = padding.top + (chartHeight * i / yTicks);
+                const val = maxLcoh - (maxLcoh - minLcoh) * i / yTicks;
+                svg += `<text x="${padding.left - 5}" y="${y + 4}" text-anchor="end" font-size="10" fill="var(--text-muted)">${val.toFixed(1)}</text>`;
+                svg += `<line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" stroke="var(--glass-border)" stroke-dasharray="2,2"/>`;
+            }
+
+            // X-axis and data points
+            const xStep = chartWidth / (data.length - 1);
+            let pathD = '';
+
+            data.forEach((point, i) => {
+                const x = padding.left + i * xStep;
+                const y = padding.top + chartHeight * (1 - (point.lcoh - minLcoh) / (maxLcoh - minLcoh));
+                const xVal = point.price || point.capex || point.hours || Object.values(point)[0];
+
+                if (i === 0) pathD = `M ${x} ${y}`;
+                else pathD += ` L ${x} ${y}`;
+
+                // X label
+                svg += `<text x="${x}" y="${height - 5}" text-anchor="middle" font-size="9" fill="var(--text-muted)">${xVal}</text>`;
+                // Data point
+                svg += `<circle cx="${x}" cy="${y}" r="4" fill="var(--accent-teal)"/>`;
+                // Value label
+                svg += `<text x="${x}" y="${y - 8}" text-anchor="middle" font-size="9" fill="var(--text-dim)">${point.lcoh.toFixed(2)}</text>`;
+            });
+
+            // Line
+            svg += `<path d="${pathD}" fill="none" stroke="var(--accent-teal)" stroke-width="2"/>`;
+
+            // Axis labels
+            svg += `<text x="${padding.left - 35}" y="${height/2}" text-anchor="middle" font-size="10" fill="var(--text-muted)" transform="rotate(-90 ${padding.left - 35} ${height/2})">LCOH (EUR/kg)</text>`;
+            svg += `<text x="${width/2}" y="${height + 10}" text-anchor="middle" font-size="10" fill="var(--text-muted)">${xLabel} (${xUnit})</text>`;
+
+            svg += '</svg>';
+            container.innerHTML = svg;
+        }
+
+        // Sensitivity chart buttons
+        document.querySelectorAll('[data-sens]').forEach(btn => {
+            btn.onclick = function() {
+                document.querySelectorAll('[data-sens]').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                const sens = this.dataset.sens;
+                if (sens === 'electricity') currentSensChart = lcohSensitivityData?.electricity_price ? 'electricity' : 'gas';
+                else if (sens === 'capex') currentSensChart = 'capex';
+                else if (sens === 'hours') currentSensChart = 'hours';
+                drawLcohSensitivityChart();
+            };
+        });
+
+        // ==================== Dashboard System ====================
+        const DASHBOARD_STORAGE_KEY = 'chemeng_dashboard_cases';
+        let dashboardChart = null;
+        let selectedCases = new Set();
+
+        // Load dashboard cases from localStorage
+        function loadDashboardCases() {
+            try {
+                const stored = localStorage.getItem(DASHBOARD_STORAGE_KEY);
+                return stored ? JSON.parse(stored) : [];
+            } catch (e) {
+                console.error('Failed to load dashboard cases:', e);
+                return [];
+            }
+        }
+
+        // Save dashboard cases to localStorage
+        function saveDashboardCases(cases) {
+            try {
+                localStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(cases));
+            } catch (e) {
+                console.error('Failed to save dashboard cases:', e);
+                toast('Failed to save to dashboard', 'error');
+            }
+        }
+
+        // Generate unique case ID
+        function generateCaseId() {
+            return 'case_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // Get case name from type and params
+        function getCaseName(type, params, result) {
+            const timestamp = new Date().toLocaleString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            switch (type) {
+                case 'lcoh':
+                    const method = params.production_method?.replace(/_/g, ' ') || 'Unknown';
+                    return `LCOH: ${method} (${params.capacity || '?'}MW) - ${timestamp}`;
+                case 'property':
+                    return `Property: ${params.substance} - ${params.property} - ${timestamp}`;
+                case 'distillation':
+                    return `Distillation: ${params.light_component}/${params.heavy_component} - ${timestamp}`;
+                case 'extraction':
+                    return `Extraction: ${params.solute || 'Unknown'} - ${timestamp}`;
+                case 'absorption':
+                    return `Absorption: ${params.gas_component || 'Unknown'} - ${timestamp}`;
+                case 'mass_balance':
+                    return `Mass Balance: ${params.components} - ${timestamp}`;
+                case 'heat_balance':
+                    return `Heat Balance - ${timestamp}`;
+                default:
+                    return `${type}: ${timestamp}`;
+            }
+        }
+
+        // Get main value from result
+        function getMainValue(type, result) {
+            switch (type) {
+                case 'lcoh':
+                    return result.lcoh ? `${result.lcoh.toFixed(2)} EUR/kg H₂` : '-';
+                case 'property':
+                    return result.value ? `${result.value.toFixed(4)} ${result.unit || ''}` : '-';
+                case 'distillation':
+                    return result.actual_stages ? `${result.actual_stages} stages` : '-';
+                case 'extraction':
+                    return result.extraction_efficiency ? `${(result.extraction_efficiency * 100).toFixed(1)}% eff.` : '-';
+                case 'absorption':
+                    return result.required_stages ? `${result.required_stages} stages` : '-';
+                case 'mass_balance':
+                    return result.distillate_flow ? `D=${result.distillate_flow.toFixed(2)}` : '-';
+                case 'heat_balance':
+                    return result.heat_duty ? `${result.heat_duty.toFixed(2)} kW` : '-';
+                default:
+                    return '-';
+            }
+        }
+
+        // Save current calculation to dashboard
+        function saveToDashboard(type) {
+            const data = lastCalculationData[type];
+            if (!data) {
+                toast('No calculation data to save. Run a calculation first.', 'warning');
+                return;
+            }
+
+            const cases = loadDashboardCases();
+            const newCase = {
+                id: generateCaseId(),
+                type: type,
+                name: getCaseName(type, data.params, data.result),
+                params: data.params,
+                result: data.result,
+                mainValue: getMainValue(type, data.result),
+                timestamp: data.timestamp || new Date().toISOString()
+            };
+
+            cases.unshift(newCase);
+            saveDashboardCases(cases);
+            toast(`Saved to dashboard: ${newCase.name}`, 'success');
+            renderDashboardCaseList();
+        }
+
+        // Render dashboard case list
+        function renderDashboardCaseList() {
+            const container = document.getElementById('dashboard-case-list');
+            const filterType = document.getElementById('dashboard-type-filter')?.value || 'all';
+            const cases = loadDashboardCases();
+            const filteredCases = filterType === 'all' ? cases : cases.filter(c => c.type === filterType);
+
+            if (filteredCases.length === 0) {
+                container.innerHTML = `
+                    <div class="dashboard-empty">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1">
+                            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                            <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                        </svg>
+                        <p>No saved cases</p>
+                        <p class="dashboard-empty-hint">Run calculations and click "Save to Dashboard" to compare results</p>
+                    </div>
+                `;
+                document.getElementById('compare-btn').disabled = true;
+                return;
+            }
+
+            const html = filteredCases.map(c => `
+                <div class="dashboard-case-item ${selectedCases.has(c.id) ? 'selected' : ''}" data-id="${c.id}">
+                    <input type="checkbox" class="case-checkbox" ${selectedCases.has(c.id) ? 'checked' : ''} onchange="toggleCaseSelection('${c.id}')">
+                    <div class="case-info">
+                        <div class="case-name">${c.name}</div>
+                        <div class="case-meta">
+                            <span class="case-type-badge">${c.type.toUpperCase()}</span>
+                            <span>${new Date(c.timestamp).toLocaleDateString('ja-JP')}</span>
+                        </div>
+                    </div>
+                    <div class="case-value">${c.mainValue}</div>
+                    <button class="case-delete" onclick="deleteDashboardCase('${c.id}')" title="Delete case">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                    </button>
+                </div>
+            `).join('');
+
+            container.innerHTML = html;
+            updateCompareButton();
+        }
+
+        // Toggle case selection
+        function toggleCaseSelection(caseId) {
+            if (selectedCases.has(caseId)) {
+                selectedCases.delete(caseId);
+            } else {
+                selectedCases.add(caseId);
+            }
+            renderDashboardCaseList();
+        }
+
+        // Update compare button state
+        function updateCompareButton() {
+            const btn = document.getElementById('compare-btn');
+            btn.disabled = selectedCases.size < 2;
+            btn.textContent = selectedCases.size < 2
+                ? `Select ${2 - selectedCases.size} more case(s)`
+                : `Compare ${selectedCases.size} Cases`;
+        }
+
+        // Delete a dashboard case
+        function deleteDashboardCase(caseId) {
+            const cases = loadDashboardCases();
+            const updated = cases.filter(c => c.id !== caseId);
+            saveDashboardCases(updated);
+            selectedCases.delete(caseId);
+            renderDashboardCaseList();
+            toast('Case deleted', 'success');
+        }
+
+        // Clear all dashboard cases
+        function clearAllDashboardCases() {
+            if (confirm('Delete all saved cases? This cannot be undone.')) {
+                saveDashboardCases([]);
+                selectedCases.clear();
+                renderDashboardCaseList();
+                toast('All cases cleared', 'success');
+            }
+        }
+
+        // Compare selected cases
+        function compareDashboardCases() {
+            const cases = loadDashboardCases();
+            const selected = cases.filter(c => selectedCases.has(c.id));
+
+            if (selected.length < 2) {
+                toast('Select at least 2 cases to compare', 'warning');
+                return;
+            }
+
+            // Show dashboard result panel
+            showResult('dashboard');
+
+            // Update summary
+            updateDashboardSummary(selected);
+
+            // Update chart
+            updateDashboardChart(selected);
+
+            // Update table
+            updateDashboardTable(selected);
+        }
+
+        // Update dashboard summary cards
+        function updateDashboardSummary(cases) {
+            document.getElementById('dash-case-count').textContent = cases.length;
+
+            // Find best case (lowest for LCOH, highest for efficiency, etc.)
+            const lcohCases = cases.filter(c => c.type === 'lcoh');
+            if (lcohCases.length > 0) {
+                const best = lcohCases.reduce((a, b) => (a.result?.lcoh || Infinity) < (b.result?.lcoh || Infinity) ? a : b);
+                document.getElementById('dash-best-case').textContent = best.result?.lcoh ? `${best.result.lcoh.toFixed(2)} EUR/kg` : '-';
+
+                const avg = lcohCases.reduce((sum, c) => sum + (c.result?.lcoh || 0), 0) / lcohCases.length;
+                document.getElementById('dash-average').textContent = `${avg.toFixed(2)} EUR/kg`;
+
+                const values = lcohCases.map(c => c.result?.lcoh || 0);
+                const range = Math.max(...values) - Math.min(...values);
+                document.getElementById('dash-range').textContent = `±${(range/2).toFixed(2)} EUR/kg`;
+            } else {
+                document.getElementById('dash-best-case').textContent = '-';
+                document.getElementById('dash-average').textContent = '-';
+                document.getElementById('dash-range').textContent = '-';
+            }
+
+            document.getElementById('dashboard-subtitle').textContent = `Comparing ${cases.length} cases`;
+        }
+
+        // Update dashboard chart
+        function updateDashboardChart(cases, chartType = 'bar') {
+            const ctx = document.getElementById('dashboard-chart').getContext('2d');
+
+            // Destroy existing chart
+            if (dashboardChart) {
+                dashboardChart.destroy();
+            }
+
+            // Prepare data for LCOH cases (most common use case)
+            const lcohCases = cases.filter(c => c.type === 'lcoh');
+            if (lcohCases.length > 0) {
+                const labels = lcohCases.map(c => c.name.replace(/LCOH: /, '').substring(0, 30));
+                const breakdownKeys = ['capex', 'energy', 'opex', 'stack_replacement', 'water', 'carbon_cost'];
+                const breakdownLabels = ['CAPEX', 'Energy', 'OPEX', 'Stack', 'Water', 'Carbon'];
+                const colors = ['#00d4ff', '#0fa', '#ffa726', '#a78bfa', '#ff6b9d', '#94a3b8'];
+
+                const datasets = breakdownKeys.map((key, i) => ({
+                    label: breakdownLabels[i],
+                    data: lcohCases.map(c => c.result?.lcoh_breakdown?.[key] || 0),
+                    backgroundColor: colors[i],
+                    borderColor: colors[i],
+                    borderWidth: 1
+                }));
+
+                dashboardChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: { labels, datasets },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { color: 'rgba(255,255,255,0.8)', font: { size: 10 } }
+                            },
+                            title: {
+                                display: true,
+                                text: 'LCOH Cost Breakdown (EUR/kg H₂)',
+                                color: 'rgba(255,255,255,0.9)'
+                            }
+                        },
+                        scales: {
+                            x: {
+                                stacked: chartType === 'stacked',
+                                ticks: { color: 'rgba(255,255,255,0.7)', font: { size: 9 } },
+                                grid: { color: 'rgba(255,255,255,0.1)' }
+                            },
+                            y: {
+                                stacked: chartType === 'stacked',
+                                ticks: { color: 'rgba(255,255,255,0.7)' },
+                                grid: { color: 'rgba(255,255,255,0.1)' },
+                                title: { display: true, text: 'EUR/kg H₂', color: 'rgba(255,255,255,0.7)' }
+                            }
+                        }
+                    }
+                });
+            } else {
+                // Generic bar chart for other types
+                const labels = cases.map(c => c.name.substring(0, 25));
+                const values = cases.map(c => parseFloat(c.mainValue) || 0);
+
+                dashboardChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: 'Value',
+                            data: values,
+                            backgroundColor: '#a78bfa',
+                            borderColor: '#a78bfa',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            x: {
+                                ticks: { color: 'rgba(255,255,255,0.7)', font: { size: 9 } },
+                                grid: { color: 'rgba(255,255,255,0.1)' }
+                            },
+                            y: {
+                                ticks: { color: 'rgba(255,255,255,0.7)' },
+                                grid: { color: 'rgba(255,255,255,0.1)' }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Set dashboard chart type
+        function setDashboardChartType(type) {
+            document.querySelectorAll('.chart-type-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.chartType === type);
+            });
+            const cases = loadDashboardCases().filter(c => selectedCases.has(c.id));
+            updateDashboardChart(cases, type);
+        }
+
+        // Update dashboard comparison table
+        function updateDashboardTable(cases) {
+            const tbody = document.getElementById('dashboard-table-body');
+            const html = cases.map(c => {
+                let details = '-';
+                if (c.type === 'lcoh') {
+                    details = `${c.params.capacity || '?'}MW, ${c.params.electricity_price || '?'} EUR/MWh, ${c.params.operating_hours || '?'}h/yr`;
+                } else if (c.type === 'distillation') {
+                    details = `Feed: ${c.params.feed_flow_rate} kmol/h, xF: ${c.params.feed_composition}`;
+                } else if (c.type === 'property') {
+                    details = `T: ${c.params.temperature}K, P: ${c.params.pressure}Pa`;
+                }
+                return `
+                    <tr>
+                        <td>${c.name}</td>
+                        <td><span class="case-type-badge">${c.type.toUpperCase()}</span></td>
+                        <td style="font-family: var(--mono); color: var(--accent-teal);">${c.mainValue}</td>
+                        <td style="font-size: 0.75rem;">${details}</td>
+                        <td>
+                            <button class="case-delete" onclick="deleteDashboardCase('${c.id}')" title="Delete">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            tbody.innerHTML = html;
+        }
+
+        // Export dashboard to CSV
+        function exportDashboardCSV() {
+            const cases = loadDashboardCases().filter(c => selectedCases.has(c.id));
+            if (cases.length === 0) {
+                toast('No cases selected for export', 'warning');
+                return;
+            }
+
+            const headers = ['Name', 'Type', 'Main Value', 'Timestamp'];
+            const rows = cases.map(c => [
+                c.name,
+                c.type,
+                c.mainValue,
+                new Date(c.timestamp).toISOString()
+            ]);
+
+            const csv = [headers.join(','), ...rows.map(r => r.map(v => `"${v}"`).join(','))].join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `chemeng_dashboard_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            toast('CSV exported successfully', 'success');
+        }
+
+        // Export dashboard chart as PNG
+        function exportDashboardPNG() {
+            if (!dashboardChart) {
+                toast('No chart to export', 'warning');
+                return;
+            }
+            const url = dashboardChart.toBase64Image();
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `chemeng_dashboard_chart_${new Date().toISOString().slice(0,10)}.png`;
+            a.click();
+            toast('Chart exported successfully', 'success');
+        }
+
+        // Initialize dashboard filter listener
+        document.getElementById('dashboard-type-filter')?.addEventListener('change', renderDashboardCaseList);
+
+        // Initial render of dashboard case list
+        renderDashboardCaseList();
+
         // ==================== Steps Toggles ====================
-        ['prop', 'dist', 'mb', 'hb', 'ext', 'abs'].forEach(prefix => {
+        ['prop', 'dist', 'mb', 'hb', 'ext', 'abs', 'lcoh'].forEach(prefix => {
             const btn = document.getElementById(`${prefix}-steps-toggle`);
             if (btn) {
                 btn.onclick = () => {

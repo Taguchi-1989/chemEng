@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+
 import yaml
 
 
@@ -63,7 +64,7 @@ class ParameterSchema:
         return True, None
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "ParameterSchema":
+    def from_dict(cls, data: dict[str, Any]) -> ParameterSchema:
         """辞書から生成"""
         return cls(
             name=data["name"],
@@ -158,14 +159,14 @@ class SkillDefinition:
         return result
 
     @classmethod
-    def from_yaml(cls, path: Path) -> "SkillDefinition":
+    def from_yaml(cls, path: Path) -> SkillDefinition:
         """YAMLファイルから読み込み"""
         with open(path, encoding="utf-8") as f:
             data = yaml.safe_load(f)
         return cls.from_dict(data, path.parent)
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any], base_path: Path | None = None) -> "SkillDefinition":
+    def from_dict(cls, data: dict[str, Any], base_path: Path | None = None) -> SkillDefinition:
         """辞書から生成"""
         input_schema = [ParameterSchema.from_dict(p) for p in data.get("input_schema", [])]
         output_schema = [ParameterSchema.from_dict(p) for p in data.get("output_schema", [])]
@@ -238,7 +239,7 @@ class CalculationResult:
         engine: str = "",
         warnings: list[str] | None = None,
         execution_time_ms: int = 0,
-    ) -> "CalculationResult":
+    ) -> CalculationResult:
         """成功結果を生成"""
         return cls(
             skill_id=skill_id,
@@ -257,7 +258,7 @@ class CalculationResult:
         skill_id: str,
         inputs: dict[str, Any],
         errors: list[str],
-    ) -> "CalculationResult":
+    ) -> CalculationResult:
         """エラー結果を生成"""
         return cls(
             skill_id=skill_id,

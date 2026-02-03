@@ -9,10 +9,10 @@ from typing import Any
 
 from .base import (
     CalculationEngine,
-    EngineCapability,
-    SubstanceNotFoundError,
-    PropertyNotAvailableError,
     ConditionsOutOfRangeError,
+    EngineCapability,
+    PropertyNotAvailableError,
+    SubstanceNotFoundError,
 )
 
 # 条件付きインポート
@@ -23,7 +23,7 @@ except ImportError:
     THERMO_AVAILABLE = False
 
 try:
-    from chemicals import CAS_from_any
+    from chemicals import CAS_from_any  # noqa: F401
     CHEMICALS_AVAILABLE = True
 except ImportError:
     CHEMICALS_AVAILABLE = False
@@ -176,11 +176,11 @@ class ThermoEngine(CalculationEngine):
                 zs = [z / total for z in zs]
 
             # Mixtureオブジェクトを作成
-            mix = Mixture(substances, zs=zs, T=T, P=P)
+            Mixture(substances, zs=zs, T=T, P=P)
 
             # K値を各成分の蒸気圧から近似計算（Raoultの法則）
             K_values = {}
-            for i, s in enumerate(substances):
+            for _i, s in enumerate(substances):
                 chem = Chemical(s, T=T, P=P)
                 Psat = chem.Psat if chem.Psat else P
                 K_values[s] = Psat / P

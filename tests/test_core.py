@@ -1,18 +1,17 @@
 """コアモジュールのテスト"""
 
-import pytest
-from datetime import datetime
 
+import pytest
 from chemeng.core.requirement import (
+    CalculationType,
+    Condition,
     RequirementSpec,
     Substance,
-    Condition,
-    CalculationType,
 )
 from chemeng.core.skill import (
-    SkillDefinition,
-    ParameterSchema,
     CalculationResult,
+    ParameterSchema,
+    SkillDefinition,
 )
 
 

@@ -1,12 +1,24 @@
 """pytest設定とフィクスチャ"""
 
-import pytest
 import sys
 from pathlib import Path
 
+import pytest
+
 # chemengモジュールをパスに追加
-chemeng_path = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(chemeng_path))
+# chemEngフォルダをchemengとしてインポート可能にする
+project_root = Path(__file__).parent.parent
+parent_dir = project_root.parent
+sys.path.insert(0, str(parent_dir))
+
+# chemEngをchemengとしてエイリアス作成
+import importlib
+import importlib.util
+spec = importlib.util.spec_from_file_location("chemeng", str(project_root / "__init__.py"),
+    submodule_search_locations=[str(project_root)])
+chemeng_module = importlib.util.module_from_spec(spec)
+sys.modules["chemeng"] = chemeng_module
+spec.loader.exec_module(chemeng_module)
 
 
 @pytest.fixture
@@ -36,7 +48,7 @@ def sample_condition():
 @pytest.fixture
 def sample_requirement(sample_substances, sample_condition):
     """サンプル要件"""
-    from chemeng.core.requirement import RequirementSpec, CalculationType
+    from chemeng.core.requirement import CalculationType, RequirementSpec
 
     return RequirementSpec(
         description="Distillation column design for ethanol-water separation",
@@ -50,7 +62,7 @@ def sample_requirement(sample_substances, sample_condition):
 @pytest.fixture
 def sample_skill():
     """サンプルスキル定義"""
-    from chemeng.core.skill import SkillDefinition, ParameterSchema
+    from chemeng.core.skill import ParameterSchema, SkillDefinition
 
     return SkillDefinition(
         id="property_estimation",

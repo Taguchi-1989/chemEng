@@ -19,14 +19,13 @@ Endpoints:
 
 from __future__ import annotations
 
-from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 try:
     from fastapi import FastAPI, HTTPException
     from fastapi.middleware.cors import CORSMiddleware
-    from fastapi.responses import HTMLResponse, FileResponse
+    from fastapi.responses import FileResponse, HTMLResponse  # noqa: F401
     from fastapi.staticfiles import StaticFiles
     from pydantic import BaseModel, Field
     FASTAPI_AVAILABLE = True
@@ -122,7 +121,7 @@ class SkillDetail(SkillInfo):
 
 # ==================== アプリケーション ====================
 
-def create_app() -> "FastAPI":
+def create_app() -> FastAPI:
     """FastAPIアプリケーションを作成"""
     if not FASTAPI_AVAILABLE:
         raise ImportError("FastAPI is not installed. Run: pip install fastapi uvicorn")

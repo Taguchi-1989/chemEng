@@ -1,0 +1,13 @@
+# Core dependencies
+pyyaml>=6.0
+pydantic>=2.0
+fastapi>=0.100
+uvicorn>=0.20.0
+httpx>=0.24.0
+
+# Chemical engineering calculations
+thermo>=0.2.27
+chemicals>=1.1.5
+fluids>=1.0.25
+scipy>=1.10.0
+numpy>=1.24.0

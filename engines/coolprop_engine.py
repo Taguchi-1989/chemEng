@@ -9,16 +9,16 @@ from typing import Any
 
 from .base import (
     CalculationEngine,
-    EngineCapability,
-    SubstanceNotFoundError,
-    PropertyNotAvailableError,
     ConditionsOutOfRangeError,
+    EngineCapability,
+    PropertyNotAvailableError,
+    SubstanceNotFoundError,
 )
 
 # 条件付きインポート
 try:
     import CoolProp.CoolProp as CP
-    from CoolProp.CoolProp import PropsSI, PhaseSI
+    from CoolProp.CoolProp import PhaseSI, PropsSI
     COOLPROP_AVAILABLE = True
 except ImportError:
     COOLPROP_AVAILABLE = False
@@ -244,7 +244,7 @@ class CoolPropEngine(CalculationEngine):
                 "critical_pressure": PropsSI("Pcrit", fluid),
                 "critical_density": PropsSI("rhocrit", fluid),
             }
-        except Exception as e:
+        except Exception:
             raise SubstanceNotFoundError(self.name, substance)
 
     def get_triple_point(self, substance: str) -> dict[str, float]:
@@ -258,7 +258,7 @@ class CoolPropEngine(CalculationEngine):
                 "triple_temperature": PropsSI("Ttriple", fluid),
                 "triple_pressure": PropsSI("ptriple", fluid),
             }
-        except Exception as e:
+        except Exception:
             raise SubstanceNotFoundError(self.name, substance)
 
     def calculate_refrigeration_cycle(
@@ -372,5 +372,5 @@ class CoolPropEngine(CalculationEngine):
                 "acentric_factor": PropsSI("acentric", fluid),
                 "gas_constant": PropsSI("gas_constant", fluid),
             }
-        except Exception as e:
+        except Exception:
             raise SubstanceNotFoundError(self.name, substance)

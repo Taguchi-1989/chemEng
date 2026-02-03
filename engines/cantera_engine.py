@@ -10,9 +10,9 @@ from typing import Any
 
 from .base import (
     CalculationEngine,
+    ConditionsOutOfRangeError,
     EngineCapability,
     EngineError,
-    ConditionsOutOfRangeError,
 )
 
 # 条件付きインポート
@@ -59,7 +59,7 @@ class CanteraEngine(CalculationEngine):
     def is_available(self) -> bool:
         return CANTERA_AVAILABLE
 
-    def _get_solution(self, mechanism: str | None = None) -> "ct.Solution":
+    def _get_solution(self, mechanism: str | None = None) -> ct.Solution:
         """Solutionオブジェクトを取得"""
         if not CANTERA_AVAILABLE:
             raise ImportError("cantera library not installed")
@@ -194,7 +194,6 @@ class CanteraEngine(CalculationEngine):
             gas.TP = initial_temperature, pressure
 
             # 初期状態を保存
-            initial_enthalpy = gas.enthalpy_mass
 
             # 断熱平衡（定エンタルピー・定圧）
             gas.equilibrate("HP")

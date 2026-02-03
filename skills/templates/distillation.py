@@ -118,7 +118,7 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
         "description": "全物質収支 + 成分収支",
         "formulas": [
             "全物質収支: F = D + B",
-            f"成分収支: F·zF = D·xD + B·xB",
+            "成分収支: F·zF = D·xD + B·xB",
             "",
             "D = F × (zF - xB) / (xD - xB)",
             f"D = {F} × ({zF} - {xB:.4f}) / ({xD} - {xB:.4f})",

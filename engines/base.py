@@ -116,7 +116,7 @@ class CalculationEngine(ABC):
         for prop in property_names:
             try:
                 result[prop] = self.get_property(substance, prop, conditions)
-            except (ValueError, NotImplementedError) as e:
+            except (ValueError, NotImplementedError):
                 result[prop] = None
         return result
 

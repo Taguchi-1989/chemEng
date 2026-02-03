@@ -8,12 +8,13 @@ from __future__ import annotations
 
 import importlib.util
 import time
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 import yaml
 
-from .skill import SkillDefinition, CalculationResult
+from .skill import CalculationResult, SkillDefinition
 
 # Use try/except to support both package import and direct module import (Vercel)
 try:

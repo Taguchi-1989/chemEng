@@ -57,9 +57,13 @@ Homepage = "https://github.com/user/walktalk-hub"
 Documentation = "https://github.com/user/walktalk-hub/tree/main/chemeng"
 Repository = "https://github.com/user/walktalk-hub"
 
+[tool.setuptools.package-dir]
+chemeng = "."
+
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["chemeng*"]
+include = ["*"]
+exclude = ["tests*", "docs*", "deploy*", "api*"]
 
 [tool.ruff]
 target-version = "py310"
@@ -67,10 +71,20 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "C4"]
-ignore = ["E501"]
+ignore = [
+    "E501",   # Line too long
+    "N999",   # Invalid module name (chemEng is intentional)
+    "N803",   # Argument name should be lowercase (T, P are standard in science)
+    "N806",   # Variable name should be lowercase (Tc, Pc, MW are standard)
+    "N802",   # Function name should be lowercase (mock Field function)
+    "N817",   # CamelCase imported as acronym (CoolProp as CP is standard)
+    "E402",   # Module level import not at top (needed for path setup)
+    "B904",   # raise from in except (style preference)
+    "B905",   # zip without strict (Python 3.10+ style)
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
-addopts = "-v --tb=short"
+addopts = "-v --tb=short -p no:asyncio"

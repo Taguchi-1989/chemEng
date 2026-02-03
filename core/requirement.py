@@ -42,7 +42,7 @@ class Substance:
             raise ValueError("Substance name is required")
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "Substance":
+    def from_dict(cls, data: dict[str, Any]) -> Substance:
         """辞書から生成"""
         return cls(
             name=data["name"],
@@ -80,7 +80,7 @@ class Condition:
                 raise ValueError(f"Composition must sum to 1.0, got {total}")
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "Condition":
+    def from_dict(cls, data: dict[str, Any]) -> Condition:
         """辞書から生成"""
         return cls(
             temperature=data.get("temperature"),
@@ -155,7 +155,7 @@ class RequirementSpec:
         self.update()
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "RequirementSpec":
+    def from_dict(cls, data: dict[str, Any]) -> RequirementSpec:
         """辞書から生成"""
         substances = [Substance.from_dict(s) for s in data.get("substances", [])]
         inlet_conditions = [Condition.from_dict(c) for c in data.get("inlet_conditions", [])]

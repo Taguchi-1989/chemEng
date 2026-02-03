@@ -70,7 +70,7 @@ def print_result(result: dict[str, Any], format: str = "text"):
 
 def cmd_property(args):
     """物性値取得コマンド"""
-    from chemeng.engines import get_available_engines, select_engine
+    from chemeng.engines import select_engine
 
     substance = args.substance
     property_name = args.property
@@ -250,10 +250,10 @@ def cmd_engine(args):
         cap = engine.capabilities
         print(f"\n=== {engine.name} ===")
         print(f"利用可能: {engine.is_available()}")
-        print(f"\n物性タイプ:")
+        print("\n物性タイプ:")
         for p in cap.property_types:
             print(f"  - {p}")
-        print(f"\n計算タイプ:")
+        print("\n計算タイプ:")
         for c in cap.calculation_types:
             print(f"  - {c}")
         print(f"\n対象物質: {cap.supported_substances}")

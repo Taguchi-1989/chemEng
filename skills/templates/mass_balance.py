@@ -113,7 +113,7 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
     })
 
     # Step 3: 入口合計を計算
-    inlet_total_flows = {comp: 0.0 for comp in components}
+    inlet_total_flows = dict.fromkeys(components, 0.0)
     for stream in inlet_streams:
         for comp in components:
             inlet_total_flows[comp] += stream.component_flows.get(comp, 0.0)
@@ -127,9 +127,9 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
     total_formulas = ["入口合計成分流量:"]
     for comp in components:
         total_formulas.append(f"  {comp}: {inlet_total_flows[comp]:.4f}")
-    total_formulas.append(f"")
+    total_formulas.append("")
     total_formulas.append(f"全入口流量: {total_inlet:.4f}")
-    total_formulas.append(f"")
+    total_formulas.append("")
     total_formulas.append("入口合計組成:")
     for comp in components:
         total_formulas.append(f"  {comp}: {inlet_total_composition[comp]:.4f}")
@@ -196,7 +196,7 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
             stream.calculate_from_component_flows(components)
 
     # Step 4: 出口合計を計算
-    outlet_total_flows = {comp: 0.0 for comp in components}
+    outlet_total_flows = dict.fromkeys(components, 0.0)
     for stream in outlet_streams:
         for comp in components:
             outlet_total_flows[comp] += stream.component_flows.get(comp, 0.0)
@@ -218,7 +218,7 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
     outlet_formulas.append("出口合計成分流量:")
     for comp in components:
         outlet_formulas.append(f"  {comp}: {outlet_total_flows[comp]:.4f}")
-    outlet_formulas.append(f"")
+    outlet_formulas.append("")
     outlet_formulas.append(f"全出口流量: {total_outlet:.4f}")
 
     calculation_steps.append({

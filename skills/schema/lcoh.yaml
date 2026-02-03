@@ -1,0 +1,245 @@
+# LCOH (Levelized Cost of Hydrogen) 計算スキル
+# 水素製造原価の計算
+
+skill_id: "lcoh"
+name: "水素製造原価 (LCOH)"
+description: "水素製造の均等化原価（LCOH）計算。電解、SMR、ATR対応。"
+calculation_type: "lcoh"
+version: "1.0.0"
+author: "chemeng"
+tags: ["hydrogen", "economics", "lcoh", "green_hydrogen", "electrolysis"]
+
+required_engines: []
+
+input_schema:
+  # 製造方法選択
+  - name: production_method
+    type: str
+    description: "水素製造方法"
+    required: true
+    options: ["pem_electrolysis", "alkaline_electrolysis", "soec_electrolysis", "smr", "smr_ccs", "atr_ccs"]
+    default: "pem_electrolysis"
+    example: "pem_electrolysis"
+
+  # 設備容量
+  - name: capacity
+    type: float
+    description: "設備容量"
+    unit: "MW"
+    required: true
+    min_value: 0.1
+    max_value: 1000
+    example: 10.0
+
+  # CAPEX
+  - name: capex_per_kw
+    type: float
+    description: "設備投資単価（電解槽/改質装置）"
+    unit: "EUR/kW"
+    required: false
+    min_value: 100
+    max_value: 5000
+    example: 800
+    # デフォルト値は製造方法により自動設定
+
+  # 電力関連（電解用）
+  - name: electricity_price
+    type: float
+    description: "電力単価"
+    unit: "EUR/MWh"
+    required: false
+    default: 50.0
+    min_value: 0
+    max_value: 500
+    example: 50.0
+
+  - name: electricity_consumption
+    type: float
+    description: "電力消費量（電解効率の逆数）"
+    unit: "kWh/kg_H2"
+    required: false
+    min_value: 40
+    max_value: 80
+    example: 50.0
+    # デフォルト値は製造方法により自動設定
+
+  # 天然ガス関連（SMR/ATR用）
+  - name: natural_gas_price
+    type: float
+    description: "天然ガス価格"
+    unit: "EUR/MWh"
+    required: false
+    default: 30.0
+    min_value: 0
+    max_value: 200
+    example: 30.0
+
+  # 運転パラメータ
+  - name: operating_hours
+    type: float
+    description: "年間稼働時間"
+    unit: "hours/year"
+    required: false
+    default: 4000
+    min_value: 1000
+    max_value: 8760
+    example: 4000
+
+  - name: capacity_factor
+    type: float
+    description: "設備利用率（稼働時間の代わりに使用可）"
+    required: false
+    min_value: 0.1
+    max_value: 1.0
+    example: 0.5
+
+  # OPEX
+  - name: opex_percent
+    type: float
+    description: "年間OPEX（CAPEXに対する割合）"
+    unit: "%"
+    required: false
+    default: 3.0
+    min_value: 0.5
+    max_value: 10
+    example: 3.0
+
+  # スタック交換
+  - name: stack_lifetime
+    type: float
+    description: "スタック寿命"
+    unit: "years"
+    required: false
+    min_value: 3
+    max_value: 20
+    example: 10
+    # デフォルト値は製造方法により自動設定
+
+  - name: stack_cost_percent
+    type: float
+    description: "スタック交換費用（CAPEXに対する割合）"
+    unit: "%"
+    required: false
+    default: 30
+    min_value: 10
+    max_value: 60
+    example: 30
+
+  # 経済パラメータ
+  - name: project_lifetime
+    type: int
+    description: "プロジェクト寿命"
+    unit: "years"
+    required: false
+    default: 20
+    min_value: 10
+    max_value: 40
+    example: 20
+
+  - name: discount_rate
+    type: float
+    description: "割引率（WACC）"
+    unit: "%"
+    required: false
+    default: 6.0
+    min_value: 2
+    max_value: 15
+    example: 6.0
+
+  # 炭素関連
+  - name: carbon_price
+    type: float
+    description: "炭素価格"
+    unit: "EUR/ton_CO2"
+    required: false
+    default: 0
+    min_value: 0
+    max_value: 500
+    example: 100
+
+  - name: ccs_capture_rate
+    type: float
+    description: "CO2回収率（CCS付きの場合）"
+    unit: "%"
+    required: false
+    default: 90
+    min_value: 50
+    max_value: 99
+    example: 90
+
+  # その他収入
+  - name: oxygen_revenue
+    type: float
+    description: "酸素販売収入（電解の場合）"
+    unit: "EUR/kg_O2"
+    required: false
+    default: 0
+    min_value: 0
+    max_value: 0.5
+    example: 0.05
+
+  - name: subsidies
+    type: float
+    description: "補助金"
+    unit: "EUR/kg_H2"
+    required: false
+    default: 0
+    min_value: 0
+    max_value: 10
+    example: 0
+
+  # 水コスト
+  - name: water_price
+    type: float
+    description: "水価格"
+    unit: "EUR/m3"
+    required: false
+    default: 2.0
+    min_value: 0
+    max_value: 10
+    example: 2.0
+
+output_schema:
+  - name: lcoh
+    type: float
+    description: "水素製造原価 (EUR/kg H2)"
+
+  - name: lcoh_breakdown
+    type: dict
+    description: "LCOH内訳"
+    # capex_component, electricity_component, opex_component,
+    # stack_replacement_component, carbon_cost_component,
+    # water_cost_component, revenue_offset
+
+  - name: annual_h2_production
+    type: float
+    description: "年間水素生産量 (kg/year)"
+
+  - name: total_capex
+    type: float
+    description: "総CAPEX (EUR)"
+
+  - name: annual_costs
+    type: dict
+    description: "年間コスト内訳 (EUR/year)"
+
+  - name: carbon_intensity
+    type: float
+    description: "CO2排出原単位 (kg CO2/kg H2)"
+
+  - name: energy_efficiency
+    type: float
+    description: "エネルギー効率 (%)"
+
+  - name: calculation_steps
+    type: list
+    description: "計算過程の詳細"
+
+  - name: sensitivity_data
+    type: dict
+    description: "感度分析用データ（電力価格±20%など）"
+
+validation_rules:
+  - "capacity must be positive"
+  - "electricity_price or natural_gas_price must be specified based on method"
+  - "operating_hours <= 8760"

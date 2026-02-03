@@ -58,7 +58,7 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
     })
 
     # 入口での溶質流量
-    solute_in = G * y_in / (1 - y_in)  # kmol/h
+    G * y_in / (1 - y_in)  # kmol/h
 
     # Step 2: ヘンリー定数の推定
     H, m = _estimate_henry_constant(
