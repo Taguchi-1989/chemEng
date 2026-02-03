@@ -1,0 +1,150 @@
+# 液液抽出スキル
+# 向流多段抽出の設計計算
+
+skill_id: "extraction"
+name: "液液抽出"
+description: "向流多段液液抽出の設計計算。Kremser式による段数計算。"
+calculation_type: "extraction"
+version: "1.0.0"
+author: "chemeng"
+tags: ["separation", "unit_operation", "extraction", "design"]
+
+required_engines:
+  - thermo
+
+input_schema:
+  # 物質系
+  - name: solute
+    type: str
+    description: "溶質（抽出する成分）"
+    required: true
+    example: "acetic_acid"
+
+  - name: carrier
+    type: str
+    description: "キャリア（元の溶媒、ラフィネート相）"
+    required: true
+    example: "water"
+
+  - name: solvent
+    type: str
+    description: "抽剤（新しい溶媒、エキストラクト相）"
+    required: true
+    example: "ethyl_acetate"
+
+  # 原料条件
+  - name: feed_flow_rate
+    type: float
+    description: "原料流量（キャリア+溶質）"
+    unit: "kmol/h"
+    required: true
+    min_value: 0.001
+    example: 100.0
+
+  - name: feed_composition
+    type: float
+    description: "原料中の溶質モル分率"
+    required: true
+    min_value: 0.001
+    max_value: 0.5
+    example: 0.1
+
+  - name: solvent_flow_rate
+    type: float
+    description: "抽剤流量"
+    unit: "kmol/h"
+    required: true
+    min_value: 0.001
+    example: 50.0
+
+  - name: solvent_purity
+    type: float
+    description: "抽剤中の溶質モル分率（通常0=純溶剤）"
+    required: false
+    default: 0.0
+    min_value: 0.0
+    max_value: 0.1
+
+  # 運転条件
+  - name: temperature
+    type: float
+    description: "操作温度"
+    unit: "K"
+    required: false
+    default: 298.15
+    min_value: 250.0
+    max_value: 400.0
+
+  - name: pressure
+    type: float
+    description: "操作圧力"
+    unit: "Pa"
+    required: false
+    default: 101325.0
+
+  # 設計仕様（いずれか一方を指定）
+  - name: stages
+    type: int
+    description: "理論段数（指定する場合）"
+    required: false
+    min_value: 1
+    max_value: 50
+    example: 5
+
+  - name: recovery
+    type: float
+    description: "目標抽出率（0-1）（段数未指定時に使用）"
+    required: false
+    min_value: 0.5
+    max_value: 0.999
+    default: 0.9
+    example: 0.95
+
+output_schema:
+  - name: extraction_factor
+    type: float
+    description: "抽出係数 E = m × S/F"
+
+  - name: distribution_coefficient
+    type: float
+    description: "分配係数 m = y*/x"
+
+  - name: actual_stages
+    type: int
+    description: "必要理論段数"
+
+  - name: recovery
+    type: float
+    description: "溶質抽出率"
+
+  - name: raffinate_flow_rate
+    type: float
+    description: "ラフィネート流量"
+    unit: "kmol/h"
+
+  - name: raffinate_composition
+    type: float
+    description: "ラフィネート中の溶質モル分率"
+
+  - name: extract_flow_rate
+    type: float
+    description: "エキストラクト流量"
+    unit: "kmol/h"
+
+  - name: extract_composition
+    type: float
+    description: "エキストラクト中の溶質モル分率"
+
+  - name: solute_in_raffinate
+    type: float
+    description: "ラフィネート中の溶質流量"
+    unit: "kmol/h"
+
+  - name: solute_in_extract
+    type: float
+    description: "エキストラクト中の溶質流量"
+    unit: "kmol/h"
+
+validation_rules:
+  - "extraction_factor should be > 1 for effective separation"
+  - "stages or recovery must be specified"

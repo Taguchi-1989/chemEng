@@ -3,75 +3,565 @@
 
 substances:
   water:
+    name_ja: "水"
+    name_en: "Water"
     cas: "7732-18-5"
     formula: "H2O"
     molecular_weight: 18.015
+    category: "inorganic"
     typical_conditions:
       temperature_range: [273, 373]  # K
       pressure: 101325  # Pa
 
   ethanol:
+    name_ja: "エタノール"
+    name_en: "Ethanol"
+    aliases: ["エチルアルコール", "酒精"]
     cas: "64-17-5"
     formula: "C2H5OH"
     molecular_weight: 46.07
+    category: "alcohol"
     typical_conditions:
       temperature_range: [273, 351]
       pressure: 101325
 
   methanol:
+    name_ja: "メタノール"
+    name_en: "Methanol"
+    aliases: ["メチルアルコール", "木精"]
     cas: "67-56-1"
     formula: "CH3OH"
     molecular_weight: 32.04
+    category: "alcohol"
     typical_conditions:
       temperature_range: [273, 338]
       pressure: 101325
 
   benzene:
+    name_ja: "ベンゼン"
+    name_en: "Benzene"
     cas: "71-43-2"
     formula: "C6H6"
     molecular_weight: 78.11
+    category: "aromatic"
     typical_conditions:
       temperature_range: [278, 353]
       pressure: 101325
 
   toluene:
+    name_ja: "トルエン"
+    name_en: "Toluene"
+    aliases: ["メチルベンゼン"]
     cas: "108-88-3"
     formula: "C7H8"
     molecular_weight: 92.14
+    category: "aromatic"
     typical_conditions:
       temperature_range: [273, 384]
       pressure: 101325
 
   acetone:
+    name_ja: "アセトン"
+    name_en: "Acetone"
+    aliases: ["ジメチルケトン", "プロパノン"]
     cas: "67-64-1"
     formula: "C3H6O"
     molecular_weight: 58.08
+    category: "ketone"
     typical_conditions:
       temperature_range: [273, 329]
       pressure: 101325
 
   ammonia:
+    name_ja: "アンモニア"
+    name_en: "Ammonia"
     cas: "7664-41-7"
     formula: "NH3"
     molecular_weight: 17.03
+    category: "inorganic"
     typical_conditions:
       temperature_range: [200, 400]
       pressure: 101325
 
   nitrogen:
+    name_ja: "窒素"
+    name_en: "Nitrogen"
     cas: "7727-37-9"
     formula: "N2"
     molecular_weight: 28.01
+    category: "inorganic"
     typical_conditions:
       temperature_range: [77, 500]
       pressure: 101325
 
   oxygen:
+    name_ja: "酸素"
+    name_en: "Oxygen"
     cas: "7782-44-7"
     formula: "O2"
     molecular_weight: 32.00
+    category: "inorganic"
     typical_conditions:
       temperature_range: [90, 500]
+      pressure: 101325
+
+  # 追加物質
+  propanol:
+    name_ja: "プロパノール"
+    name_en: "Propanol"
+    aliases: ["n-プロパノール", "1-プロパノール"]
+    cas: "71-23-8"
+    formula: "C3H7OH"
+    molecular_weight: 60.10
+    category: "alcohol"
+    typical_conditions:
+      temperature_range: [273, 370]
+      pressure: 101325
+
+  isopropanol:
+    name_ja: "イソプロパノール"
+    name_en: "Isopropanol"
+    aliases: ["2-プロパノール", "IPA"]
+    cas: "67-63-0"
+    formula: "C3H8O"
+    molecular_weight: 60.10
+    category: "alcohol"
+    typical_conditions:
+      temperature_range: [273, 355]
+      pressure: 101325
+
+  hexane:
+    name_ja: "ヘキサン"
+    name_en: "Hexane"
+    aliases: ["n-ヘキサン"]
+    cas: "110-54-3"
+    formula: "C6H14"
+    molecular_weight: 86.18
+    category: "alkane"
+    typical_conditions:
+      temperature_range: [273, 342]
+      pressure: 101325
+
+  heptane:
+    name_ja: "ヘプタン"
+    name_en: "Heptane"
+    aliases: ["n-ヘプタン"]
+    cas: "142-82-5"
+    formula: "C7H16"
+    molecular_weight: 100.21
+    category: "alkane"
+    typical_conditions:
+      temperature_range: [273, 371]
+      pressure: 101325
+
+  chloroform:
+    name_ja: "クロロホルム"
+    name_en: "Chloroform"
+    aliases: ["トリクロロメタン"]
+    cas: "67-66-3"
+    formula: "CHCl3"
+    molecular_weight: 119.38
+    category: "halogenated"
+    typical_conditions:
+      temperature_range: [273, 334]
+      pressure: 101325
+
+  acetic_acid:
+    name_ja: "酢酸"
+    name_en: "Acetic acid"
+    aliases: ["エタン酸"]
+    cas: "64-19-7"
+    formula: "CH3COOH"
+    molecular_weight: 60.05
+    category: "carboxylic_acid"
+    typical_conditions:
+      temperature_range: [290, 391]
+      pressure: 101325
+
+  ethyl_acetate:
+    name_ja: "酢酸エチル"
+    name_en: "Ethyl acetate"
+    cas: "141-78-6"
+    formula: "C4H8O2"
+    molecular_weight: 88.11
+    category: "ester"
+    typical_conditions:
+      temperature_range: [273, 350]
+      pressure: 101325
+
+  carbon_dioxide:
+    name_ja: "二酸化炭素"
+    name_en: "Carbon dioxide"
+    aliases: ["炭酸ガス", "CO2"]
+    cas: "124-38-9"
+    formula: "CO2"
+    molecular_weight: 44.01
+    category: "inorganic"
+    typical_conditions:
+      temperature_range: [200, 500]
+      pressure: 101325
+
+  hydrogen:
+    name_ja: "水素"
+    name_en: "Hydrogen"
+    cas: "1333-74-0"
+    formula: "H2"
+    molecular_weight: 2.016
+    category: "inorganic"
+    typical_conditions:
+      temperature_range: [20, 500]
+      pressure: 101325
+
+  sulfuric_acid:
+    name_ja: "硫酸"
+    name_en: "Sulfuric acid"
+    cas: "7664-93-9"
+    formula: "H2SO4"
+    molecular_weight: 98.08
+    category: "inorganic"
+    typical_conditions:
+      temperature_range: [273, 610]
+      pressure: 101325
+
+  # 炭化水素（アルカン）
+  methane:
+    name_ja: "メタン"
+    name_en: "Methane"
+    aliases: ["天然ガス"]
+    cas: "74-82-8"
+    formula: "CH4"
+    molecular_weight: 16.04
+    category: "alkane"
+    typical_conditions:
+      temperature_range: [111, 500]
+      pressure: 101325
+
+  ethane:
+    name_ja: "エタン"
+    name_en: "Ethane"
+    cas: "74-84-0"
+    formula: "C2H6"
+    molecular_weight: 30.07
+    category: "alkane"
+    typical_conditions:
+      temperature_range: [184, 500]
+      pressure: 101325
+
+  propane:
+    name_ja: "プロパン"
+    name_en: "Propane"
+    aliases: ["LPG"]
+    cas: "74-98-6"
+    formula: "C3H8"
+    molecular_weight: 44.10
+    category: "alkane"
+    typical_conditions:
+      temperature_range: [231, 500]
+      pressure: 101325
+
+  butane:
+    name_ja: "ブタン"
+    name_en: "Butane"
+    aliases: ["n-ブタン"]
+    cas: "106-97-8"
+    formula: "C4H10"
+    molecular_weight: 58.12
+    category: "alkane"
+    typical_conditions:
+      temperature_range: [273, 425]
+      pressure: 101325
+
+  pentane:
+    name_ja: "ペンタン"
+    name_en: "Pentane"
+    aliases: ["n-ペンタン"]
+    cas: "109-66-0"
+    formula: "C5H12"
+    molecular_weight: 72.15
+    category: "alkane"
+    typical_conditions:
+      temperature_range: [273, 309]
+      pressure: 101325
+
+  octane:
+    name_ja: "オクタン"
+    name_en: "Octane"
+    aliases: ["n-オクタン"]
+    cas: "111-65-9"
+    formula: "C8H18"
+    molecular_weight: 114.23
+    category: "alkane"
+    typical_conditions:
+      temperature_range: [273, 399]
+      pressure: 101325
+
+  cyclohexane:
+    name_ja: "シクロヘキサン"
+    name_en: "Cyclohexane"
+    cas: "110-82-7"
+    formula: "C6H12"
+    molecular_weight: 84.16
+    category: "cycloalkane"
+    typical_conditions:
+      temperature_range: [280, 354]
+      pressure: 101325
+
+  # アルコール追加
+  butanol:
+    name_ja: "ブタノール"
+    name_en: "Butanol"
+    aliases: ["n-ブタノール", "1-ブタノール"]
+    cas: "71-36-3"
+    formula: "C4H9OH"
+    molecular_weight: 74.12
+    category: "alcohol"
+    typical_conditions:
+      temperature_range: [273, 391]
+      pressure: 101325
+
+  ethylene_glycol:
+    name_ja: "エチレングリコール"
+    name_en: "Ethylene glycol"
+    aliases: ["EG", "モノエチレングリコール"]
+    cas: "107-21-1"
+    formula: "C2H6O2"
+    molecular_weight: 62.07
+    category: "glycol"
+    typical_conditions:
+      temperature_range: [260, 470]
+      pressure: 101325
+
+  # 芳香族化合物追加
+  xylene:
+    name_ja: "キシレン"
+    name_en: "Xylene"
+    aliases: ["o-キシレン", "オルトキシレン"]
+    cas: "95-47-6"
+    formula: "C8H10"
+    molecular_weight: 106.17
+    category: "aromatic"
+    typical_conditions:
+      temperature_range: [273, 417]
+      pressure: 101325
+
+  styrene:
+    name_ja: "スチレン"
+    name_en: "Styrene"
+    aliases: ["ビニルベンゼン", "スチロールモノマー"]
+    cas: "100-42-5"
+    formula: "C8H8"
+    molecular_weight: 104.15
+    category: "aromatic"
+    typical_conditions:
+      temperature_range: [273, 418]
+      pressure: 101325
+
+  phenol:
+    name_ja: "フェノール"
+    name_en: "Phenol"
+    aliases: ["石炭酸", "ヒドロキシベンゼン"]
+    cas: "108-95-2"
+    formula: "C6H5OH"
+    molecular_weight: 94.11
+    category: "aromatic"
+    typical_conditions:
+      temperature_range: [314, 455]
+      pressure: 101325
+
+  aniline:
+    name_ja: "アニリン"
+    name_en: "Aniline"
+    aliases: ["アミノベンゼン", "フェニルアミン"]
+    cas: "62-53-3"
+    formula: "C6H5NH2"
+    molecular_weight: 93.13
+    category: "aromatic"
+    typical_conditions:
+      temperature_range: [267, 457]
+      pressure: 101325
+
+  # 溶媒
+  dichloromethane:
+    name_ja: "ジクロロメタン"
+    name_en: "Dichloromethane"
+    aliases: ["塩化メチレン", "DCM"]
+    cas: "75-09-2"
+    formula: "CH2Cl2"
+    molecular_weight: 84.93
+    category: "halogenated"
+    typical_conditions:
+      temperature_range: [273, 313]
+      pressure: 101325
+
+  tetrahydrofuran:
+    name_ja: "テトラヒドロフラン"
+    name_en: "Tetrahydrofuran"
+    aliases: ["THF", "オキソラン"]
+    cas: "109-99-9"
+    formula: "C4H8O"
+    molecular_weight: 72.11
+    category: "ether"
+    typical_conditions:
+      temperature_range: [273, 339]
+      pressure: 101325
+
+  dimethylformamide:
+    name_ja: "ジメチルホルムアミド"
+    name_en: "Dimethylformamide"
+    aliases: ["DMF", "N,N-ジメチルホルムアミド"]
+    cas: "68-12-2"
+    formula: "C3H7NO"
+    molecular_weight: 73.09
+    category: "amide"
+    typical_conditions:
+      temperature_range: [273, 426]
+      pressure: 101325
+
+  dimethyl_sulfoxide:
+    name_ja: "ジメチルスルホキシド"
+    name_en: "Dimethyl sulfoxide"
+    aliases: ["DMSO"]
+    cas: "67-68-5"
+    formula: "C2H6OS"
+    molecular_weight: 78.13
+    category: "sulfoxide"
+    typical_conditions:
+      temperature_range: [292, 462]
+      pressure: 101325
+
+  # 酸類追加
+  nitric_acid:
+    name_ja: "硝酸"
+    name_en: "Nitric acid"
+    cas: "7697-37-2"
+    formula: "HNO3"
+    molecular_weight: 63.01
+    category: "inorganic"
+    typical_conditions:
+      temperature_range: [273, 356]
+      pressure: 101325
+
+  formic_acid:
+    name_ja: "ギ酸"
+    name_en: "Formic acid"
+    aliases: ["蟻酸", "メタン酸"]
+    cas: "64-18-6"
+    formula: "HCOOH"
+    molecular_weight: 46.03
+    category: "carboxylic_acid"
+    typical_conditions:
+      temperature_range: [281, 374]
+      pressure: 101325
+
+  hydrochloric_acid:
+    name_ja: "塩酸"
+    name_en: "Hydrochloric acid"
+    aliases: ["塩化水素"]
+    cas: "7647-01-0"
+    formula: "HCl"
+    molecular_weight: 36.46
+    category: "inorganic"
+    typical_conditions:
+      temperature_range: [188, 500]
+      pressure: 101325
+
+  # ガス類追加
+  carbon_monoxide:
+    name_ja: "一酸化炭素"
+    name_en: "Carbon monoxide"
+    aliases: ["CO"]
+    cas: "630-08-0"
+    formula: "CO"
+    molecular_weight: 28.01
+    category: "inorganic"
+    typical_conditions:
+      temperature_range: [68, 500]
+      pressure: 101325
+
+  helium:
+    name_ja: "ヘリウム"
+    name_en: "Helium"
+    aliases: ["He"]
+    cas: "7440-59-7"
+    formula: "He"
+    molecular_weight: 4.003
+    category: "noble_gas"
+    typical_conditions:
+      temperature_range: [4, 500]
+      pressure: 101325
+
+  argon:
+    name_ja: "アルゴン"
+    name_en: "Argon"
+    aliases: ["Ar"]
+    cas: "7440-37-1"
+    formula: "Ar"
+    molecular_weight: 39.95
+    category: "noble_gas"
+    typical_conditions:
+      temperature_range: [87, 500]
+      pressure: 101325
+
+  # オレフィン
+  ethylene:
+    name_ja: "エチレン"
+    name_en: "Ethylene"
+    aliases: ["エテン"]
+    cas: "74-85-1"
+    formula: "C2H4"
+    molecular_weight: 28.05
+    category: "olefin"
+    typical_conditions:
+      temperature_range: [169, 500]
+      pressure: 101325
+
+  propylene:
+    name_ja: "プロピレン"
+    name_en: "Propylene"
+    aliases: ["プロペン"]
+    cas: "115-07-1"
+    formula: "C3H6"
+    molecular_weight: 42.08
+    category: "olefin"
+    typical_conditions:
+      temperature_range: [225, 500]
+      pressure: 101325
+
+  # その他
+  formaldehyde:
+    name_ja: "ホルムアルデヒド"
+    name_en: "Formaldehyde"
+    aliases: ["ホルマリン", "メタナール"]
+    cas: "50-00-0"
+    formula: "CH2O"
+    molecular_weight: 30.03
+    category: "aldehyde"
+    typical_conditions:
+      temperature_range: [181, 500]
+      pressure: 101325
+
+  diethyl_ether:
+    name_ja: "ジエチルエーテル"
+    name_en: "Diethyl ether"
+    aliases: ["エーテル", "エチルエーテル"]
+    cas: "60-29-7"
+    formula: "C4H10O"
+    molecular_weight: 74.12
+    category: "ether"
+    typical_conditions:
+      temperature_range: [273, 308]
+      pressure: 101325
+
+  sodium_hydroxide:
+    name_ja: "水酸化ナトリウム"
+    name_en: "Sodium hydroxide"
+    aliases: ["苛性ソーダ", "NaOH"]
+    cas: "1310-73-2"
+    formula: "NaOH"
+    molecular_weight: 40.00
+    category: "inorganic"
+    typical_conditions:
+      temperature_range: [323, 1663]
       pressure: 101325
 
 # 計算タイプ別デフォルト条件

@@ -1109,11 +1109,126 @@
             font-size: 0.85rem;
             color: var(--text-dim);
             transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
 
-        .autocomplete-item:hover {
+        .autocomplete-item:hover,
+        .autocomplete-item.selected {
             background: var(--accent-cyan);
             color: var(--bg-deep);
+        }
+
+        .autocomplete-item:hover .ac-en,
+        .autocomplete-item:hover .ac-formula,
+        .autocomplete-item.selected .ac-en,
+        .autocomplete-item.selected .ac-formula {
+            color: var(--bg-deep);
+            opacity: 0.7;
+        }
+
+        .autocomplete-item.selected .ac-name {
+            color: var(--bg-deep);
+        }
+
+        .ac-name {
+            font-weight: 500;
+            color: var(--text-main);
+            min-width: 80px;
+        }
+
+        .ac-en {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            flex: 1;
+        }
+
+        .ac-formula {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            color: var(--accent-cyan);
+            background: rgba(0, 255, 255, 0.1);
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            -webkit-backdrop-filter: blur(5px);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: var(--bg-panel);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .modal-header h3 {
+            font-family: var(--serif);
+            font-size: 1.25rem;
+            color: var(--accent-cyan);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--danger);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .txy-info {
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            text-align: center;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .submit-btn.secondary {
+            display: inline-flex;
+            align-items: center;
         }
 
         /* Footer */
@@ -1214,6 +1329,366 @@
                 width: 100%;
                 justify-content: center;
             }
+
+            .help-fab {
+                bottom: 1.5rem;
+                right: 1.5rem;
+                width: 48px;
+                height: 48px;
+            }
+
+            .help-panel {
+                bottom: 0;
+                right: 0;
+                left: 0;
+                width: 100%;
+                max-height: 70vh;
+                border-radius: 20px 20px 0 0;
+            }
+        }
+
+        /* ==================== Help FAB (Floating Action Button) ==================== */
+        .help-fab {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-teal));
+            border: none;
+            color: var(--bg-deep);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow:
+                0 4px 20px rgba(0, 212, 255, 0.4),
+                0 0 40px rgba(0, 212, 255, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            animation: fabPulse 3s ease-in-out infinite;
+        }
+
+        .help-fab:hover {
+            transform: scale(1.1) translateY(-2px);
+            box-shadow:
+                0 8px 30px rgba(0, 212, 255, 0.5),
+                0 0 60px rgba(0, 212, 255, 0.3);
+        }
+
+        .help-fab:active {
+            transform: scale(0.95);
+        }
+
+        .help-fab.active {
+            animation: none;
+            background: var(--accent-rose);
+            box-shadow: 0 4px 20px rgba(255, 107, 157, 0.4);
+        }
+
+        .help-fab.active svg {
+            transform: rotate(45deg);
+        }
+
+        .help-fab svg {
+            transition: transform 0.3s;
+        }
+
+        @keyframes fabPulse {
+            0%, 100% { box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4), 0 0 40px rgba(0, 212, 255, 0.2); }
+            50% { box-shadow: 0 4px 30px rgba(0, 212, 255, 0.6), 0 0 60px rgba(0, 212, 255, 0.3); }
+        }
+
+        /* ==================== Help Panel ==================== */
+        .help-panel {
+            position: fixed;
+            bottom: 6rem;
+            right: 2rem;
+            width: 360px;
+            max-height: 520px;
+            background: var(--bg-panel);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.4),
+                0 0 40px var(--glass-glow);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: helpPanelIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .help-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--glass-glow) 0%, transparent 50%);
+            pointer-events: none;
+            border-radius: 20px;
+        }
+
+        .help-panel.hidden {
+            display: none;
+        }
+
+        @keyframes helpPanelIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Help Panel Header */
+        .help-panel-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            position: relative;
+        }
+
+        .help-panel-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-teal));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bg-deep);
+        }
+
+        .help-panel-title {
+            flex: 1;
+            font-family: var(--serif);
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-bright);
+        }
+
+        .help-panel-close {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .help-panel-close:hover {
+            border-color: var(--accent-rose);
+            color: var(--accent-rose);
+            background: rgba(255, 107, 157, 0.1);
+        }
+
+        /* Help Panel Body */
+        .help-panel-body {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        /* Help Messages */
+        .help-message {
+            display: flex;
+            gap: 0.75rem;
+            animation: fadeSlideIn 0.3s ease;
+        }
+
+        .help-message.user {
+            flex-direction: row-reverse;
+        }
+
+        .help-message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-cyan);
+            flex-shrink: 0;
+        }
+
+        .help-message.user .help-message-avatar {
+            background: linear-gradient(135deg, var(--accent-violet), var(--accent-rose));
+            color: white;
+            border: none;
+        }
+
+        .help-message-content {
+            flex: 1;
+            padding: 0.875rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            font-size: 0.85rem;
+            color: var(--text-bright);
+            line-height: 1.5;
+        }
+
+        .help-message.user .help-message-content {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-teal));
+            color: var(--bg-deep);
+            border: none;
+        }
+
+        .help-message-content p {
+            margin: 0 0 0.5rem;
+        }
+
+        .help-message-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .help-message-content ul {
+            margin: 0.5rem 0;
+            padding-left: 1.25rem;
+        }
+
+        .help-message-content li {
+            margin-bottom: 0.25rem;
+        }
+
+        .help-message-hint {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Quick Action Buttons */
+        .help-quick-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+        }
+
+        .help-quick-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            font-family: var(--mono);
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .help-quick-btn:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            transform: translateX(4px);
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .help-quick-btn svg {
+            color: var(--accent-cyan);
+            flex-shrink: 0;
+        }
+
+        /* Help Panel Footer */
+        .help-panel-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--glass-border);
+            position: relative;
+        }
+
+        .help-input-wrapper {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .help-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            font-family: var(--mono);
+            font-size: 0.85rem;
+            color: var(--text-bright);
+            transition: all 0.3s;
+        }
+
+        .help-input:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.15);
+        }
+
+        .help-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .help-send-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+            background: var(--bg-card);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            opacity: 0.5;
+        }
+
+        .help-send-btn:not(:disabled) {
+            cursor: pointer;
+            opacity: 1;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-teal));
+            color: var(--bg-deep);
+            border: none;
+        }
+
+        .help-send-btn:not(:disabled):hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
+        }
+
+        .help-input-hint {
+            margin-top: 0.5rem;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .help-ai-badge {
+            padding: 0.2rem 0.5rem;
+            background: linear-gradient(135deg, var(--accent-violet), var(--accent-rose));
+            border-radius: 4px;
+            font-size: 0.6rem;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
     </style>
 </head>
@@ -1225,6 +1700,110 @@
 
     <!-- Toast Container -->
     <div class="toast-container" id="toast-container"></div>
+
+    <!-- Help FAB & Panel -->
+    <button class="help-fab" id="help-fab" title="ヘルプ / Help">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+    </button>
+
+    <div class="help-panel hidden" id="help-panel">
+        <div class="help-panel-header">
+            <div class="help-panel-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                </svg>
+            </div>
+            <span class="help-panel-title">ChemEng ヘルプ</span>
+            <button class="help-panel-close" id="help-panel-close">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="help-panel-body" id="help-messages">
+            <div class="help-message system">
+                <div class="help-message-avatar">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                    </svg>
+                </div>
+                <div class="help-message-content">
+                    <p>ChemEngへようこそ! 何かお手伝いできますか?</p>
+                    <p class="help-message-hint">下のトピックを選択するか、質問を入力してください。</p>
+                </div>
+            </div>
+
+            <div class="help-quick-actions" id="help-quick-actions">
+                <button class="help-quick-btn" data-topic="overview">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="16" x2="12" y2="12"/>
+                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                    ChemEngとは?
+                </button>
+                <button class="help-quick-btn" data-topic="property">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    物性推算の使い方
+                </button>
+                <button class="help-quick-btn" data-topic="distillation">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="8" y="2" width="8" height="20" rx="1"/>
+                        <line x1="8" y1="10" x2="16" y2="10"/>
+                        <line x1="8" y1="14" x2="16" y2="14"/>
+                    </svg>
+                    蒸留塔設計の使い方
+                </button>
+                <button class="help-quick-btn" data-topic="mass_balance">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="16"/>
+                        <line x1="8" y1="12" x2="16" y2="12"/>
+                    </svg>
+                    物質収支の使い方
+                </button>
+                <button class="help-quick-btn" data-topic="heat_balance">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"/>
+                        <line x1="12" y1="1" x2="12" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="23"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                        <line x1="1" y1="12" x2="3" y2="12"/>
+                        <line x1="21" y1="12" x2="23" y2="12"/>
+                    </svg>
+                    熱収支の使い方
+                </button>
+            </div>
+        </div>
+
+        <div class="help-panel-footer">
+            <div class="help-input-wrapper">
+                <input type="text" class="help-input" id="help-input" placeholder="質問を入力... (将来AI対応予定)">
+                <button class="help-send-btn" id="help-send-btn" disabled title="将来のAI統合で有効化予定">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"/>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="help-input-hint">
+                <span class="help-ai-badge">AI統合予定</span>
+                現在はFAQのみ対応
+            </div>
+        </div>
+    </div>
 
     <!-- Header -->
     <header>
@@ -1318,6 +1897,25 @@
                         <div class="calc-tab-label">熱収支</div>
                         <div class="calc-tab-sublabel">Heat Balance</div>
                     </div>
+                    <div class="calc-tab" data-tab="extraction">
+                        <svg class="calc-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="4" y="4" width="6" height="16" rx="1"/>
+                            <rect x="14" y="4" width="6" height="16" rx="1"/>
+                            <path d="M10 8h4M10 12h4M10 16h4"/>
+                        </svg>
+                        <div class="calc-tab-label">液液抽出</div>
+                        <div class="calc-tab-sublabel">L-L Extraction</div>
+                    </div>
+                    <div class="calc-tab" data-tab="absorption">
+                        <svg class="calc-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 2v6M12 22v-6"/>
+                            <rect x="6" y="8" width="12" height="8" rx="2"/>
+                            <path d="M9 11h6M9 14h4"/>
+                            <path d="M4 11l2-2M4 14l2 2M20 11l-2-2M20 14l-2 2"/>
+                        </svg>
+                        <div class="calc-tab-label">ガス吸収</div>
+                        <div class="calc-tab-sublabel">Gas Absorption</div>
+                    </div>
                 </div>
 
                 <!-- Property Form -->
@@ -1399,8 +1997,31 @@
                         <label class="form-label">Reflux Ratio Factor / 還流比係数 (R/Rmin)</label>
                         <input type="number" name="reflux_ratio_factor" class="form-input" value="1.3" step="0.1" min="1" required>
                     </div>
-                    <button type="submit" class="submit-btn">Design Column</button>
+                    <div class="form-actions">
+                        <button type="submit" class="submit-btn">Design Column</button>
+                        <button type="button" class="submit-btn secondary" id="show-txy-btn" style="background: var(--accent-violet);">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+                                <path d="M3 3v18h18"/>
+                                <path d="M7 16l4-8 4 4 6-8"/>
+                            </svg>
+                            View T-x-y Diagram
+                        </button>
+                    </div>
                 </form>
+
+                <!-- T-x-y Diagram Modal -->
+                <div id="txy-modal" class="modal hidden">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>T-x-y Phase Diagram / 相図</h3>
+                            <button class="modal-close" id="close-txy-modal">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <canvas id="txy-chart" width="500" height="400"></canvas>
+                            <div class="txy-info" id="txy-info"></div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Mass Balance Form -->
                 <form id="mass_balance-form" class="form-section">
@@ -1457,6 +2078,106 @@
                         <input type="number" name="efficiency" class="form-input" value="0.85" step="0.01" min="0" max="1">
                     </div>
                     <button type="submit" class="submit-btn">Calculate Heat Duty</button>
+                </form>
+
+                <!-- Liquid-Liquid Extraction Form -->
+                <form id="extraction-form" class="form-section">
+                    <div class="form-group">
+                        <label class="form-label">Solute / 溶質</label>
+                        <div class="autocomplete-wrapper">
+                            <input type="text" name="solute" class="form-input substance-input" value="acetic_acid" required autocomplete="off">
+                            <div class="autocomplete-dropdown hidden" id="autocomplete-ext-1"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Carrier / キャリア（原料溶媒）</label>
+                        <div class="autocomplete-wrapper">
+                            <input type="text" name="carrier" class="form-input substance-input" value="water" required autocomplete="off">
+                            <div class="autocomplete-dropdown hidden" id="autocomplete-ext-2"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Solvent / 抽剤（抽出溶媒）</label>
+                        <div class="autocomplete-wrapper">
+                            <input type="text" name="solvent" class="form-input substance-input" value="ethyl_acetate" required autocomplete="off">
+                            <div class="autocomplete-dropdown hidden" id="autocomplete-ext-3"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Feed Flow Rate / 原料流量 (kmol/h)</label>
+                        <input type="number" name="feed_flow_rate" class="form-input" value="100" step="0.1" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Feed Composition / 原料組成 (溶質モル分率)</label>
+                        <input type="number" name="feed_composition" class="form-input" value="0.1" step="0.01" min="0" max="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Solvent Flow Rate / 抽剤流量 (kmol/h)</label>
+                        <input type="number" name="solvent_flow_rate" class="form-input" value="50" step="0.1" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Temperature / 温度 (K)</label>
+                        <input type="number" name="temperature" class="form-input" value="298.15" step="0.1" min="200" max="500">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Number of Stages / 段数 (Optional)</label>
+                        <input type="number" name="stages" class="form-input" placeholder="Leave empty to calculate" step="1" min="1" max="50">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Target Recovery / 目標抽出率 (0-1)</label>
+                        <input type="number" name="recovery" class="form-input" value="0.9" step="0.01" min="0" max="1">
+                    </div>
+                    <button type="submit" class="submit-btn">Calculate Extraction</button>
+                </form>
+
+                <!-- Gas Absorption Form -->
+                <form id="absorption-form" class="form-section">
+                    <div class="form-group">
+                        <label class="form-label">Gas Component / 吸収成分</label>
+                        <div class="autocomplete-wrapper">
+                            <input type="text" name="gas_component" class="form-input substance-input" value="ammonia" required autocomplete="off">
+                            <div class="autocomplete-dropdown hidden" id="autocomplete-abs-1"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Carrier Gas / キャリアガス</label>
+                        <div class="autocomplete-wrapper">
+                            <input type="text" name="carrier_gas" class="form-input substance-input" value="air" required autocomplete="off">
+                            <div class="autocomplete-dropdown hidden" id="autocomplete-abs-2"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Solvent / 吸収液</label>
+                        <div class="autocomplete-wrapper">
+                            <input type="text" name="solvent" class="form-input substance-input" value="water" required autocomplete="off">
+                            <div class="autocomplete-dropdown hidden" id="autocomplete-abs-3"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Gas Flow Rate / ガス流量 (kmol/h)</label>
+                        <input type="number" name="gas_flow_rate" class="form-input" value="100" step="0.1" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Inlet Gas Composition / 入口ガス組成</label>
+                        <input type="number" name="inlet_gas_composition" class="form-input" value="0.05" step="0.001" min="0" max="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Liquid Flow Rate / 液流量 (kmol/h, Optional)</label>
+                        <input type="number" name="liquid_flow_rate" class="form-input" placeholder="Auto-calculate if empty" step="0.1" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Temperature / 温度 (K)</label>
+                        <input type="number" name="temperature" class="form-input" value="298.15" step="0.1" min="200" max="500">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Pressure / 圧力 (Pa)</label>
+                        <input type="number" name="pressure" class="form-input" value="101325" step="100" min="1000">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Target Removal / 目標除去率 (0-1)</label>
+                        <input type="number" name="removal_efficiency" class="form-input" value="0.9" step="0.01" min="0" max="0.9999">
+                    </div>
+                    <button type="submit" class="submit-btn">Calculate Absorption</button>
                 </form>
 
                 <!-- History -->
@@ -1775,6 +2496,199 @@
                     </button>
                     <div id="hb-steps" class="steps-content hidden"></div>
                 </div>
+
+                <!-- Liquid-Liquid Extraction Result -->
+                <div id="extraction-result" class="result-section">
+                    <div class="result-header">
+                        <div class="result-badge">✓</div>
+                        <div class="result-title-group">
+                            <div class="result-title">Liquid-Liquid Extraction</div>
+                            <div class="result-subtitle" id="ext-system">-</div>
+                        </div>
+                    </div>
+                    <div class="diagram-container">
+                        <svg width="480" height="320" viewBox="0 0 480 320">
+                            <defs>
+                                <marker id="arr-feed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="var(--accent-teal)"/>
+                                </marker>
+                                <marker id="arr-solv" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="var(--accent-cyan)"/>
+                                </marker>
+                                <marker id="arr-raff" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="var(--accent-amber)"/>
+                                </marker>
+                                <marker id="arr-ext" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="var(--accent-violet)"/>
+                                </marker>
+                                <linearGradient id="extractorGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" style="stop-color:rgba(139, 92, 246, 0.2)"/>
+                                    <stop offset="100%" style="stop-color:rgba(0, 212, 255, 0.2)"/>
+                                </linearGradient>
+                            </defs>
+                            <!-- Extraction Column -->
+                            <rect x="180" y="40" width="120" height="240" rx="8" fill="url(#extractorGrad)" stroke="var(--accent-violet)" stroke-width="2"/>
+                            <text x="240" y="30" text-anchor="middle" font-size="12" fill="var(--text-muted)">Extraction Column</text>
+                            <!-- Stages -->
+                            <g id="ext-stages-svg"></g>
+                            <!-- Feed (enters mid-bottom) -->
+                            <line x1="40" y1="220" x2="175" y2="220" stroke="var(--accent-teal)" stroke-width="3" marker-end="url(#arr-feed)"/>
+                            <text x="20" y="200" font-size="11" fill="var(--accent-teal)">Feed (F)</text>
+                            <text x="20" y="240" font-size="9" fill="var(--text-muted)" id="ext-feed-label">100 kmol/h</text>
+                            <!-- Solvent (enters top) -->
+                            <line x1="240" y1="10" x2="240" y2="35" stroke="var(--accent-cyan)" stroke-width="3" marker-end="url(#arr-solv)"/>
+                            <text x="280" y="18" font-size="11" fill="var(--accent-cyan)">Solvent (S)</text>
+                            <text x="280" y="32" font-size="9" fill="var(--text-muted)" id="ext-solv-label">50 kmol/h</text>
+                            <!-- Raffinate (exits bottom) -->
+                            <line x1="240" y1="285" x2="240" y2="310" stroke="var(--accent-amber)" stroke-width="3" marker-end="url(#arr-raff)"/>
+                            <text x="260" y="305" font-size="11" fill="var(--accent-amber)">Raffinate (R)</text>
+                            <text x="260" y="295" font-size="9" fill="var(--text-muted)" id="ext-raff-label">- kmol/h</text>
+                            <!-- Extract (exits top side) -->
+                            <line x1="305" y1="80" x2="400" y2="80" stroke="var(--accent-violet)" stroke-width="3" marker-end="url(#arr-ext)"/>
+                            <text x="405" y="75" font-size="11" fill="var(--accent-violet)">Extract (E)</text>
+                            <text x="405" y="92" font-size="9" fill="var(--text-muted)" id="ext-extract-label">- kmol/h</text>
+                        </svg>
+                    </div>
+                    <div class="result-grid">
+                        <div class="result-card">
+                            <div class="result-label">Recovery / 抽出率</div>
+                            <div class="result-value"><span id="ext-recovery">-</span><span class="result-unit">%</span></div>
+                        </div>
+                        <div class="result-card amber">
+                            <div class="result-label">Stages / 段数</div>
+                            <div class="result-value" id="ext-stages">-</div>
+                        </div>
+                        <div class="result-card rose">
+                            <div class="result-label">Extraction Factor (E)</div>
+                            <div class="result-value" id="ext-factor">-</div>
+                        </div>
+                        <div class="result-card violet">
+                            <div class="result-label">Distribution Coef (m)</div>
+                            <div class="result-value" id="ext-m">-</div>
+                        </div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>Stream</th><th>Flow (kmol/h)</th><th>Solute Composition</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Feed</td><td id="ext-tbl-feed">-</td><td id="ext-tbl-xf">-</td></tr>
+                            <tr><td>Solvent</td><td id="ext-tbl-solv">-</td><td id="ext-tbl-ys">-</td></tr>
+                            <tr><td>Raffinate</td><td id="ext-tbl-raff">-</td><td id="ext-tbl-xr">-</td></tr>
+                            <tr><td>Extract</td><td id="ext-tbl-extract">-</td><td id="ext-tbl-ye">-</td></tr>
+                        </tbody>
+                    </table>
+                    <div id="ext-warnings" class="warning-box hidden">
+                        <div class="warning-title">⚠ Warnings</div>
+                        <ul class="warning-list" id="ext-warn-list"></ul>
+                    </div>
+                    <button type="button" class="steps-toggle" id="ext-steps-toggle">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14M5 12h14"/>
+                        </svg>
+                        Show Calculation Steps
+                    </button>
+                    <div id="ext-steps" class="steps-content hidden"></div>
+                </div>
+
+                <!-- Gas Absorption Result -->
+                <div id="absorption-result" class="result-section">
+                    <div class="result-header">
+                        <div class="result-badge">✓</div>
+                        <div class="result-title-group">
+                            <div class="result-title">Gas Absorption Tower</div>
+                            <div class="result-subtitle" id="abs-system">-</div>
+                        </div>
+                    </div>
+                    <div class="diagram-container">
+                        <svg width="420" height="340" viewBox="0 0 420 340">
+                            <defs>
+                                <marker id="arr-gas-in" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="var(--accent-amber)"/>
+                                </marker>
+                                <marker id="arr-gas-out" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="var(--accent-teal)"/>
+                                </marker>
+                                <marker id="arr-liq-in" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="var(--accent-cyan)"/>
+                                </marker>
+                                <marker id="arr-liq-out" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="var(--accent-violet)"/>
+                                </marker>
+                                <linearGradient id="towerGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" style="stop-color:rgba(0, 212, 255, 0.15)"/>
+                                    <stop offset="100%" style="stop-color:rgba(139, 92, 246, 0.15)"/>
+                                </linearGradient>
+                            </defs>
+                            <!-- Absorption Tower -->
+                            <rect x="150" y="40" width="120" height="260" rx="8" fill="url(#towerGrad)" stroke="var(--accent-cyan)" stroke-width="2"/>
+                            <text x="210" y="30" text-anchor="middle" font-size="12" fill="var(--text-muted)">Absorption Tower</text>
+                            <!-- Packing/Stages -->
+                            <g id="abs-stages-svg"></g>
+                            <!-- Gas In (bottom) -->
+                            <path d="M80 280 L145 280" stroke="var(--accent-amber)" stroke-width="3" marker-end="url(#arr-gas-in)"/>
+                            <text x="40" y="265" font-size="11" fill="var(--accent-amber)">Gas In</text>
+                            <text x="40" y="295" font-size="9" fill="var(--text-muted)" id="abs-gas-in-label">100 kmol/h</text>
+                            <!-- Gas Out (top) -->
+                            <path d="M210 35 V15 H320" stroke="var(--accent-teal)" stroke-width="2" marker-end="url(#arr-gas-out)"/>
+                            <text x="325" y="12" font-size="11" fill="var(--accent-teal)">Gas Out</text>
+                            <text x="325" y="27" font-size="9" fill="var(--text-muted)" id="abs-gas-out-label">- kmol/h</text>
+                            <!-- Liquid In (top) -->
+                            <path d="M210 5 V35" stroke="var(--accent-cyan)" stroke-width="3" marker-end="url(#arr-liq-in)"/>
+                            <text x="230" y="20" font-size="11" fill="var(--accent-cyan)">Liquid In</text>
+                            <!-- Liquid Out (bottom) -->
+                            <path d="M210 305 V330" stroke="var(--accent-violet)" stroke-width="3" marker-end="url(#arr-liq-out)"/>
+                            <text x="230" y="325" font-size="11" fill="var(--accent-violet)">Liquid Out</text>
+                            <text x="230" y="338" font-size="9" fill="var(--text-muted)" id="abs-liq-out-label">- kmol/h</text>
+                        </svg>
+                    </div>
+                    <div class="result-grid">
+                        <div class="result-card">
+                            <div class="result-label">Removal / 除去率</div>
+                            <div class="result-value"><span id="abs-removal">-</span><span class="result-unit">%</span></div>
+                        </div>
+                        <div class="result-card amber">
+                            <div class="result-label">Stages / 段数</div>
+                            <div class="result-value" id="abs-stages">-</div>
+                        </div>
+                        <div class="result-card rose">
+                            <div class="result-label">Absorption Factor (A)</div>
+                            <div class="result-value" id="abs-factor">-</div>
+                        </div>
+                        <div class="result-card violet">
+                            <div class="result-label">L/G Ratio</div>
+                            <div class="result-value" id="abs-lg">-</div>
+                        </div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>Stream</th><th>Flow (kmol/h)</th><th>Composition</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Gas In</td><td id="abs-tbl-gin">-</td><td id="abs-tbl-yin">-</td></tr>
+                            <tr><td>Gas Out</td><td id="abs-tbl-gout">-</td><td id="abs-tbl-yout">-</td></tr>
+                            <tr><td>Liquid In</td><td id="abs-tbl-lin">-</td><td id="abs-tbl-xin">-</td></tr>
+                            <tr><td>Liquid Out</td><td id="abs-tbl-lout">-</td><td id="abs-tbl-xout">-</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="result-grid" style="margin-top: 1rem;">
+                        <div class="result-card" style="grid-column: span 2;">
+                            <div class="result-label">Absorbed Amount / 吸収量</div>
+                            <div class="result-value"><span id="abs-absorbed">-</span><span class="result-unit">kmol/h</span></div>
+                        </div>
+                    </div>
+                    <div id="abs-warnings" class="warning-box hidden">
+                        <div class="warning-title">⚠ Warnings</div>
+                        <ul class="warning-list" id="abs-warn-list"></ul>
+                    </div>
+                    <button type="button" class="steps-toggle" id="abs-steps-toggle">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14M5 12h14"/>
+                        </svg>
+                        Show Calculation Steps
+                    </button>
+                    <div id="abs-steps" class="steps-content hidden"></div>
+                </div>
             </div>
         </div>
     </main>
@@ -1793,14 +2707,54 @@
         // ==================== Configuration ====================
         const API_BASE = '/api/v1';
 
-        const SUBSTANCES = [
-            'water', 'ethanol', 'methanol', 'acetone', 'benzene', 'toluene',
-            'hexane', 'heptane', 'octane', 'propane', 'butane', 'pentane',
-            'ammonia', 'nitrogen', 'oxygen', 'hydrogen', 'carbon dioxide',
-            'acetic acid', 'formic acid', 'ethylene glycol', 'glycerol',
-            'chloroform', 'dichloromethane', 'diethyl ether', 'tetrahydrofuran',
-            'dimethyl sulfoxide', 'acetonitrile', 'cyclohexane', 'xylene'
+        // 物質データ（APIから読み込み）
+        let SUBSTANCES_DATA = [];
+
+        // 初期物質リスト（フォールバック）
+        const SUBSTANCES_FALLBACK = [
+            { id: 'water', name_ja: '水', name_en: 'Water', formula: 'H2O' },
+            { id: 'ethanol', name_ja: 'エタノール', name_en: 'Ethanol', formula: 'C2H5OH' },
+            { id: 'methanol', name_ja: 'メタノール', name_en: 'Methanol', formula: 'CH3OH' },
+            { id: 'acetone', name_ja: 'アセトン', name_en: 'Acetone', formula: 'C3H6O' },
+            { id: 'benzene', name_ja: 'ベンゼン', name_en: 'Benzene', formula: 'C6H6' },
+            { id: 'toluene', name_ja: 'トルエン', name_en: 'Toluene', formula: 'C7H8' },
+            { id: 'ammonia', name_ja: 'アンモニア', name_en: 'Ammonia', formula: 'NH3' },
+            { id: 'nitrogen', name_ja: '窒素', name_en: 'Nitrogen', formula: 'N2' },
+            { id: 'oxygen', name_ja: '酸素', name_en: 'Oxygen', formula: 'O2' },
+            { id: 'hydrogen', name_ja: '水素', name_en: 'Hydrogen', formula: 'H2' },
         ];
+
+        // 物質リストをAPIから読み込み
+        async function loadSubstances() {
+            try {
+                const res = await fetch(`${API_BASE}/substances`);
+                const data = await res.json();
+                if (data.success && data.substances.length > 0) {
+                    SUBSTANCES_DATA = data.substances;
+                } else {
+                    SUBSTANCES_DATA = SUBSTANCES_FALLBACK;
+                }
+            } catch (e) {
+                console.warn('Failed to load substances from API, using fallback', e);
+                SUBSTANCES_DATA = SUBSTANCES_FALLBACK;
+            }
+        }
+
+        // 物質検索（日本語・英語・化学式対応）
+        function searchSubstances(query) {
+            if (!query || query.length < 1) return [];
+            const q = query.toLowerCase();
+            return SUBSTANCES_DATA.filter(s => {
+                const searchFields = [
+                    s.id?.toLowerCase() || '',
+                    s.name_ja?.toLowerCase() || '',
+                    s.name_en?.toLowerCase() || '',
+                    s.formula?.toLowerCase() || '',
+                    ...(s.aliases || []).map(a => a.toLowerCase())
+                ];
+                return searchFields.some(f => f.includes(q));
+            }).slice(0, 10);
+        }
 
         const PROPERTIES = {
             'vapor_pressure': { name: 'Vapor Pressure', unit: 'kPa', factor: 0.001 },
@@ -1907,23 +2861,89 @@
         });
 
         // ==================== Autocomplete ====================
-        document.querySelectorAll('.substance-input').forEach((input, i) => {
-            const dropdown = document.getElementById(`autocomplete-${i + 1}`) || input.parentElement.querySelector('.autocomplete-dropdown');
-            if (!dropdown) return;
+        function initAutocomplete() {
+            document.querySelectorAll('.substance-input').forEach((input, i) => {
+                const dropdown = document.getElementById(`autocomplete-${i + 1}`) || input.parentElement.querySelector('.autocomplete-dropdown');
+                if (!dropdown) return;
 
-            input.oninput = () => {
-                const val = input.value.toLowerCase();
-                if (val.length < 1) { dropdown.classList.add('hidden'); return; }
-                const matches = SUBSTANCES.filter(s => s.includes(val)).slice(0, 8);
-                if (!matches.length) { dropdown.classList.add('hidden'); return; }
-                dropdown.innerHTML = matches.map(s => `<div class="autocomplete-item">${s}</div>`).join('');
-                dropdown.classList.remove('hidden');
-                dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
-                    item.onclick = () => { input.value = item.textContent; dropdown.classList.add('hidden'); };
-                });
-            };
-            input.onblur = () => setTimeout(() => dropdown.classList.add('hidden'), 150);
-        });
+                let selectedIndex = -1;
+
+                function updateSelection() {
+                    const items = dropdown.querySelectorAll('.autocomplete-item');
+                    items.forEach((item, idx) => {
+                        item.classList.toggle('selected', idx === selectedIndex);
+                    });
+                    // スクロール位置調整
+                    if (selectedIndex >= 0 && items[selectedIndex]) {
+                        items[selectedIndex].scrollIntoView({ block: 'nearest' });
+                    }
+                }
+
+                function selectItem(item) {
+                    input.value = item.dataset.id;
+                    dropdown.classList.add('hidden');
+                    selectedIndex = -1;
+                }
+
+                input.oninput = () => {
+                    const val = input.value;
+                    selectedIndex = -1;
+                    if (val.length < 1) { dropdown.classList.add('hidden'); return; }
+                    const matches = searchSubstances(val);
+                    if (!matches.length) { dropdown.classList.add('hidden'); return; }
+
+                    dropdown.innerHTML = matches.map(s => `
+                        <div class="autocomplete-item" data-id="${s.id}">
+                            <span class="ac-name">${s.name_ja || s.id}</span>
+                            <span class="ac-en">${s.name_en || ''}</span>
+                            <span class="ac-formula">${s.formula || ''}</span>
+                        </div>
+                    `).join('');
+                    dropdown.classList.remove('hidden');
+
+                    dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+                        item.onclick = () => selectItem(item);
+                        item.onmouseenter = () => {
+                            selectedIndex = [...dropdown.querySelectorAll('.autocomplete-item')].indexOf(item);
+                            updateSelection();
+                        };
+                    });
+                };
+
+                input.onkeydown = (e) => {
+                    const items = dropdown.querySelectorAll('.autocomplete-item');
+                    if (dropdown.classList.contains('hidden') || !items.length) return;
+
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                        updateSelection();
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        selectedIndex = Math.max(selectedIndex - 1, 0);
+                        updateSelection();
+                    } else if (e.key === 'Enter' && selectedIndex >= 0) {
+                        e.preventDefault();
+                        selectItem(items[selectedIndex]);
+                    } else if (e.key === 'Escape') {
+                        dropdown.classList.add('hidden');
+                        selectedIndex = -1;
+                    }
+                };
+
+                input.onblur = () => setTimeout(() => {
+                    dropdown.classList.add('hidden');
+                    selectedIndex = -1;
+                }, 150);
+
+                input.onfocus = () => {
+                    if (input.value.length >= 1) input.oninput();
+                };
+            });
+        }
+
+        // 物質データ読み込み後にオートコンプリート初期化
+        loadSubstances().then(() => initAutocomplete());
 
         // ==================== Unit Conversion ====================
         document.querySelectorAll('.unit-chip').forEach(chip => {
@@ -2215,6 +3235,139 @@
             }
         };
 
+        // ==================== T-x-y Diagram ====================
+        let txyChart = null;
+
+        document.getElementById('show-txy-btn').onclick = async () => {
+            const form = document.getElementById('distillation-form');
+            const fd = new FormData(form);
+            const lightComp = fd.get('light_component');
+            const heavyComp = fd.get('heavy_component');
+
+            if (!lightComp || !heavyComp) {
+                toast('Please enter both components', 'warning');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const res = await fetch(`${API_BASE}/txy-diagram?light_component=${encodeURIComponent(lightComp)}&heavy_component=${encodeURIComponent(heavyComp)}&pressure=101325&points=21`, {
+                    method: 'POST'
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    // Show modal
+                    document.getElementById('txy-modal').classList.remove('hidden');
+
+                    // Create chart data
+                    const bubbleData = data.x.map((x, i) => ({ x: x, y: data.T_bubble[i] - 273.15 }));
+                    const dewData = data.x.map((x, i) => ({ x: data.y[i], y: data.T_bubble[i] - 273.15 }));
+
+                    // Destroy previous chart if exists
+                    if (txyChart) {
+                        txyChart.destroy();
+                    }
+
+                    // Create new chart
+                    const ctx = document.getElementById('txy-chart').getContext('2d');
+                    txyChart = new Chart(ctx, {
+                        type: 'scatter',
+                        data: {
+                            datasets: [
+                                {
+                                    label: 'Bubble Point (液相線)',
+                                    data: bubbleData,
+                                    borderColor: '#00d4ff',
+                                    backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                                    showLine: true,
+                                    fill: false,
+                                    tension: 0.3,
+                                    pointRadius: 3,
+                                },
+                                {
+                                    label: 'Dew Point (気相線)',
+                                    data: dewData,
+                                    borderColor: '#ff6b9d',
+                                    backgroundColor: 'rgba(255, 107, 157, 0.1)',
+                                    showLine: true,
+                                    fill: false,
+                                    tension: 0.3,
+                                    pointRadius: 3,
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: `${lightComp} - ${heavyComp} System @ 101.325 kPa`,
+                                    color: '#e8f4f8',
+                                    font: { size: 14 }
+                                },
+                                legend: {
+                                    labels: { color: '#7a9aa8' }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    type: 'linear',
+                                    min: 0,
+                                    max: 1,
+                                    title: {
+                                        display: true,
+                                        text: `x, y (${lightComp} mole fraction)`,
+                                        color: '#7a9aa8'
+                                    },
+                                    grid: { color: 'rgba(80, 160, 180, 0.1)' },
+                                    ticks: { color: '#7a9aa8' }
+                                },
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: 'Temperature (°C)',
+                                        color: '#7a9aa8'
+                                    },
+                                    grid: { color: 'rgba(80, 160, 180, 0.1)' },
+                                    ticks: { color: '#7a9aa8' }
+                                }
+                            }
+                        }
+                    });
+
+                    // Update info
+                    const bpLight = data.bp_light ? (data.bp_light - 273.15).toFixed(1) : '?';
+                    const bpHeavy = data.bp_heavy ? (data.bp_heavy - 273.15).toFixed(1) : '?';
+                    document.getElementById('txy-info').innerHTML = `
+                        <strong>${lightComp}</strong> bp: ${bpLight}°C |
+                        <strong>${heavyComp}</strong> bp: ${bpHeavy}°C
+                    `;
+
+                    toast('T-x-y diagram generated');
+                } else {
+                    toast('Error: ' + (data.error || 'Unknown'), 'error');
+                }
+            } catch (err) {
+                toast('Connection error: ' + err.message, 'error');
+            }
+
+            hideLoading();
+        };
+
+        // Close modal
+        document.getElementById('close-txy-modal').onclick = () => {
+            document.getElementById('txy-modal').classList.add('hidden');
+        };
+
+        document.getElementById('txy-modal').onclick = (e) => {
+            if (e.target.id === 'txy-modal') {
+                document.getElementById('txy-modal').classList.add('hidden');
+            }
+        };
+
         // ==================== Mass Balance Form ====================
         document.getElementById('mass_balance-form').onsubmit = async e => {
             e.preventDefault();
@@ -2316,8 +3469,176 @@
             }
         };
 
+        // ==================== Extraction Form ====================
+        document.getElementById('extraction-form').onsubmit = async e => {
+            e.preventDefault();
+            showLoading();
+            const fd = new FormData(e.target);
+            const stagesVal = fd.get('stages');
+            const params = {
+                solute: fd.get('solute'),
+                carrier: fd.get('carrier'),
+                solvent: fd.get('solvent'),
+                feed_flow_rate: parseFloat(fd.get('feed_flow_rate')),
+                feed_composition: parseFloat(fd.get('feed_composition')),
+                solvent_flow_rate: parseFloat(fd.get('solvent_flow_rate')),
+                temperature: parseFloat(fd.get('temperature')),
+                recovery: parseFloat(fd.get('recovery'))
+            };
+            if (stagesVal && stagesVal.trim() !== '') {
+                params.stages = parseInt(stagesVal);
+            }
+            try {
+                const res = await fetch(`${API_BASE}/calculate/extraction`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ parameters: params })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const out = data.outputs;
+                    // System description
+                    document.getElementById('ext-system').textContent = `${params.solute} from ${params.carrier} using ${params.solvent}`;
+                    // Main results
+                    document.getElementById('ext-recovery').textContent = (out.recovery * 100).toFixed(1);
+                    document.getElementById('ext-stages').textContent = out.actual_stages;
+                    document.getElementById('ext-factor').textContent = out.extraction_factor.toFixed(3);
+                    document.getElementById('ext-m').textContent = out.distribution_coefficient.toFixed(3);
+                    // Diagram labels
+                    document.getElementById('ext-feed-label').textContent = `${params.feed_flow_rate} kmol/h`;
+                    document.getElementById('ext-solv-label').textContent = `${params.solvent_flow_rate} kmol/h`;
+                    document.getElementById('ext-raff-label').textContent = `${out.raffinate_flow_rate.toFixed(1)} kmol/h`;
+                    document.getElementById('ext-extract-label').textContent = `${out.extract_flow_rate.toFixed(1)} kmol/h`;
+                    // Draw stages in SVG
+                    const stagesSvg = document.getElementById('ext-stages-svg');
+                    stagesSvg.innerHTML = '';
+                    const nStages = out.actual_stages;
+                    const stageHeight = 200 / Math.min(nStages, 10);
+                    for (let i = 0; i < Math.min(nStages, 10); i++) {
+                        const y = 50 + i * stageHeight + stageHeight / 2;
+                        stagesSvg.innerHTML += `<line x1="185" y1="${y}" x2="295" y2="${y}" stroke="var(--glass-border)" stroke-width="1" stroke-dasharray="4,4"/>`;
+                        stagesSvg.innerHTML += `<text x="300" y="${y+4}" font-size="9" fill="var(--text-dim)">${i+1}</text>`;
+                    }
+                    if (nStages > 10) {
+                        stagesSvg.innerHTML += `<text x="240" y="270" text-anchor="middle" font-size="9" fill="var(--text-muted)">...${nStages} stages total</text>`;
+                    }
+                    // Table data
+                    document.getElementById('ext-tbl-feed').textContent = params.feed_flow_rate.toFixed(1);
+                    document.getElementById('ext-tbl-xf').textContent = params.feed_composition.toFixed(4);
+                    document.getElementById('ext-tbl-solv').textContent = params.solvent_flow_rate.toFixed(1);
+                    document.getElementById('ext-tbl-ys').textContent = '0.0000';
+                    document.getElementById('ext-tbl-raff').textContent = out.raffinate_flow_rate.toFixed(2);
+                    document.getElementById('ext-tbl-xr').textContent = out.raffinate_composition.toFixed(6);
+                    document.getElementById('ext-tbl-extract').textContent = out.extract_flow_rate.toFixed(2);
+                    document.getElementById('ext-tbl-ye').textContent = out.extract_composition.toFixed(6);
+                    // Warnings
+                    const warn = document.getElementById('ext-warnings');
+                    if (data.warnings?.length) {
+                        warn.classList.remove('hidden');
+                        document.getElementById('ext-warn-list').innerHTML = data.warnings.map(w => `<li>${w}</li>`).join('');
+                    } else warn.classList.add('hidden');
+                    // Steps
+                    if (out.calculation_steps?.length) document.getElementById('ext-steps').innerHTML = renderSteps(out.calculation_steps);
+                    saveHistory('extraction', params, out);
+                    showResult('extraction');
+                    toast('Extraction calculation complete');
+                } else {
+                    toast('Error: ' + (data.errors?.join(', ') || 'Unknown'), 'error');
+                    hideLoading();
+                }
+            } catch (err) {
+                toast('Connection error: ' + err.message, 'error');
+                hideLoading();
+            }
+        };
+
+        // ==================== Absorption Form ====================
+        document.getElementById('absorption-form').onsubmit = async e => {
+            e.preventDefault();
+            showLoading();
+            const fd = new FormData(e.target);
+            const liquidFlowVal = fd.get('liquid_flow_rate');
+            const params = {
+                gas_component: fd.get('gas_component'),
+                carrier_gas: fd.get('carrier_gas'),
+                solvent: fd.get('solvent'),
+                gas_flow_rate: parseFloat(fd.get('gas_flow_rate')),
+                inlet_gas_composition: parseFloat(fd.get('inlet_gas_composition')),
+                temperature: parseFloat(fd.get('temperature')),
+                pressure: parseFloat(fd.get('pressure')),
+                removal_efficiency: parseFloat(fd.get('removal_efficiency'))
+            };
+            if (liquidFlowVal && liquidFlowVal.trim() !== '') {
+                params.liquid_flow_rate = parseFloat(liquidFlowVal);
+            }
+            try {
+                const res = await fetch(`${API_BASE}/calculate/absorption`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ parameters: params })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const out = data.outputs;
+                    // System description
+                    document.getElementById('abs-system').textContent = `${params.gas_component} into ${params.solvent}`;
+                    // Main results
+                    document.getElementById('abs-removal').textContent = (out.removal_efficiency * 100).toFixed(1);
+                    document.getElementById('abs-stages').textContent = out.actual_stages;
+                    document.getElementById('abs-factor').textContent = out.absorption_factor.toFixed(3);
+                    document.getElementById('abs-lg').textContent = out.liquid_gas_ratio.toFixed(3);
+                    // Diagram labels
+                    document.getElementById('abs-gas-in-label').textContent = `${params.gas_flow_rate} kmol/h`;
+                    document.getElementById('abs-gas-out-label').textContent = `${out.outlet_gas_flow.toFixed(1)} kmol/h`;
+                    document.getElementById('abs-liq-out-label').textContent = `${out.outlet_liquid_flow.toFixed(1)} kmol/h`;
+                    // Draw stages in SVG
+                    const stagesSvg = document.getElementById('abs-stages-svg');
+                    stagesSvg.innerHTML = '';
+                    const nStages = out.actual_stages;
+                    const stageHeight = 220 / Math.min(nStages, 10);
+                    for (let i = 0; i < Math.min(nStages, 10); i++) {
+                        const y = 50 + i * stageHeight + stageHeight / 2;
+                        stagesSvg.innerHTML += `<line x1="155" y1="${y}" x2="265" y2="${y}" stroke="var(--glass-border)" stroke-width="1" stroke-dasharray="4,4"/>`;
+                        stagesSvg.innerHTML += `<text x="275" y="${y+4}" font-size="9" fill="var(--text-dim)">${i+1}</text>`;
+                    }
+                    if (nStages > 10) {
+                        stagesSvg.innerHTML += `<text x="210" y="285" text-anchor="middle" font-size="9" fill="var(--text-muted)">...${nStages} stages total</text>`;
+                    }
+                    // Table data
+                    document.getElementById('abs-tbl-gin').textContent = params.gas_flow_rate.toFixed(1);
+                    document.getElementById('abs-tbl-yin').textContent = params.inlet_gas_composition.toFixed(4);
+                    document.getElementById('abs-tbl-gout').textContent = out.outlet_gas_flow.toFixed(2);
+                    document.getElementById('abs-tbl-yout').textContent = out.outlet_gas_composition.toFixed(8);
+                    const L_in = out.outlet_liquid_flow - out.absorbed_amount;
+                    document.getElementById('abs-tbl-lin').textContent = L_in.toFixed(1);
+                    document.getElementById('abs-tbl-xin').textContent = '0.0000';
+                    document.getElementById('abs-tbl-lout').textContent = out.outlet_liquid_flow.toFixed(2);
+                    document.getElementById('abs-tbl-xout').textContent = out.outlet_liquid_composition.toFixed(6);
+                    // Absorbed amount
+                    document.getElementById('abs-absorbed').textContent = out.absorbed_amount.toFixed(3);
+                    // Warnings
+                    const warn = document.getElementById('abs-warnings');
+                    if (data.warnings?.length) {
+                        warn.classList.remove('hidden');
+                        document.getElementById('abs-warn-list').innerHTML = data.warnings.map(w => `<li>${w}</li>`).join('');
+                    } else warn.classList.add('hidden');
+                    // Steps
+                    if (out.calculation_steps?.length) document.getElementById('abs-steps').innerHTML = renderSteps(out.calculation_steps);
+                    saveHistory('absorption', params, out);
+                    showResult('absorption');
+                    toast('Absorption calculation complete');
+                } else {
+                    toast('Error: ' + (data.errors?.join(', ') || 'Unknown'), 'error');
+                    hideLoading();
+                }
+            } catch (err) {
+                toast('Connection error: ' + err.message, 'error');
+                hideLoading();
+            }
+        };
+
         // ==================== Steps Toggles ====================
-        ['prop', 'dist', 'mb', 'hb'].forEach(prefix => {
+        ['prop', 'dist', 'mb', 'hb', 'ext', 'abs'].forEach(prefix => {
             const btn = document.getElementById(`${prefix}-steps-toggle`);
             if (btn) {
                 btn.onclick = () => {
@@ -2327,6 +3648,305 @@
                 };
             }
         });
+
+        // ==================== Help System ====================
+        const HELP_CONTENT = {
+            overview: {
+                title: 'ChemEngとは?',
+                content: `
+                    <p><strong>ChemEng</strong>は、化学工学の計算を簡単に行えるWebアプリケーションです。</p>
+                    <p>主な機能:</p>
+                    <ul>
+                        <li><strong>物性推算</strong> - 蒸気圧、密度、粘度などの物性値を計算</li>
+                        <li><strong>蒸留塔設計</strong> - McCabe-Thiele法による段数計算</li>
+                        <li><strong>物質収支</strong> - 分離プロセスの物質収支計算</li>
+                        <li><strong>熱収支</strong> - 加熱/冷却に必要な熱量計算</li>
+                    </ul>
+                    <p>左のパネルでパラメータを入力し、計算を実行すると右のパネルに結果が表示されます。</p>
+                `
+            },
+            property: {
+                title: '物性推算の使い方',
+                content: `
+                    <p><strong>物性推算</strong>では、化学物質の物理的性質を計算できます。</p>
+                    <p><strong>入力項目:</strong></p>
+                    <ul>
+                        <li><strong>物質名</strong> - ethanol, water, benzene などを入力（オートコンプリート対応）</li>
+                        <li><strong>物性</strong> - 蒸気圧、液密度、粘度、蒸発熱、表面張力、沸点から選択</li>
+                        <li><strong>温度</strong> - K, °C, °F で入力可能（チップで単位切替）</li>
+                        <li><strong>圧力</strong> - Pa, kPa, atm, bar で入力可能</li>
+                    </ul>
+                    <p><strong>ヒント:</strong> <kbd>Ctrl</kbd>+<kbd>Enter</kbd> で計算を実行できます。</p>
+                `
+            },
+            distillation: {
+                title: '蒸留塔設計の使い方',
+                content: `
+                    <p><strong>蒸留塔設計</strong>では、McCabe-Thiele法を用いた二成分蒸留塔の設計ができます。</p>
+                    <p><strong>入力項目:</strong></p>
+                    <ul>
+                        <li><strong>軽沸/重沸成分</strong> - 分離する2成分を指定</li>
+                        <li><strong>原料流量</strong> - kmol/h で入力</li>
+                        <li><strong>組成</strong> - 軽沸成分のモル分率（0〜1）</li>
+                        <li><strong>還流比係数</strong> - R/Rmin（通常1.2〜1.5）</li>
+                    </ul>
+                    <p><strong>出力:</strong> 理論段数、フィード段、塔径、コンデンサー/リボイラー熱負荷</p>
+                `
+            },
+            mass_balance: {
+                title: '物質収支の使い方',
+                content: `
+                    <p><strong>物質収支</strong>では、分離プロセスの物質収支を計算します。</p>
+                    <p><strong>入力項目:</strong></p>
+                    <ul>
+                        <li><strong>成分リスト</strong> - カンマ区切りで入力（例: ethanol, water）</li>
+                        <li><strong>原料流量</strong> - mol/s で入力</li>
+                        <li><strong>各組成</strong> - 第一成分のモル分率</li>
+                    </ul>
+                    <p><strong>出力:</strong> 各ストリームの流量とクロージャー（収支誤差）</p>
+                `
+            },
+            heat_balance: {
+                title: '熱収支の使い方',
+                content: `
+                    <p><strong>熱収支</strong>では、加熱・冷却に必要な熱量を計算します。</p>
+                    <p><strong>入力項目:</strong></p>
+                    <ul>
+                        <li><strong>物質名</strong> - 対象物質を指定</li>
+                        <li><strong>流量</strong> - mol/s で入力</li>
+                        <li><strong>入口/出口温度</strong> - K で入力</li>
+                        <li><strong>圧力</strong> - Pa で入力</li>
+                        <li><strong>熱効率</strong> - 0〜1 の値</li>
+                    </ul>
+                    <p><strong>出力:</strong> 顕熱、潜熱、総熱負荷、実熱負荷、相変化情報</p>
+                `
+            }
+        };
+
+        let helpPanelOpen = false;
+
+        function initHelpSystem() {
+            const fab = document.getElementById('help-fab');
+            const panel = document.getElementById('help-panel');
+            const closeBtn = document.getElementById('help-panel-close');
+            const messagesContainer = document.getElementById('help-messages');
+            const input = document.getElementById('help-input');
+            const sendBtn = document.getElementById('help-send-btn');
+
+            // Toggle panel
+            fab.onclick = () => {
+                helpPanelOpen = !helpPanelOpen;
+                panel.classList.toggle('hidden', !helpPanelOpen);
+                fab.classList.toggle('active', helpPanelOpen);
+                if (helpPanelOpen) {
+                    input.focus();
+                }
+            };
+
+            // Close button
+            closeBtn.onclick = () => {
+                helpPanelOpen = false;
+                panel.classList.add('hidden');
+                fab.classList.remove('active');
+            };
+
+            // Quick action buttons
+            document.querySelectorAll('.help-quick-btn').forEach(btn => {
+                btn.onclick = () => {
+                    const topic = btn.dataset.topic;
+                    showHelpTopic(topic);
+                };
+            });
+
+            // Close on Escape key
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape' && helpPanelOpen) {
+                    helpPanelOpen = false;
+                    panel.classList.add('hidden');
+                    fab.classList.remove('active');
+                }
+            });
+
+            // Future: Enable input when AI is integrated
+            input.oninput = () => {
+                // sendBtn.disabled = !input.value.trim();
+            };
+
+            // Future: Send message
+            sendBtn.onclick = () => {
+                if (sendBtn.disabled) return;
+                const text = input.value.trim();
+                if (!text) return;
+                addUserMessage(text);
+                input.value = '';
+                sendBtn.disabled = true;
+                setTimeout(() => {
+                    addSystemMessage('AI機能は現在開発中です。上のトピックボタンをご利用ください。');
+                }, 500);
+            };
+
+            // Enter to send (future)
+            input.onkeydown = e => {
+                if (e.key === 'Enter' && !e.shiftKey && !sendBtn.disabled) {
+                    e.preventDefault();
+                    sendBtn.click();
+                }
+            };
+        }
+
+        function showHelpTopic(topic) {
+            const content = HELP_CONTENT[topic];
+            if (!content) return;
+
+            const messagesContainer = document.getElementById('help-messages');
+
+            // Clear quick actions and add response
+            const quickActions = document.getElementById('help-quick-actions');
+            if (quickActions) {
+                quickActions.remove();
+            }
+
+            // Add system response
+            const msgEl = document.createElement('div');
+            msgEl.className = 'help-message system';
+            msgEl.innerHTML = `
+                <div class="help-message-avatar">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                    </svg>
+                </div>
+                <div class="help-message-content">
+                    <p style="font-weight: 600; color: var(--accent-cyan); margin-bottom: 0.75rem;">${content.title}</p>
+                    ${content.content}
+                </div>
+            `;
+            messagesContainer.appendChild(msgEl);
+
+            // Add back button
+            const backBtn = document.createElement('button');
+            backBtn.className = 'help-quick-btn';
+            backBtn.innerHTML = `
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                他のトピックを見る
+            `;
+            backBtn.onclick = () => resetHelpPanel();
+            messagesContainer.appendChild(backBtn);
+
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function addUserMessage(text) {
+            const messagesContainer = document.getElementById('help-messages');
+            const msgEl = document.createElement('div');
+            msgEl.className = 'help-message user';
+            msgEl.innerHTML = `
+                <div class="help-message-avatar">U</div>
+                <div class="help-message-content">${escapeHtml(text)}</div>
+            `;
+            messagesContainer.appendChild(msgEl);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function addSystemMessage(text) {
+            const messagesContainer = document.getElementById('help-messages');
+            const msgEl = document.createElement('div');
+            msgEl.className = 'help-message system';
+            msgEl.innerHTML = `
+                <div class="help-message-avatar">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                    </svg>
+                </div>
+                <div class="help-message-content">${text}</div>
+            `;
+            messagesContainer.appendChild(msgEl);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function resetHelpPanel() {
+            const messagesContainer = document.getElementById('help-messages');
+            messagesContainer.innerHTML = `
+                <div class="help-message system">
+                    <div class="help-message-avatar">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                        </svg>
+                    </div>
+                    <div class="help-message-content">
+                        <p>ChemEngへようこそ! 何かお手伝いできますか?</p>
+                        <p class="help-message-hint">下のトピックを選択するか、質問を入力してください。</p>
+                    </div>
+                </div>
+                <div class="help-quick-actions" id="help-quick-actions">
+                    <button class="help-quick-btn" data-topic="overview">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="16" x2="12" y2="12"/>
+                            <line x1="12" y1="8" x2="12.01" y2="8"/>
+                        </svg>
+                        ChemEngとは?
+                    </button>
+                    <button class="help-quick-btn" data-topic="property">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        物性推算の使い方
+                    </button>
+                    <button class="help-quick-btn" data-topic="distillation">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="8" y="2" width="8" height="20" rx="1"/>
+                            <line x1="8" y1="10" x2="16" y2="10"/>
+                            <line x1="8" y1="14" x2="16" y2="14"/>
+                        </svg>
+                        蒸留塔設計の使い方
+                    </button>
+                    <button class="help-quick-btn" data-topic="mass_balance">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="16"/>
+                            <line x1="8" y1="12" x2="16" y2="12"/>
+                        </svg>
+                        物質収支の使い方
+                    </button>
+                    <button class="help-quick-btn" data-topic="heat_balance">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="5"/>
+                            <line x1="12" y1="1" x2="12" y2="3"/>
+                            <line x1="12" y1="21" x2="12" y2="23"/>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                            <line x1="1" y1="12" x2="3" y2="12"/>
+                            <line x1="21" y1="12" x2="23" y2="12"/>
+                        </svg>
+                        熱収支の使い方
+                    </button>
+                </div>
+            `;
+
+            // Re-attach event listeners
+            document.querySelectorAll('.help-quick-btn').forEach(btn => {
+                btn.onclick = () => {
+                    const topic = btn.dataset.topic;
+                    showHelpTopic(topic);
+                };
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize Help System
+        initHelpSystem();
     </script>
 </body>
 </html>

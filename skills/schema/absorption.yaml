@@ -1,0 +1,168 @@
+# ガス吸収スキル
+# ガス吸収塔の設計計算
+
+skill_id: "absorption"
+name: "ガス吸収"
+description: "ガス吸収塔の設計計算（NTU/HTU法、Kremser式）"
+calculation_type: "absorption"
+version: "1.0.0"
+author: "chemeng"
+tags: ["separation", "mass_transfer", "absorption"]
+
+required_engines:
+  - thermo
+
+input_schema:
+  - name: gas_component
+    type: str
+    description: "吸収されるガス成分（溶質）"
+    required: true
+    example: "ammonia"
+
+  - name: carrier_gas
+    type: str
+    description: "キャリアガス（不活性ガス）"
+    required: true
+    example: "air"
+
+  - name: solvent
+    type: str
+    description: "吸収液（溶媒）"
+    required: true
+    example: "water"
+
+  - name: gas_flow_rate
+    type: float
+    description: "ガス流量（キャリアガス基準）"
+    unit: "kmol/h"
+    required: true
+    min_value: 0.0
+    example: 100.0
+
+  - name: inlet_gas_composition
+    type: float
+    description: "入口ガス中の溶質モル分率"
+    required: true
+    min_value: 0.0
+    max_value: 1.0
+    example: 0.05
+
+  - name: outlet_gas_composition
+    type: float
+    description: "出口ガス中の溶質モル分率（目標値）"
+    required: false
+    min_value: 0.0
+    max_value: 1.0
+    example: 0.005
+
+  - name: liquid_flow_rate
+    type: float
+    description: "液流量"
+    unit: "kmol/h"
+    required: false
+    min_value: 0.0
+    example: 200.0
+
+  - name: inlet_liquid_composition
+    type: float
+    description: "入口液中の溶質モル分率"
+    required: false
+    default: 0.0
+    min_value: 0.0
+    max_value: 1.0
+    example: 0.0
+
+  - name: temperature
+    type: float
+    description: "操作温度"
+    unit: "K"
+    required: false
+    default: 298.15
+    min_value: 200.0
+    max_value: 500.0
+    example: 298.15
+
+  - name: pressure
+    type: float
+    description: "操作圧力"
+    unit: "Pa"
+    required: false
+    default: 101325.0
+    min_value: 1000.0
+    max_value: 10000000.0
+    example: 101325.0
+
+  - name: removal_efficiency
+    type: float
+    description: "目標除去率（0-1）"
+    required: false
+    default: 0.9
+    min_value: 0.0
+    max_value: 0.9999
+    example: 0.9
+
+  - name: stages
+    type: int
+    description: "理論段数（指定する場合）"
+    required: false
+    min_value: 1
+    max_value: 100
+    example: 10
+
+output_schema:
+  - name: absorption_factor
+    type: float
+    description: "吸収係数 A = L/(m×G)"
+
+  - name: henry_constant
+    type: float
+    description: "ヘンリー定数 (Pa)"
+
+  - name: actual_stages
+    type: int
+    description: "理論段数"
+
+  - name: ntu
+    type: float
+    description: "移動単位数 NTU"
+
+  - name: removal_efficiency
+    type: float
+    description: "除去率"
+
+  - name: liquid_gas_ratio
+    type: float
+    description: "液ガス比 L/G"
+
+  - name: min_liquid_gas_ratio
+    type: float
+    description: "最小液ガス比 (L/G)min"
+
+  - name: outlet_gas_flow
+    type: float
+    description: "出口ガス流量 (kmol/h)"
+
+  - name: outlet_gas_composition
+    type: float
+    description: "出口ガス組成"
+
+  - name: outlet_liquid_flow
+    type: float
+    description: "出口液流量 (kmol/h)"
+
+  - name: outlet_liquid_composition
+    type: float
+    description: "出口液組成"
+
+  - name: absorbed_amount
+    type: float
+    description: "吸収量 (kmol/h)"
+
+  - name: calculation_steps
+    type: list
+    description: "計算過程の詳細"
+
+validation_rules:
+  - "gas_flow_rate must be positive"
+  - "liquid_flow_rate must be positive if specified"
+  - "inlet_gas_composition must be greater than outlet_gas_composition"
