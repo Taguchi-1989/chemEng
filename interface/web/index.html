@@ -815,6 +815,150 @@
             height: 14px;
         }
 
+        .export-btn.template-btn {
+            background: linear-gradient(135deg, var(--accent-violet) 0%, var(--accent-rose) 100%);
+            border-color: transparent;
+            color: white;
+        }
+
+        .export-btn.template-btn:hover {
+            filter: brightness(1.1);
+            border-color: transparent;
+            color: white;
+        }
+
+        /* Import Dropzone */
+        .import-dropzone {
+            border: 2px dashed var(--glass-border);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: var(--bg-card);
+        }
+
+        .import-dropzone:hover,
+        .import-dropzone.dragover {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .import-dropzone svg {
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .import-dropzone p {
+            color: var(--text-dim);
+            margin: 0.25rem 0;
+        }
+
+        .import-dropzone .text-muted {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .import-preview {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+        }
+
+        .import-preview h4 {
+            color: var(--accent-cyan);
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        .import-skill-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-teal));
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: #000;
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+        }
+
+        .import-params-list {
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 0.8rem;
+        }
+
+        .import-param-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.35rem 0;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .import-param-name {
+            color: var(--text-dim);
+        }
+
+        .import-param-value {
+            color: var(--accent-teal);
+            font-family: var(--mono);
+        }
+
+        .import-error {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 82, 82, 0.1);
+            border: 1px solid var(--danger);
+            border-radius: 8px;
+            color: var(--danger);
+            font-size: 0.85rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .modal-footer .btn {
+            padding: 0.6rem 1.25rem;
+            border-radius: 8px;
+            font-family: var(--mono);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-footer .btn-secondary {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            color: var(--text-dim);
+        }
+
+        .modal-footer .btn-secondary:hover {
+            border-color: var(--text-dim);
+        }
+
+        .modal-footer .btn-primary {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-teal));
+            border: none;
+            color: #000;
+            font-weight: 500;
+        }
+
+        .modal-footer .btn-primary:hover {
+            filter: brightness(1.1);
+        }
+
+        .modal-footer .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         /* Chart Container */
         .chart-section {
             margin-top: 1.5rem;
@@ -2170,6 +2314,14 @@
                     <span class="status-dot" id="status-dot"></span>
                     <span id="status-text">Connecting...</span>
                 </div>
+                <button class="theme-btn" id="import-btn" title="Import JSON Parameters">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17,8 12,3 7,8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                </button>
+                <input type="file" id="import-file" accept=".json" style="display: none;">
                 <button class="theme-btn" id="theme-toggle" title="Toggle Theme">
                     <svg id="theme-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
@@ -2376,6 +2528,38 @@
                         <div class="modal-body">
                             <canvas id="txy-chart" width="500" height="400"></canvas>
                             <div class="txy-info" id="txy-info"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Import Modal -->
+                <div id="import-modal" class="modal hidden">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>Import Parameters / パラメータ読込</h3>
+                            <button class="modal-close" id="close-import-modal">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="import-dropzone" id="import-dropzone">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="17,8 12,3 7,8"/>
+                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                                <p>Drag & drop JSON file here</p>
+                                <p class="text-muted">JSONファイルをドラッグ＆ドロップ</p>
+                                <p class="text-muted">or click to browse</p>
+                            </div>
+                            <div class="import-preview hidden" id="import-preview">
+                                <h4>Preview / プレビュー:</h4>
+                                <div class="import-skill-badge" id="import-skill-badge"></div>
+                                <div class="import-params-list" id="import-params-list"></div>
+                            </div>
+                            <div class="import-error hidden" id="import-error"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" id="cancel-import">Cancel</button>
+                            <button class="btn btn-primary" id="confirm-import" disabled>Import & Fill Form</button>
                         </div>
                     </div>
                 </div>
@@ -2714,14 +2898,20 @@
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                                 <path d="M14 2v6h6"/>
                             </svg>
-                            Export JSON
+                            JSON
                         </button>
                         <button type="button" class="export-btn" id="export-csv">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                                 <path d="M14 2v6h6"/>
                             </svg>
-                            Export CSV
+                            CSV
+                        </button>
+                        <button type="button" class="export-btn template-btn" onclick="downloadPromptTemplate('property_estimation')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Template
                         </button>
                     </div>
                     <div class="chart-section">
@@ -2835,24 +3025,44 @@
                         <div class="warning-title">⚠ Warnings</div>
                         <ul class="warning-list" id="dist-warn-list"></ul>
                     </div>
-                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                    <div class="export-row" style="margin-top: 1rem;">
+                        <button type="button" class="export-btn" onclick="exportJSON('distillation')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>
+                            </svg>
+                            JSON
+                        </button>
+                        <button type="button" class="export-btn" onclick="exportCSV('distillation')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>
+                            </svg>
+                            CSV
+                        </button>
+                        <button type="button" class="export-btn template-btn" onclick="downloadPromptTemplate('distillation')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Template
+                        </button>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
                         <button type="button" class="steps-toggle" id="dist-steps-toggle">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M12 5v14M5 12h14"/>
                             </svg>
-                            Show Calculation Steps
+                            Steps
                         </button>
                         <button type="button" class="steps-toggle" onclick="downloadReport('distillation')" style="background: var(--accent-amber);">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/>
                             </svg>
-                            Download Report
+                            Report
                         </button>
                         <button type="button" class="save-dashboard-btn" onclick="saveToDashboard('distillation')">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
                             </svg>
-                            Save to Dashboard
+                            Dashboard
                         </button>
                     </div>
                     <div id="dist-steps" class="steps-content hidden"></div>
@@ -2901,24 +3111,38 @@
                             <div class="result-value" style="color: var(--success);"><span id="mb-closure">-</span><span class="result-unit">%</span></div>
                         </div>
                     </div>
-                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                    <div class="export-row" style="margin-top: 1rem;">
+                        <button type="button" class="export-btn" onclick="exportJSON('mass_balance')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                            JSON
+                        </button>
+                        <button type="button" class="export-btn" onclick="exportCSV('mass_balance')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                            CSV
+                        </button>
+                        <button type="button" class="export-btn template-btn" onclick="downloadPromptTemplate('mass_balance')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Template
+                        </button>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
                         <button type="button" class="steps-toggle" id="mb-steps-toggle">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M12 5v14M5 12h14"/>
                             </svg>
-                            Show Calculation Steps
+                            Steps
                         </button>
                         <button type="button" class="steps-toggle" onclick="downloadReport('mass_balance')" style="background: var(--accent-amber);">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/>
                             </svg>
-                            Download Report
+                            Report
                         </button>
                         <button type="button" class="save-dashboard-btn" onclick="saveToDashboard('mass_balance')">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
                             </svg>
-                            Save to Dashboard
+                            Dashboard
                         </button>
                     </div>
                     <div id="mb-steps" class="steps-content hidden"></div>
@@ -2992,24 +3216,38 @@
                         <div class="warning-title">⚠ Warnings</div>
                         <ul class="warning-list" id="hb-warn-list"></ul>
                     </div>
-                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                    <div class="export-row" style="margin-top: 1rem;">
+                        <button type="button" class="export-btn" onclick="exportJSON('heat_balance')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                            JSON
+                        </button>
+                        <button type="button" class="export-btn" onclick="exportCSV('heat_balance')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                            CSV
+                        </button>
+                        <button type="button" class="export-btn template-btn" onclick="downloadPromptTemplate('heat_balance')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Template
+                        </button>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
                         <button type="button" class="steps-toggle" id="hb-steps-toggle">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M12 5v14M5 12h14"/>
                             </svg>
-                            Show Calculation Steps
+                            Steps
                         </button>
                         <button type="button" class="steps-toggle" onclick="downloadReport('heat_balance')" style="background: var(--accent-amber);">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/>
                             </svg>
-                            Download Report
+                            Report
                         </button>
                         <button type="button" class="save-dashboard-btn" onclick="saveToDashboard('heat_balance')">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
                             </svg>
-                            Save to Dashboard
+                            Dashboard
                         </button>
                     </div>
                     <div id="hb-steps" class="steps-content hidden"></div>
@@ -3100,24 +3338,38 @@
                         <div class="warning-title">⚠ Warnings</div>
                         <ul class="warning-list" id="ext-warn-list"></ul>
                     </div>
-                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                    <div class="export-row" style="margin-top: 1rem;">
+                        <button type="button" class="export-btn" onclick="exportJSON('extraction')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                            JSON
+                        </button>
+                        <button type="button" class="export-btn" onclick="exportCSV('extraction')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                            CSV
+                        </button>
+                        <button type="button" class="export-btn template-btn" onclick="downloadPromptTemplate('extraction')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Template
+                        </button>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
                         <button type="button" class="steps-toggle" id="ext-steps-toggle">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M12 5v14M5 12h14"/>
                             </svg>
-                            Show Calculation Steps
+                            Steps
                         </button>
                         <button type="button" class="steps-toggle" onclick="downloadReport('extraction')" style="background: var(--accent-amber);">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/>
                             </svg>
-                            Download Report
+                            Report
                         </button>
                         <button type="button" class="save-dashboard-btn" onclick="saveToDashboard('extraction')">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
                             </svg>
-                            Save to Dashboard
+                            Dashboard
                         </button>
                     </div>
                     <div id="ext-steps" class="steps-content hidden"></div>
@@ -3213,24 +3465,38 @@
                         <div class="warning-title">⚠ Warnings</div>
                         <ul class="warning-list" id="abs-warn-list"></ul>
                     </div>
-                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                    <div class="export-row" style="margin-top: 1rem;">
+                        <button type="button" class="export-btn" onclick="exportJSON('absorption')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                            JSON
+                        </button>
+                        <button type="button" class="export-btn" onclick="exportCSV('absorption')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                            CSV
+                        </button>
+                        <button type="button" class="export-btn template-btn" onclick="downloadPromptTemplate('absorption')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Template
+                        </button>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
                         <button type="button" class="steps-toggle" id="abs-steps-toggle">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M12 5v14M5 12h14"/>
                             </svg>
-                            Show Calculation Steps
+                            Steps
                         </button>
                         <button type="button" class="steps-toggle" onclick="downloadReport('absorption')" style="background: var(--accent-amber);">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/>
                             </svg>
-                            Download Report
+                            Report
                         </button>
                         <button type="button" class="save-dashboard-btn" onclick="saveToDashboard('absorption')">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
                             </svg>
-                            Save to Dashboard
+                            Dashboard
                         </button>
                     </div>
                     <div id="abs-steps" class="steps-content hidden"></div>
@@ -3308,24 +3574,38 @@
                         </div>
                     </div>
 
-                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                    <div class="export-row" style="margin-top: 1rem;">
+                        <button type="button" class="export-btn" onclick="exportJSON('lcoh')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                            JSON
+                        </button>
+                        <button type="button" class="export-btn" onclick="exportCSV('lcoh')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                            CSV
+                        </button>
+                        <button type="button" class="export-btn template-btn" onclick="downloadPromptTemplate('lcoh')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Template
+                        </button>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
                         <button type="button" class="steps-toggle" id="lcoh-steps-toggle">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M12 5v14M5 12h14"/>
                             </svg>
-                            Show Calculation Steps
+                            Steps
                         </button>
                         <button type="button" class="steps-toggle" onclick="downloadReport('lcoh')" style="background: var(--accent-amber);">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/>
                             </svg>
-                            Download Report
+                            Report
                         </button>
                         <button type="button" class="save-dashboard-btn" onclick="saveToDashboard('lcoh')">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
                             </svg>
-                            Save to Dashboard
+                            Dashboard
                         </button>
                     </div>
                     <div id="lcoh-steps" class="steps-content hidden"></div>
@@ -4188,18 +4468,385 @@
             toast(`Downloaded ${filename}`);
         }
 
+        // Legacy export for property estimation
         document.getElementById('export-json').onclick = () => {
             if (!lastResult) return toast('No data to export', 'warning');
-            download(JSON.stringify(lastResult, null, 2), `chemeng_${Date.now()}.json`, 'application/json');
+            exportJSON('property_estimation');
         };
 
         document.getElementById('export-csv').onclick = () => {
             if (!lastResult) return toast('No data to export', 'warning');
-            const { params, outputs } = lastResult;
-            const p = PROPERTIES[params.property] || { name: params.property, unit: '', factor: 1 };
-            const csv = `Substance,Property,Value,Unit,Temperature (K),Pressure (Pa)\n${params.substance},${p.name},${(outputs.value * p.factor).toFixed(4)},${p.unit},${params.temperature},${params.pressure}`;
-            download(csv, `chemeng_${Date.now()}.csv`, 'text/csv');
+            exportCSV('property_estimation');
         };
+
+        // Universal JSON Export (importable format)
+        function exportJSON(skillId) {
+            const data = lastCalculationData[skillId.replace('_estimation', '').replace('property_estimation', 'property')];
+            if (!data) return toast('No data to export. Run calculation first.', 'warning');
+
+            const exportData = {
+                skill_id: skillId,
+                parameters: data.params,
+                results: data.result,
+                timestamp: data.timestamp || new Date().toISOString()
+            };
+
+            download(JSON.stringify(exportData, null, 2),
+                     `chemeng_${skillId}_${Date.now()}.json`,
+                     'application/json');
+        }
+
+        // Universal CSV Export
+        function exportCSV(skillId) {
+            const typeKey = skillId.replace('_estimation', '').replace('property_estimation', 'property');
+            const data = lastCalculationData[typeKey];
+            if (!data) return toast('No data to export. Run calculation first.', 'warning');
+
+            const { params, result } = data;
+            let csv = '';
+
+            // Build CSV based on skill type
+            if (skillId === 'property_estimation' || skillId === 'property') {
+                const p = PROPERTIES[params.property] || { name: params.property, unit: '', factor: 1 };
+                csv = `Substance,Property,Value,Unit,Temperature (K),Pressure (Pa)\n`;
+                csv += `${params.substance},${p.name},${(result.value * p.factor).toFixed(4)},${p.unit},${params.temperature},${params.pressure}`;
+            } else {
+                // Generic CSV for other skill types
+                csv = `Parameter,Value\n`;
+                Object.entries(params).forEach(([key, val]) => {
+                    csv += `[Input] ${key},${formatCSVValue(val)}\n`;
+                });
+                csv += `\nResult,Value\n`;
+                Object.entries(result).forEach(([key, val]) => {
+                    if (key !== 'calculation_steps' && key !== 'lcoh_breakdown' && key !== 'sensitivity_data') {
+                        csv += `[Output] ${key},${formatCSVValue(val)}\n`;
+                    }
+                });
+            }
+
+            download(csv, `chemeng_${skillId}_${Date.now()}.csv`, 'text/csv');
+        }
+
+        function formatCSVValue(val) {
+            if (val === null || val === undefined) return '';
+            if (typeof val === 'number') return val.toString();
+            if (typeof val === 'object') return JSON.stringify(val).replace(/,/g, ';');
+            return String(val).replace(/,/g, ';');
+        }
+
+        // ==================== Prompt Template Generation ====================
+        const SKILL_NAMES = {
+            property_estimation: { ja: '物性推算', en: 'Property Estimation' },
+            distillation: { ja: '蒸留塔設計', en: 'Distillation Column Design' },
+            mass_balance: { ja: '物質収支', en: 'Mass Balance' },
+            heat_balance: { ja: '熱収支', en: 'Heat Balance' },
+            extraction: { ja: '液液抽出', en: 'Liquid-Liquid Extraction' },
+            absorption: { ja: 'ガス吸収', en: 'Gas Absorption' },
+            lcoh: { ja: '水素原価計算', en: 'Levelized Cost of Hydrogen' }
+        };
+
+        const SKILL_PARAMS = {
+            property_estimation: [
+                { name: 'substance', ja: '物質名', en: 'Substance name', required: true, example: 'ethanol', choices: 'water, ethanol, methanol, benzene, toluene, acetone, etc.' },
+                { name: 'property', ja: '物性', en: 'Property', required: true, example: 'vapor_pressure', choices: 'vapor_pressure, liquid_density, gas_density, liquid_viscosity, gas_viscosity, heat_capacity_liquid, heat_capacity_gas, thermal_conductivity_liquid, thermal_conductivity_gas, surface_tension, heat_of_vaporization, critical_temperature, critical_pressure, acentric_factor, molecular_weight' },
+                { name: 'temperature', ja: '温度', en: 'Temperature', required: false, unit: 'K', default: 298.15, range: '50-2000' },
+                { name: 'pressure', ja: '圧力', en: 'Pressure', required: false, unit: 'Pa', default: 101325, range: '100-100000000' }
+            ],
+            distillation: [
+                { name: 'light_component', ja: '軽沸成分', en: 'Light component', required: true, example: 'ethanol' },
+                { name: 'heavy_component', ja: '重沸成分', en: 'Heavy component', required: true, example: 'water' },
+                { name: 'feed_flow_rate', ja: '原料流量', en: 'Feed flow rate', required: true, unit: 'kmol/h', example: 100 },
+                { name: 'feed_composition', ja: '原料中軽沸成分モル分率', en: 'Light component mole fraction in feed', required: true, range: '0.001-0.999', example: 0.4 },
+                { name: 'distillate_purity', ja: '留出液目標純度', en: 'Target distillate purity', required: true, range: '0.5-0.9999', example: 0.95 },
+                { name: 'bottoms_purity', ja: '缶出液目標純度（重沸成分）', en: 'Target bottoms purity (heavy component)', required: true, range: '0.5-0.9999', example: 0.98 },
+                { name: 'feed_temperature', ja: '原料温度', en: 'Feed temperature', required: false, unit: 'K', default: 350, range: '200-600' },
+                { name: 'feed_condition', ja: '原料熱状態 q', en: 'Feed thermal condition q', required: false, default: 1.0, range: '-0.5-1.5' },
+                { name: 'column_pressure', ja: '塔頂圧力', en: 'Column pressure', required: false, unit: 'Pa', default: 101325 },
+                { name: 'reflux_ratio_factor', ja: '還流比係数（最小還流比に対する倍率）', en: 'Reflux ratio factor', required: false, default: 1.3, range: '1.05-5.0' }
+            ],
+            mass_balance: [
+                { name: 'components', ja: '成分リスト', en: 'Components (comma-separated)', required: true, example: 'ethanol, water' },
+                { name: 'feed_flow_rate', ja: '原料流量', en: 'Feed flow rate', required: true, unit: 'mol/s', example: 100 },
+                { name: 'feed_composition', ja: '原料組成（第1成分モル分率）', en: 'Feed composition (first component mole fraction)', required: true, range: '0-1', example: 0.4 },
+                { name: 'distillate_composition', ja: '留出液組成', en: 'Distillate composition', required: true, range: '0-1', example: 0.95 },
+                { name: 'bottoms_composition', ja: '缶出液組成', en: 'Bottoms composition', required: true, range: '0-1', example: 0.05 }
+            ],
+            heat_balance: [
+                { name: 'substance', ja: '物質名', en: 'Substance name', required: true, example: 'water' },
+                { name: 'flow_rate', ja: '流量', en: 'Flow rate', required: true, unit: 'mol/s', example: 100 },
+                { name: 'inlet_temperature', ja: '入口温度', en: 'Inlet temperature', required: true, unit: 'K', example: 300 },
+                { name: 'outlet_temperature', ja: '出口温度', en: 'Outlet temperature', required: true, unit: 'K', example: 400 },
+                { name: 'pressure', ja: '圧力', en: 'Pressure', required: false, unit: 'Pa', default: 101325 },
+                { name: 'phase_change', ja: '相変化考慮', en: 'Consider phase change', required: false, default: true, type: 'boolean' }
+            ],
+            extraction: [
+                { name: 'solute', ja: '溶質', en: 'Solute', required: true, example: 'acetic_acid' },
+                { name: 'carrier', ja: '原溶媒', en: 'Carrier solvent', required: true, example: 'water' },
+                { name: 'solvent', ja: '抽剤', en: 'Extraction solvent', required: true, example: 'ethyl_acetate' },
+                { name: 'feed_flow_rate', ja: '原料流量', en: 'Feed flow rate', required: true, unit: 'kmol/h', example: 100 },
+                { name: 'feed_composition', ja: '原料中溶質モル分率', en: 'Solute mole fraction in feed', required: true, range: '0.001-0.5', example: 0.1 },
+                { name: 'solvent_flow_rate', ja: '抽剤流量', en: 'Solvent flow rate', required: true, unit: 'kmol/h', example: 50 },
+                { name: 'temperature', ja: '温度', en: 'Temperature', required: false, unit: 'K', default: 298.15 },
+                { name: 'recovery', ja: '目標抽出率', en: 'Target recovery', required: false, default: 0.9, range: '0-1' }
+            ],
+            absorption: [
+                { name: 'gas_component', ja: '被吸収成分', en: 'Gas component to absorb', required: true, example: 'ammonia' },
+                { name: 'carrier_gas', ja: 'キャリアガス', en: 'Carrier gas', required: true, example: 'air' },
+                { name: 'solvent', ja: '吸収液', en: 'Absorbent', required: true, example: 'water' },
+                { name: 'gas_flow_rate', ja: 'ガス流量', en: 'Gas flow rate', required: true, unit: 'kmol/h', example: 100 },
+                { name: 'inlet_gas_composition', ja: '入口ガス組成', en: 'Inlet gas composition', required: false, default: 0.05, range: '0-1' },
+                { name: 'liquid_flow_rate', ja: '液流量', en: 'Liquid flow rate', required: false, unit: 'kmol/h', example: 200 },
+                { name: 'temperature', ja: '温度', en: 'Temperature', required: false, unit: 'K', default: 298.15 },
+                { name: 'pressure', ja: '圧力', en: 'Pressure', required: false, unit: 'Pa', default: 101325 },
+                { name: 'removal_efficiency', ja: '目標除去率', en: 'Target removal efficiency', required: false, default: 0.9, range: '0-0.9999' }
+            ],
+            lcoh: [
+                { name: 'production_method', ja: '製造方法', en: 'Production method', required: true, choices: 'pem_electrolysis, alkaline_electrolysis, soec_electrolysis, smr, smr_ccs, atr_ccs', example: 'pem_electrolysis' },
+                { name: 'capacity', ja: '設備容量', en: 'Capacity', required: true, unit: 'MW', range: '0.1-1000', example: 10 },
+                { name: 'electricity_price', ja: '電力単価', en: 'Electricity price', required: false, unit: 'EUR/MWh', default: 50 },
+                { name: 'natural_gas_price', ja: 'ガス単価', en: 'Natural gas price', required: false, unit: 'EUR/MWh', default: 30 },
+                { name: 'operating_hours', ja: '年間稼働時間', en: 'Operating hours', required: false, unit: 'h/year', default: 4000, range: '1000-8760' },
+                { name: 'capex_per_kw', ja: 'CAPEX単価', en: 'CAPEX per kW', required: false, unit: 'EUR/kW', range: '100-5000' },
+                { name: 'opex_percent', ja: 'OPEX率', en: 'OPEX percentage', required: false, unit: '%', default: 3.0 },
+                { name: 'discount_rate', ja: '割引率', en: 'Discount rate', required: false, unit: '%', default: 6.0 },
+                { name: 'project_lifetime', ja: 'プロジェクト寿命', en: 'Project lifetime', required: false, unit: 'years', default: 20 },
+                { name: 'carbon_price', ja: '炭素価格', en: 'Carbon price', required: false, unit: 'EUR/ton', default: 0 }
+            ]
+        };
+
+        async function downloadPromptTemplate(skillId) {
+            const template = generatePromptTemplate(skillId);
+            download(template, `chemeng_${skillId}_template.txt`, 'text/plain');
+        }
+
+        function generatePromptTemplate(skillId) {
+            const skillName = SKILL_NAMES[skillId] || { ja: skillId, en: skillId };
+            const params = SKILL_PARAMS[skillId] || [];
+
+            let template = `${'='.repeat(80)}\n`;
+            template += `ChemEng - ${skillName.ja} / ${skillName.en} - Prompt Template\n`;
+            template += `${'='.repeat(80)}\n\n`;
+
+            template += `【使い方 / How to Use】\n`;
+            template += `1. 下の「YOUR DATA」セクションにパラメータを入力してください\n`;
+            template += `   Fill in your parameters in the "YOUR DATA" section below\n`;
+            template += `2. このテンプレートをClaude等のLLMに送信してください\n`;
+            template += `   Send this template to an LLM (like Claude)\n`;
+            template += `3. 出力されたJSONをChemEngにインポートしてください\n`;
+            template += `   Import the output JSON into ChemEng\n\n`;
+
+            template += `${'='.repeat(80)}\n`;
+            template += `【パラメータ説明 / Parameter Description】\n`;
+            template += `${'='.repeat(80)}\n\n`;
+
+            params.forEach((p, idx) => {
+                template += `${idx + 1}. ${p.name} ${p.required ? '(必須/Required)' : '(オプション/Optional)'}\n`;
+                template += `   - ${p.ja} / ${p.en}\n`;
+                if (p.unit) template += `   - 単位/Unit: ${p.unit}\n`;
+                if (p.default !== undefined) template += `   - デフォルト/Default: ${p.default}\n`;
+                if (p.range) template += `   - 範囲/Range: ${p.range}\n`;
+                if (p.choices) template += `   - 選択肢/Choices: ${p.choices}\n`;
+                if (p.example !== undefined) template += `   - 例/Example: ${JSON.stringify(p.example)}\n`;
+                template += `\n`;
+            });
+
+            template += `${'='.repeat(80)}\n`;
+            template += `【YOUR DATA / あなたのデータ】\n`;
+            template += `${'='.repeat(80)}\n\n`;
+
+            params.forEach(p => {
+                template += `${p.name}: _______________\n`;
+            });
+
+            template += `\n${'='.repeat(80)}\n`;
+            template += `【LLMへの指示 / Instructions for LLM】\n`;
+            template += `${'='.repeat(80)}\n\n`;
+            template += `上記のデータを以下のJSON形式で出力してください。\n`;
+            template += `空欄のフィールドは省略してください。\n\n`;
+            template += `Please convert the above data to this JSON format.\n`;
+            template += `Omit fields that are empty.\n\n`;
+
+            const exampleParams = {};
+            params.forEach(p => {
+                if (p.example !== undefined) {
+                    exampleParams[p.name] = p.example;
+                } else if (p.default !== undefined) {
+                    exampleParams[p.name] = p.default;
+                }
+            });
+
+            template += `{\n`;
+            template += `  "skill_id": "${skillId}",\n`;
+            template += `  "parameters": ${JSON.stringify(exampleParams, null, 4).split('\n').map((line, i) => i === 0 ? line : '  ' + line).join('\n')}\n`;
+            template += `}\n\n`;
+
+            template += `${'='.repeat(80)}\n`;
+            template += `ChemEng v1.0.0 | Chemical Engineering Calculator\n`;
+            template += `${'='.repeat(80)}\n`;
+
+            return template;
+        }
+
+        // ==================== Import ====================
+        let pendingImportData = null;
+
+        document.getElementById('import-btn').onclick = () => {
+            document.getElementById('import-modal').classList.remove('hidden');
+        };
+
+        document.getElementById('close-import-modal').onclick = () => {
+            document.getElementById('import-modal').classList.add('hidden');
+            resetImportModal();
+        };
+
+        document.getElementById('cancel-import').onclick = () => {
+            document.getElementById('import-modal').classList.add('hidden');
+            resetImportModal();
+        };
+
+        const importDropzone = document.getElementById('import-dropzone');
+        const importFileInput = document.getElementById('import-file');
+
+        importDropzone.onclick = () => importFileInput.click();
+        importFileInput.onchange = (e) => handleImportFile(e.target.files[0]);
+
+        importDropzone.ondragover = (e) => {
+            e.preventDefault();
+            importDropzone.classList.add('dragover');
+        };
+        importDropzone.ondragleave = () => importDropzone.classList.remove('dragover');
+        importDropzone.ondrop = (e) => {
+            e.preventDefault();
+            importDropzone.classList.remove('dragover');
+            handleImportFile(e.dataTransfer.files[0]);
+        };
+
+        async function handleImportFile(file) {
+            if (!file || !file.name.endsWith('.json')) {
+                showImportError('Please select a valid JSON file / 有効なJSONファイルを選択してください');
+                return;
+            }
+
+            try {
+                const text = await file.text();
+                const data = JSON.parse(text);
+
+                if (!data.skill_id || !data.parameters) {
+                    showImportError('Invalid format. Missing skill_id or parameters. / 無効なフォーマット。skill_idまたはparametersがありません。');
+                    return;
+                }
+
+                const validSkills = Object.keys(SKILL_NAMES);
+                if (!validSkills.includes(data.skill_id)) {
+                    showImportError(`Unknown skill: ${data.skill_id}. Valid: ${validSkills.join(', ')}`);
+                    return;
+                }
+
+                const validation = validateImportParams(data.skill_id, data.parameters);
+                if (!validation.valid) {
+                    showImportError(`Validation error: ${validation.errors.join(', ')}`);
+                    return;
+                }
+
+                pendingImportData = data;
+                showImportPreview(data);
+                document.getElementById('confirm-import').disabled = false;
+
+            } catch (e) {
+                showImportError('Failed to parse JSON: ' + e.message);
+            }
+        }
+
+        function validateImportParams(skillId, params) {
+            const schema = SKILL_PARAMS[skillId] || [];
+            const errors = [];
+
+            schema.filter(p => p.required).forEach(p => {
+                if (params[p.name] === undefined || params[p.name] === null || params[p.name] === '') {
+                    errors.push(`Missing required: ${p.name}`);
+                }
+            });
+
+            return { valid: errors.length === 0, errors };
+        }
+
+        function showImportPreview(data) {
+            const skillName = SKILL_NAMES[data.skill_id] || { ja: data.skill_id, en: data.skill_id };
+            document.getElementById('import-skill-badge').textContent = `${skillName.ja} / ${skillName.en}`;
+
+            const paramsList = document.getElementById('import-params-list');
+            paramsList.innerHTML = Object.entries(data.parameters)
+                .map(([key, val]) => `<div class="import-param-row">
+                    <span class="import-param-name">${key}:</span>
+                    <span class="import-param-value">${JSON.stringify(val)}</span>
+                </div>`)
+                .join('');
+
+            document.getElementById('import-preview').classList.remove('hidden');
+            document.getElementById('import-dropzone').classList.add('hidden');
+            document.getElementById('import-error').classList.add('hidden');
+        }
+
+        function showImportError(message) {
+            const errorEl = document.getElementById('import-error');
+            errorEl.textContent = message;
+            errorEl.classList.remove('hidden');
+        }
+
+        function resetImportModal() {
+            pendingImportData = null;
+            document.getElementById('import-preview').classList.add('hidden');
+            document.getElementById('import-dropzone').classList.remove('hidden');
+            document.getElementById('import-error').classList.add('hidden');
+            document.getElementById('confirm-import').disabled = true;
+            document.getElementById('import-file').value = '';
+        }
+
+        document.getElementById('confirm-import').onclick = () => {
+            if (!pendingImportData) return;
+
+            const { skill_id, parameters } = pendingImportData;
+
+            // Map skill_id to tab name
+            const tabName = skill_id === 'property_estimation' ? 'property' : skill_id;
+
+            // Switch to correct tab
+            document.querySelectorAll('.calc-tab').forEach(t => t.classList.remove('active'));
+            const targetTab = document.querySelector(`[data-tab="${tabName}"]`);
+            if (targetTab) targetTab.classList.add('active');
+
+            document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+            const targetForm = document.getElementById(`${tabName}-form`);
+            if (targetForm) targetForm.classList.add('active');
+
+            // Populate form fields
+            populateForm(skill_id, parameters);
+
+            // Close modal
+            document.getElementById('import-modal').classList.add('hidden');
+            resetImportModal();
+
+            toast('Parameters imported! / パラメータをインポートしました', 'success');
+        };
+
+        function populateForm(skillId, params) {
+            const tabName = skillId === 'property_estimation' ? 'property' : skillId;
+            const form = document.getElementById(`${tabName}-form`);
+            if (!form) return;
+
+            Object.entries(params).forEach(([name, value]) => {
+                const input = form.querySelector(`[name="${name}"]`);
+                if (input) {
+                    if (input.type === 'checkbox') {
+                        input.checked = !!value;
+                    } else if (Array.isArray(value)) {
+                        input.value = value.join(', ');
+                    } else {
+                        input.value = value;
+                    }
+                }
+            });
+        }
 
         // ==================== Chart ====================
         document.getElementById('gen-chart').onclick = async () => {
