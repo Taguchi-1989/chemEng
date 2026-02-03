@@ -35,6 +35,14 @@ except ImportError:
 BACKEND_URL = os.environ.get("BACKEND_URL", "")
 
 
+def _parse_cors_origins(value: str | None) -> list[str]:
+    if not value:
+        return ["http://localhost:8000", "http://127.0.0.1:8000"]
+    if value.strip() == "*":
+        return ["*"]
+    return [o.strip() for o in value.split(",") if o.strip()]
+
+
 # ==================== FastAPI App ====================
 
 app = FastAPI(
@@ -44,10 +52,13 @@ app = FastAPI(
 )
 
 # CORS設定
+cors_origins = _parse_cors_origins(os.environ.get("CHEMENG_CORS_ORIGINS"))
+allow_credentials_env = os.environ.get("CHEMENG_CORS_ALLOW_CREDENTIALS", "false").lower()
+allow_credentials = allow_credentials_env in ("1", "true", "yes") and "*" not in cors_origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=cors_origins,
+    allow_credentials=allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )

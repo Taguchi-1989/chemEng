@@ -19,6 +19,7 @@ Endpoints:
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
@@ -39,6 +40,14 @@ except ImportError:
 
 # Web UIディレクトリ
 WEB_DIR = Path(__file__).parent / "web"
+
+
+def _parse_cors_origins(value: str | None) -> list[str]:
+    if not value:
+        return ["http://localhost:8000", "http://127.0.0.1:8000"]
+    if value.strip() == "*":
+        return ["*"]
+    return [o.strip() for o in value.split(",") if o.strip()]
 
 
 # ==================== リクエスト/レスポンスモデル ====================
@@ -135,10 +144,13 @@ def create_app() -> FastAPI:
     )
 
     # CORS設定
+    cors_origins = _parse_cors_origins(os.environ.get("CHEMENG_CORS_ORIGINS"))
+    allow_credentials_env = os.environ.get("CHEMENG_CORS_ALLOW_CREDENTIALS", "false").lower()
+    allow_credentials = allow_credentials_env in ("1", "true", "yes") and "*" not in cors_origins
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
-        allow_credentials=True,
+        allow_origins=cors_origins,
+        allow_credentials=allow_credentials,
         allow_methods=["*"],
         allow_headers=["*"],
     )
@@ -537,7 +549,7 @@ def create_app() -> FastAPI:
 app = create_app() if FASTAPI_AVAILABLE else None
 
 
-def start_server(host: str = "0.0.0.0", port: int = 8000):
+def start_server(host: str = "127.0.0.1", port: int = 8000):
     """サーバー起動"""
     if not FASTAPI_AVAILABLE:
         print("Error: FastAPI is not installed")

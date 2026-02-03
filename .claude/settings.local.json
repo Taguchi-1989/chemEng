@@ -77,7 +77,19 @@
       "Bash(tree:*)",
       "Bash(gh repo view:*)",
       "Bash(gh auth login:*)",
-      "mcp__claude_ai_Vercel__deploy_to_vercel"
+      "mcp__claude_ai_Vercel__deploy_to_vercel",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)",
+      "mcp__plugin_playwright_playwright__browser_console_messages",
+      "Skill(frontend-design)",
+      "Skill(frontend-design:*)",
+      "mcp__plugin_playwright_playwright__browser_press_key",
+      "mcp__plugin_playwright_playwright__browser_run_code",
+      "mcp__plugin_playwright_playwright__browser_type",
+      "mcp__plugin_playwright_playwright__browser_network_requests",
+      "mcp__plugin_playwright_playwright__browser_select_option",
+      "Bash(cd /d d:devchemEng)",
+      "mcp__plugin_playwright_playwright__browser_file_upload"
     ]
   }
 }

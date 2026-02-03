@@ -3801,7 +3801,7 @@
             const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : '⚠';
             el.innerHTML = `
                 <span class="toast-icon">${icon}</span>
-                <span class="toast-message">${msg}</span>
+                <span class="toast-message">${escapeHtml(msg)}</span>
                 <button class="toast-close">×</button>
             `;
             container.appendChild(el);
@@ -3909,10 +3909,10 @@
                     if (!matches.length) { dropdown.classList.add('hidden'); return; }
 
                     dropdown.innerHTML = matches.map(s => `
-                        <div class="autocomplete-item" data-id="${s.id}">
-                            <span class="ac-name">${s.name_ja || s.id}</span>
-                            <span class="ac-en">${s.name_en || ''}</span>
-                            <span class="ac-formula">${s.formula || ''}</span>
+                        <div class="autocomplete-item" data-id="${escapeHtml(s.id)}">
+                            <span class="ac-name">${escapeHtml(s.name_ja || s.id)}</span>
+                            <span class="ac-en">${escapeHtml(s.name_en || '')}</span>
+                            <span class="ac-formula">${escapeHtml(s.formula || '')}</span>
                         </div>
                     `).join('');
                     dropdown.classList.remove('hidden');
@@ -4009,8 +4009,8 @@
             const list = document.getElementById('history-list');
             list.innerHTML = h.map((item, i) => `
                 <div class="history-item" data-idx="${i}">
-                    <div class="history-type">${item.type}</div>
-                    <div class="history-summary">${item.summary}</div>
+                    <div class="history-type">${escapeHtml(item.type)}</div>
+                    <div class="history-summary">${escapeHtml(item.summary)}</div>
                 </div>
             `).join('');
             list.querySelectorAll('.history-item').forEach(el => {
@@ -4059,13 +4059,21 @@
         }
 
         function renderSteps(steps) {
-            return steps.map(s => `
+            return steps.map(s => {
+                const stepNo = escapeHtml(s?.step);
+                const title = escapeHtml(s?.title);
+                const desc = s?.description ? `<div class="step-desc">${escapeHtml(s.description)}</div>` : '';
+                const formulas = Array.isArray(s?.formulas)
+                    ? s.formulas.map(escapeHtml).join('<br>')
+                    : escapeHtml(s?.formulas ?? '');
+                return `
                 <div class="step-item">
-                    <div class="step-title">Step ${s.step}: ${s.title}</div>
-                    ${s.description ? `<div class="step-desc">${s.description}</div>` : ''}
-                    <div class="step-formula">${s.formulas.join('<br>')}</div>
+                    <div class="step-title">Step ${stepNo}: ${title}</div>
+                    ${desc}
+                    <div class="step-formula">${formulas}</div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
 
         // ==================== Report Generation ====================
@@ -4279,7 +4287,7 @@
                         ${step.description ? `<div>${step.description}</div>` : ''}
                         ${step.formula ? `<div class="step-formula">${step.formula}</div>` : ''}
                         ${step.formulas ? `<div class="step-formula">${step.formulas.join('<br>')}</div>` : ''}
-                        ${step.values ? `<div class="step-formula">${Object.entries(step.values).map(([k,v]) => `${k}: ${v}`).join(', ')}</div>` : ''}
+                        ${step.values ? `<div class="step-formula">${Object.entries(step.values).map(([k,v]) => `${escapeHtml(k)}: ${escapeHtml(v)}`).join(', ')}</div>` : ''}
                         ${step.result ? `<div class="step-result">→ ${step.result}</div>` : ''}
                     </div>`;
                 });
@@ -4777,8 +4785,8 @@
             const paramsList = document.getElementById('import-params-list');
             paramsList.innerHTML = Object.entries(data.parameters)
                 .map(([key, val]) => `<div class="import-param-row">
-                    <span class="import-param-name">${key}:</span>
-                    <span class="import-param-value">${JSON.stringify(val)}</span>
+                    <span class="import-param-name">${escapeHtml(key)}:</span>
+                    <span class="import-param-value">${escapeHtml(JSON.stringify(val))}</span>
                 </div>`)
                 .join('');
 
@@ -4991,7 +4999,7 @@
                     const warn = document.getElementById('dist-warnings');
                     if (data.warnings?.length) {
                         warn.classList.remove('hidden');
-                        document.getElementById('dist-warn-list').innerHTML = data.warnings.map(w => `<li>${w}</li>`).join('');
+                        document.getElementById('dist-warn-list').innerHTML = data.warnings.map(w => `<li>${escapeHtml(w)}</li>`).join('');
                     } else warn.classList.add('hidden');
                     if (out.calculation_steps?.length) document.getElementById('dist-steps').innerHTML = renderSteps(out.calculation_steps);
                     saveHistory('distillation', params, out);
@@ -5113,9 +5121,11 @@
                     // Update info
                     const bpLight = data.bp_light ? (data.bp_light - 273.15).toFixed(1) : '?';
                     const bpHeavy = data.bp_heavy ? (data.bp_heavy - 273.15).toFixed(1) : '?';
+                    const safeLightComp = escapeHtml(lightComp);
+                    const safeHeavyComp = escapeHtml(heavyComp);
                     document.getElementById('txy-info').innerHTML = `
-                        <strong>${lightComp}</strong> bp: ${bpLight}°C |
-                        <strong>${heavyComp}</strong> bp: ${bpHeavy}°C
+                        <strong>${safeLightComp}</strong> bp: ${bpLight}°C |
+                        <strong>${safeHeavyComp}</strong> bp: ${bpHeavy}°C
                     `;
 
                     toast('T-x-y diagram generated');
@@ -5225,7 +5235,7 @@
                     const warn = document.getElementById('hb-warnings');
                     if (data.warnings?.length) {
                         warn.classList.remove('hidden');
-                        document.getElementById('hb-warn-list').innerHTML = data.warnings.map(w => `<li>${w}</li>`).join('');
+                        document.getElementById('hb-warn-list').innerHTML = data.warnings.map(w => `<li>${escapeHtml(w)}</li>`).join('');
                     } else warn.classList.add('hidden');
                     if (out.calculation_steps?.length) document.getElementById('hb-steps').innerHTML = renderSteps(out.calculation_steps);
                     saveHistory('heat_balance', params, out);
@@ -5307,7 +5317,7 @@
                     const warn = document.getElementById('ext-warnings');
                     if (data.warnings?.length) {
                         warn.classList.remove('hidden');
-                        document.getElementById('ext-warn-list').innerHTML = data.warnings.map(w => `<li>${w}</li>`).join('');
+                        document.getElementById('ext-warn-list').innerHTML = data.warnings.map(w => `<li>${escapeHtml(w)}</li>`).join('');
                     } else warn.classList.add('hidden');
                     // Steps
                     if (out.calculation_steps?.length) document.getElementById('ext-steps').innerHTML = renderSteps(out.calculation_steps);
@@ -5392,7 +5402,7 @@
                     const warn = document.getElementById('abs-warnings');
                     if (data.warnings?.length) {
                         warn.classList.remove('hidden');
-                        document.getElementById('abs-warn-list').innerHTML = data.warnings.map(w => `<li>${w}</li>`).join('');
+                        document.getElementById('abs-warn-list').innerHTML = data.warnings.map(w => `<li>${escapeHtml(w)}</li>`).join('');
                     } else warn.classList.add('hidden');
                     // Steps
                     if (out.calculation_steps?.length) document.getElementById('abs-steps').innerHTML = renderSteps(out.calculation_steps);
@@ -5506,11 +5516,11 @@
                     if (out.calculation_steps?.length) {
                         const stepsHtml = out.calculation_steps.map(s => `
                             <div class="step-item">
-                                <div class="step-title">${s.step}</div>
-                                ${s.description ? `<div class="step-desc">${s.description}</div>` : ''}
-                                ${s.formula ? `<div class="step-formula">${s.formula}</div>` : ''}
-                                ${s.values ? `<div class="step-values" style="font-size: 0.8rem; color: var(--text-muted); margin: 0.25rem 0;">${Object.entries(s.values).map(([k,v]) => `${k}: ${v}`).join(', ')}</div>` : ''}
-                                ${s.result ? `<div class="step-result" style="font-weight: 500; color: var(--accent-teal);">→ ${s.result}</div>` : ''}
+                                <div class="step-title">${escapeHtml(s.step)}</div>
+                                ${s.description ? `<div class="step-desc">${escapeHtml(s.description)}</div>` : ''}
+                                ${s.formula ? `<div class="step-formula">${escapeHtml(s.formula)}</div>` : ''}
+                                ${s.values ? `<div class="step-values" style="font-size: 0.8rem; color: var(--text-muted); margin: 0.25rem 0;">${Object.entries(s.values).map(([k,v]) => `${escapeHtml(k)}: ${escapeHtml(v)}`).join(', ')}</div>` : ''}
+                                ${s.result ? `<div class="step-result" style="font-weight: 500; color: var(--accent-teal);">→ ${escapeHtml(s.result)}</div>` : ''}
                             </div>
                         `).join('');
                         document.getElementById('lcoh-steps').innerHTML = stepsHtml;

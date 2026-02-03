@@ -173,7 +173,16 @@ class SkillDefinition:
 
         template_path = None
         if "template_path" in data and base_path:
-            template_path = base_path / data["template_path"]
+            candidate = Path(str(data["template_path"]))
+            if not candidate.is_absolute():
+                resolved = (base_path / candidate).resolve()
+                templates_dir = (base_path.parent / "templates").resolve()
+                try:
+                    resolved.relative_to(templates_dir)
+                except ValueError:
+                    resolved = None
+                if resolved is not None:
+                    template_path = resolved
 
         return cls(
             id=data["skill_id"] if "skill_id" in data else data["id"],

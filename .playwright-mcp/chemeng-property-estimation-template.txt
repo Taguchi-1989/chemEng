@@ -1,0 +1,70 @@
+================================================================================
+ChemEng - 物性推算 / Property Estimation - Prompt Template
+================================================================================
+
+【使い方 / How to Use】
+1. 下の「YOUR DATA」セクションにパラメータを入力してください
+   Fill in your parameters in the "YOUR DATA" section below
+2. このテンプレートをClaude等のLLMに送信してください
+   Send this template to an LLM (like Claude)
+3. 出力されたJSONをChemEngにインポートしてください
+   Import the output JSON into ChemEng
+
+================================================================================
+【パラメータ説明 / Parameter Description】
+================================================================================
+
+1. substance (必須/Required)
+   - 物質名 / Substance name
+   - 選択肢/Choices: water, ethanol, methanol, benzene, toluene, acetone, etc.
+   - 例/Example: "ethanol"
+
+2. property (必須/Required)
+   - 物性 / Property
+   - 選択肢/Choices: vapor_pressure, liquid_density, gas_density, liquid_viscosity, gas_viscosity, heat_capacity_liquid, heat_capacity_gas, thermal_conductivity_liquid, thermal_conductivity_gas, surface_tension, heat_of_vaporization, critical_temperature, critical_pressure, acentric_factor, molecular_weight
+   - 例/Example: "vapor_pressure"
+
+3. temperature (オプション/Optional)
+   - 温度 / Temperature
+   - 単位/Unit: K
+   - デフォルト/Default: 298.15
+   - 範囲/Range: 50-2000
+
+4. pressure (オプション/Optional)
+   - 圧力 / Pressure
+   - 単位/Unit: Pa
+   - デフォルト/Default: 101325
+   - 範囲/Range: 100-100000000
+
+================================================================================
+【YOUR DATA / あなたのデータ】
+================================================================================
+
+substance: _______________
+property: _______________
+temperature: _______________
+pressure: _______________
+
+================================================================================
+【LLMへの指示 / Instructions for LLM】
+================================================================================
+
+上記のデータを以下のJSON形式で出力してください。
+空欄のフィールドは省略してください。
+
+Please convert the above data to this JSON format.
+Omit fields that are empty.
+
+{
+  "skill_id": "property_estimation",
+  "parameters": {
+      "substance": "ethanol",
+      "property": "vapor_pressure",
+      "temperature": 298.15,
+      "pressure": 101325
+  }
+}
+
+================================================================================
+ChemEng v1.0.0 | Chemical Engineering Calculator
+================================================================================
