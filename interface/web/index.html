@@ -5613,7 +5613,7 @@
             const maxLcoh = Math.max(...lcohValues) * 1.1;
 
             // Draw SVG chart
-            const width = container.clientWidth - 20;
+            const width = Math.max(200, (container.clientWidth || 0) - 20);
             const height = 180;
             const padding = { left: 50, right: 20, top: 20, bottom: 30 };
             const chartWidth = width - padding.left - padding.right;

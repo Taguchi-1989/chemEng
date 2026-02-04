@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import importlib.util
+import sys
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -109,6 +110,8 @@ class SkillRegistry:
                 return None
 
             module = importlib.util.module_from_spec(spec)
+            # Ensure module is in sys.modules for decorators (e.g., dataclasses)
+            sys.modules[spec.name] = module
             spec.loader.exec_module(module)
 
             if hasattr(module, "execute"):
