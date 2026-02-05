@@ -199,6 +199,54 @@ input_schema:
     max_value: 10
     example: 2.0
 
+
+  - name: capex_subsidy_percent
+    type: float
+    description: "CAPEX???"
+    unit: "%"
+    required: false
+    default: 0
+    min_value: 0
+    max_value: 100
+    example: 20
+
+  - name: capex_subsidy_amount
+    type: float
+    description: "CAPEX???"
+    unit: "EUR"
+    required: false
+    default: 0
+    min_value: 0
+    example: 1000000
+
+  - name: maintenance_days
+    type: float
+    description: "?????????"
+    unit: "days/year"
+    required: false
+    default: 0
+    min_value: 0
+    max_value: 365
+    example: 20
+
+  - name: labor_cost
+    type: float
+    description: "???"
+    unit: "EUR/year"
+    required: false
+    default: 0
+    min_value: 0
+    example: 500000
+
+  - name: maintenance_cost
+    type: float
+    description: "????"
+    unit: "EUR/year"
+    required: false
+    default: 0
+    min_value: 0
+    example: 200000
+
 output_schema:
   - name: lcoh
     type: float

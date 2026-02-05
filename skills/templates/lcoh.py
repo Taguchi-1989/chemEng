@@ -188,10 +188,19 @@ def calculate_lcoh(params: dict[str, Any], include_sensitivity: bool = True) -> 
 
     capex_per_kw = params.get("capex_per_kw", defaults["capex_per_kw"])
     operating_hours = params.get("operating_hours", 4000)
+    maintenance_days = params.get("maintenance_days", 0) or 0
+    labor_cost = params.get("labor_cost", 0) or 0
+    maintenance_cost = params.get("maintenance_cost", 0) or 0
+    capex_subsidy_percent = params.get("capex_subsidy_percent", 0) or 0
+    capex_subsidy_amount = params.get("capex_subsidy_amount", 0) or 0
 
     # 設備利用率が指定された場合
     if "capacity_factor" in params and params["capacity_factor"]:
         operating_hours = params["capacity_factor"] * 8760
+    if maintenance_days:
+        operating_hours = max(0, operating_hours - (maintenance_days * 24))
+    if operating_hours <= 0:
+        raise ValueError("Operating hours must be > 0 after maintenance downtime")
 
     opex_percent = params.get("opex_percent", 3.0)
     stack_lifetime = params.get("stack_lifetime", defaults["stack_lifetime"])
@@ -219,15 +228,30 @@ def calculate_lcoh(params: dict[str, Any], include_sensitivity: bool = True) -> 
     # ----- 計算開始 -----
 
     # 1. 総CAPEX
+    if maintenance_days:
+        steps.append({
+            "step": "Operating Hours Adjustment",
+            "formula": "effective_hours = operating_hours - maintenance_days * 24",
+            "values": {
+                "operating_hours_input": params.get("operating_hours", 4000),
+                "maintenance_days": maintenance_days,
+            },
+            "result": f"{operating_hours:.1f} hours/year"
+        })
+
     total_capex = capacity_kw * capex_per_kw
+    capex_subsidy = (total_capex * (capex_subsidy_percent / 100)) + capex_subsidy_amount
+    net_capex = max(0, total_capex - capex_subsidy)
     steps.append({
         "step": "総CAPEX計算",
         "formula": "CAPEX = 容量 × 単価",
         "values": {
             "capacity_kw": capacity_kw,
             "capex_per_kw": capex_per_kw,
+            "capex_subsidy_percent": capex_subsidy_percent,
+            "capex_subsidy_amount": capex_subsidy_amount,
         },
-        "result": f"{total_capex:,.0f} EUR"
+        "result": f"{net_capex:,.0f} EUR (gross {total_capex:,.0f} - subsidy {capex_subsidy:,.0f})"
     })
 
     # 2. 年間水素生産量
@@ -274,14 +298,14 @@ def calculate_lcoh(params: dict[str, Any], include_sensitivity: bool = True) -> 
     })
 
     # 4. 年間CAPEX償却
-    annual_capex_cost = total_capex * crf
+    annual_capex_cost = net_capex * crf
     capex_per_kg = annual_capex_cost / annual_h2_production
 
     steps.append({
         "step": "年間CAPEX償却",
         "formula": "年間CAPEX = 総CAPEX × CRF",
         "values": {
-            "total_capex": f"{total_capex:,.0f} EUR",
+            "total_capex": f"{net_capex:,.0f} EUR",
             "crf": crf,
         },
         "result": f"{annual_capex_cost:,.0f} EUR/year ({capex_per_kg:.2f} EUR/kg H2)"
@@ -318,15 +342,21 @@ def calculate_lcoh(params: dict[str, Any], include_sensitivity: bool = True) -> 
         })
 
     # 6. 固定OPEX
-    annual_fixed_opex = total_capex * (opex_percent / 100)
-    opex_per_kg = annual_fixed_opex / annual_h2_production
+    annual_base_opex = net_capex * (opex_percent / 100)
+    annual_fixed_opex = annual_base_opex + labor_cost + maintenance_cost
+    opex_base_per_kg = annual_base_opex / annual_h2_production
+    labor_per_kg = labor_cost / annual_h2_production if labor_cost else 0
+    maintenance_per_kg = maintenance_cost / annual_h2_production if maintenance_cost else 0
+    opex_per_kg = opex_base_per_kg + labor_per_kg + maintenance_per_kg
 
     steps.append({
         "step": "固定OPEX計算",
         "formula": "固定OPEX = CAPEX × OPEX率",
         "values": {
-            "total_capex": f"{total_capex:,.0f} EUR",
+            "total_capex": f"{net_capex:,.0f} EUR",
             "opex_percent": f"{opex_percent}%",
+            "labor_cost": f"{labor_cost:,.0f} EUR/year",
+            "maintenance_cost": f"{maintenance_cost:,.0f} EUR/year",
         },
         "result": f"{annual_fixed_opex:,.0f} EUR/year ({opex_per_kg:.2f} EUR/kg H2)"
     })
@@ -435,7 +465,9 @@ def calculate_lcoh(params: dict[str, Any], include_sensitivity: bool = True) -> 
     lcoh_breakdown = {
         "capex": round(capex_per_kg, 3),
         "energy": round(energy_per_kg, 3),
-        "opex": round(opex_per_kg, 3),
+        "opex": round(opex_base_per_kg, 3),
+        "labor": round(labor_per_kg, 3),
+        "maintenance": round(maintenance_per_kg, 3),
         "stack_replacement": round(stack_per_kg, 3),
         "water": round(water_per_kg, 4),
         "carbon": round(carbon_per_kg, 3),
@@ -447,7 +479,9 @@ def calculate_lcoh(params: dict[str, Any], include_sensitivity: bool = True) -> 
     annual_costs = {
         "capex_annualized": round(annual_capex_cost, 0),
         "energy": round(annual_energy_cost, 0),
-        "fixed_opex": round(annual_fixed_opex, 0),
+        "fixed_opex": round(annual_base_opex, 0),
+        "labor": round(labor_cost, 0),
+        "maintenance": round(maintenance_cost, 0),
         "stack_replacement": round(annual_stack_cost, 0),
         "water": round(annual_water_cost, 0),
         "carbon": round(annual_carbon_cost, 0),
@@ -475,7 +509,7 @@ def calculate_lcoh(params: dict[str, Any], include_sensitivity: bool = True) -> 
         "lcoh": round(lcoh, 3),
         "lcoh_breakdown": lcoh_breakdown,
         "annual_h2_production": round(annual_h2_production, 0),
-        "total_capex": round(total_capex, 0),
+        "total_capex": round(net_capex, 0),
         "annual_costs": annual_costs,
         "carbon_intensity": round(actual_carbon_intensity, 2),
         "energy_efficiency": round(energy_efficiency, 1),

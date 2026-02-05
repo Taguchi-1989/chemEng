@@ -2742,6 +2742,14 @@
                         <label class="form-label">CAPEX / 設備投資単価 (EUR/kW)</label>
                         <input type="number" name="capex_per_kw" class="form-input" placeholder="Default based on method" step="10" min="100" max="5000">
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">CAPEX Subsidy / ??? (%)</label>
+                        <input type="number" name="capex_subsidy_percent" class="form-input" value="0" step="1" min="0" max="100">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">CAPEX Subsidy Amount / ??? (EUR)</label>
+                        <input type="number" name="capex_subsidy_amount" class="form-input" value="0" step="10000" min="0">
+                    </div>
                     <div class="form-group" id="lcoh-elec-group">
                         <label class="form-label">Electricity Price / 電力単価 (EUR/MWh)</label>
                         <input type="number" name="electricity_price" class="form-input" value="50" step="1" min="0" max="500">
@@ -2755,8 +2763,20 @@
                         <input type="number" name="operating_hours" class="form-input" value="4000" step="100" min="1000" max="8760">
                     </div>
                     <div class="form-group">
+                        <label class="form-label">Maintenance Downtime / ??????? (days/year)</label>
+                        <input type="number" name="maintenance_days" class="form-input" value="0" step="1" min="0" max="365">
+                    </div>
+                    <div class="form-group">
                         <label class="form-label">OPEX / 年間運転費 (% of CAPEX)</label>
                         <input type="number" name="opex_percent" class="form-input" value="3" step="0.1" min="0.5" max="10">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Labor Cost / ??? (EUR/year)</label>
+                        <input type="number" name="labor_cost" class="form-input" value="0" step="10000" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Maintenance Cost / ???? (EUR/year)</label>
+                        <input type="number" name="maintenance_cost" class="form-input" value="0" step="10000" min="0">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Discount Rate / 割引率 (%)</label>
@@ -2769,6 +2789,10 @@
                     <div class="form-group" id="lcoh-carbon-group">
                         <label class="form-label">Carbon Price / 炭素価格 (EUR/ton CO₂)</label>
                         <input type="number" name="carbon_price" class="form-input" value="0" step="10" min="0" max="500">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Subsidy / ??? (EUR/kg H2)</label>
+                        <input type="number" name="subsidies" class="form-input" value="0" step="0.1" min="0">
                     </div>
                     <button type="submit" class="submit-btn">Calculate LCOH</button>
                 </form>
@@ -3555,9 +3579,13 @@
                         <tbody id="lcoh-breakdown-table">
                             <tr><td>CAPEX (設備投資)</td><td id="lcoh-tbl-capex">-</td><td id="lcoh-tbl-capex-pct">-</td></tr>
                             <tr><td>Energy (エネルギー)</td><td id="lcoh-tbl-energy">-</td><td id="lcoh-tbl-energy-pct">-</td></tr>
-                            <tr><td>OPEX (運転費)</td><td id="lcoh-tbl-opex">-</td><td id="lcoh-tbl-opex-pct">-</td></tr>
+                            <tr><td>OPEX (運転費・基礎)</td><td id="lcoh-tbl-opex">-</td><td id="lcoh-tbl-opex-pct">-</td></tr>
+                            <tr><td>Labor (人件費)</td><td id="lcoh-tbl-labor">-</td><td id="lcoh-tbl-labor-pct">-</td></tr>
+                            <tr><td>Maintenance (保守費)</td><td id="lcoh-tbl-maint">-</td><td id="lcoh-tbl-maint-pct">-</td></tr>
                             <tr><td>Stack Replacement (スタック交換)</td><td id="lcoh-tbl-stack">-</td><td id="lcoh-tbl-stack-pct">-</td></tr>
+                            <tr><td>Water (水)</td><td id="lcoh-tbl-water">-</td><td id="lcoh-tbl-water-pct">-</td></tr>
                             <tr><td>Carbon Cost (炭素コスト)</td><td id="lcoh-tbl-carbon">-</td><td id="lcoh-tbl-carbon-pct">-</td></tr>
+                            <tr><td>Revenue/Subsidy (収益/補助)</td><td id="lcoh-tbl-revenue">-</td><td id="lcoh-tbl-revenue-pct">-</td></tr>
                         </tbody>
                     </table>
 
@@ -4618,7 +4646,14 @@
                 { name: 'opex_percent', ja: 'OPEX率', en: 'OPEX percentage', required: false, unit: '%', default: 3.0 },
                 { name: 'discount_rate', ja: '割引率', en: 'Discount rate', required: false, unit: '%', default: 6.0 },
                 { name: 'project_lifetime', ja: 'プロジェクト寿命', en: 'Project lifetime', required: false, unit: 'years', default: 20 },
-                { name: 'carbon_price', ja: '炭素価格', en: 'Carbon price', required: false, unit: 'EUR/ton', default: 0 }
+                { name: 'carbon_price', ja: '炭素価格', en: 'Carbon price', required: false, unit: 'EUR/ton', default: 0 },
+                { name: 'capex_subsidy_percent', ja: 'CAPEX???', en: 'CAPEX subsidy percent', required: false, unit: '%', default: 0 },
+                { name: 'capex_subsidy_amount', ja: 'CAPEX???', en: 'CAPEX subsidy amount', required: false, unit: 'EUR', default: 0 },
+                { name: 'maintenance_days', ja: '?????????', en: 'Maintenance downtime days', required: false, unit: 'days/year', default: 0 },
+                { name: 'labor_cost', ja: '???', en: 'Labor cost', required: false, unit: 'EUR/year', default: 0 },
+                { name: 'maintenance_cost', ja: '????', en: 'Maintenance cost', required: false, unit: 'EUR/year', default: 0 },
+                { name: 'subsidies', ja: '???', en: 'Subsidy per kg', required: false, unit: 'EUR/kg H2', default: 0 },
+                { name: 'water_price', ja: '???', en: 'Water price', required: false, unit: 'EUR/m3', default: 2.0 },
             ]
         };
 
@@ -5437,15 +5472,21 @@
             showLoading();
             const fd = new FormData(e.target);
             const method = fd.get('production_method');
-            const params = {
-                production_method: method,
-                capacity: parseFloat(fd.get('capacity')),
-                operating_hours: parseFloat(fd.get('operating_hours')),
-                opex_percent: parseFloat(fd.get('opex_percent')),
-                discount_rate: parseFloat(fd.get('discount_rate')),
-                project_lifetime: parseInt(fd.get('project_lifetime')),
-                carbon_price: parseFloat(fd.get('carbon_price'))
-            };
+                const params = {
+                    production_method: method,
+                    capacity: parseFloat(fd.get('capacity')),
+                    operating_hours: parseFloat(fd.get('operating_hours')),
+                    opex_percent: parseFloat(fd.get('opex_percent')),
+                    discount_rate: parseFloat(fd.get('discount_rate')),
+                    project_lifetime: parseInt(fd.get('project_lifetime')),
+                    carbon_price: parseFloat(fd.get('carbon_price')),
+                    maintenance_days: parseFloat(fd.get('maintenance_days') || 0),
+                    labor_cost: parseFloat(fd.get('labor_cost') || 0),
+                    maintenance_cost: parseFloat(fd.get('maintenance_cost') || 0),
+                    capex_subsidy_percent: parseFloat(fd.get('capex_subsidy_percent') || 0),
+                    capex_subsidy_amount: parseFloat(fd.get('capex_subsidy_amount') || 0),
+                    subsidies: parseFloat(fd.get('subsidies') || 0)
+                };
 
             // Optional CAPEX
             const capexVal = fd.get('capex_per_kw');
@@ -5493,17 +5534,29 @@
 
                     // Cost breakdown
                     const bd = out.lcoh_breakdown;
-                    const totalPositive = bd.capex + bd.energy + bd.opex + bd.stack_replacement + bd.carbon + bd.water;
+                    const labor = bd.labor || 0;
+                    const maintenance = bd.maintenance || 0;
+                    const water = bd.water || 0;
+                    const revenue = bd.revenue_offset || 0;
+                    const totalPositive = bd.capex + bd.energy + bd.opex + labor + maintenance + bd.stack_replacement + bd.carbon + water;
                     document.getElementById('lcoh-tbl-capex').textContent = bd.capex.toFixed(3);
                     document.getElementById('lcoh-tbl-capex-pct').textContent = ((bd.capex / totalPositive) * 100).toFixed(1) + '%';
                     document.getElementById('lcoh-tbl-energy').textContent = bd.energy.toFixed(3);
                     document.getElementById('lcoh-tbl-energy-pct').textContent = ((bd.energy / totalPositive) * 100).toFixed(1) + '%';
                     document.getElementById('lcoh-tbl-opex').textContent = bd.opex.toFixed(3);
                     document.getElementById('lcoh-tbl-opex-pct').textContent = ((bd.opex / totalPositive) * 100).toFixed(1) + '%';
+                    document.getElementById('lcoh-tbl-labor').textContent = labor.toFixed(3);
+                    document.getElementById('lcoh-tbl-labor-pct').textContent = ((labor / totalPositive) * 100).toFixed(1) + '%';
+                    document.getElementById('lcoh-tbl-maint').textContent = maintenance.toFixed(3);
+                    document.getElementById('lcoh-tbl-maint-pct').textContent = ((maintenance / totalPositive) * 100).toFixed(1) + '%';
                     document.getElementById('lcoh-tbl-stack').textContent = bd.stack_replacement.toFixed(3);
                     document.getElementById('lcoh-tbl-stack-pct').textContent = ((bd.stack_replacement / totalPositive) * 100).toFixed(1) + '%';
+                    document.getElementById('lcoh-tbl-water').textContent = water.toFixed(3);
+                    document.getElementById('lcoh-tbl-water-pct').textContent = ((water / totalPositive) * 100).toFixed(1) + '%';
                     document.getElementById('lcoh-tbl-carbon').textContent = bd.carbon.toFixed(3);
                     document.getElementById('lcoh-tbl-carbon-pct').textContent = ((bd.carbon / totalPositive) * 100).toFixed(1) + '%';
+                    document.getElementById('lcoh-tbl-revenue').textContent = revenue.toFixed(3);
+                    document.getElementById('lcoh-tbl-revenue-pct').textContent = totalPositive > 0 ? ((revenue / totalPositive) * 100).toFixed(1) + '%' : '-';
 
                     // Draw breakdown chart
                     drawLcohBreakdownChart(bd, totalPositive);
@@ -5546,7 +5599,10 @@
                 { label: 'CAPEX', value: breakdown.capex, color: 'var(--accent-teal)' },
                 { label: 'Energy', value: breakdown.energy, color: 'var(--accent-amber)' },
                 { label: 'OPEX', value: breakdown.opex, color: 'var(--accent-cyan)' },
-                { label: 'Stack', value: breakdown.stack_replacement, color: 'var(--accent-rose)' },
+                { label: 'Labor', value: breakdown.labor, color: 'var(--accent-rose)' },
+                { label: 'Maintenance', value: breakdown.maintenance, color: 'var(--accent-violet)' },
+                { label: 'Stack', value: breakdown.stack_replacement, color: 'var(--accent-cyan)' },
+                { label: 'Water', value: breakdown.water, color: 'var(--accent-teal)' },
                 { label: 'Carbon', value: breakdown.carbon, color: 'var(--accent-violet)' }
             ].filter(i => i.value > 0.001);
 
