@@ -4306,17 +4306,56 @@
                 html += '</table></div>';
             }
 
+
+            // Object Outputs Section (e.g., annual_costs)
+            if (result) {
+                const outputLabels = getOutputLabels(type);
+                const objectEntries = Object.entries(result).filter(([key, value]) => {
+                    if (!value || typeof value !== 'object') return false;
+                    if (key === 'calculation_steps' || key === 'sensitivity_data') return false;
+                    if (key === 'lcoh_breakdown') return false; // handled in main result
+                    return true;
+                });
+                if (objectEntries.length) {
+                    html += '<div class="section"><div class="section-title">Structured Outputs</div>';
+                    objectEntries.forEach(([key, value]) => {
+                        const label = outputLabels[key] || key;
+                        html += `<div class="section-title" style="margin-top:1rem;">${escapeHtml(label)}</div>`;
+                        if (Array.isArray(value)) {
+                            html += `<pre>${escapeHtml(JSON.stringify(value, null, 2))}</pre>`;
+                        } else {
+                            html += '<table>';
+                            for (const [k, v] of Object.entries(value)) {
+                                let displayVal = '-';
+                                if (v !== null && v !== undefined) {
+                                    if (typeof v === 'number') {
+                                        displayVal = formatValue(v);
+                                    } else if (typeof v === 'object') {
+                                        displayVal = JSON.stringify(v);
+                                    } else {
+                                        displayVal = String(v);
+                                    }
+                                }
+                                html += `<tr><th>${escapeHtml(k)}</th><td>${escapeHtml(displayVal)}</td></tr>`;
+                            }
+                            html += '</table>';
+                        }
+                    });
+                    html += '</div>';
+                }
+            }
+
             // Calculation Steps
             if (result?.calculation_steps?.length) {
                 html += '<div class="section"><div class="section-title">📝 計算過程 / Calculation Steps</div>';
                 result.calculation_steps.forEach((step, i) => {
                     html += `<div class="step">
                         <div class="step-title">Step ${i + 1}: ${step.step || step.title || ''}</div>
-                        ${step.description ? `<div>${step.description}</div>` : ''}
-                        ${step.formula ? `<div class="step-formula">${step.formula}</div>` : ''}
-                        ${step.formulas ? `<div class="step-formula">${step.formulas.join('<br>')}</div>` : ''}
+                        ${step.description ? `<div>${escapeHtml(step.description)}</div>` : ''}
+                        ${step.formula ? `<div class="step-formula">${escapeHtml(step.formula)}</div>` : ''}
+                        ${step.formulas ? `<div class="step-formula">${step.formulas.map(escapeHtml).join('<br>')}</div>` : ''}
                         ${step.values ? `<div class="step-formula">${Object.entries(step.values).map(([k,v]) => `${escapeHtml(k)}: ${escapeHtml(v)}`).join(', ')}</div>` : ''}
-                        ${step.result ? `<div class="step-result">→ ${step.result}</div>` : ''}
+                        ${step.result ? `<div class="step-result">→ ${escapeHtml(step.result)}</div>` : ''}
                     </div>`;
                 });
                 html += '</div>';
@@ -4357,7 +4396,7 @@
                 case 'lcoh':
                     html += `<div class="highlight">
                         <div class="highlight-label">Levelized Cost of Hydrogen</div>
-                        <div class="highlight-value">${result.lcoh?.toFixed(2) || '-'} EUR/kg H₂</div>
+                        <div class="highlight-value">${result.lcoh?.toFixed(2) || '-'} EUR/kg H2</div>
                     </div>`;
                     // Cost breakdown
                     if (result.lcoh_breakdown) {
@@ -4366,6 +4405,8 @@
                             capex: 'CAPEX (設備投資)',
                             energy: 'Energy (エネルギー)',
                             opex: 'OPEX (運転費)',
+                            labor: 'Labor (Labor Cost)',
+                            maintenance: 'Maintenance (Maintenance Cost)',
                             stack_replacement: 'Stack Replacement (スタック交換)',
                             water: 'Water (水)',
                             carbon: 'Carbon Cost (炭素コスト)',
@@ -4373,7 +4414,7 @@
                         };
                         for (const [key, value] of Object.entries(result.lcoh_breakdown)) {
                             if (key === 'total') continue;
-                            html += `<tr><th>${breakdownLabels[key] || key}</th><td>${value?.toFixed(3) || 0} EUR/kg H₂</td></tr>`;
+                            html += `<tr><th>${breakdownLabels[key] || key}</th><td>${value?.toFixed(3) || 0} EUR/kg H2</td></tr>`;
                         }
                         html += '</table></div>';
                     }
@@ -4425,7 +4466,14 @@
                     opex_percent: 'OPEX率 / OPEX (%)',
                     discount_rate: '割引率 / Discount Rate (%)',
                     project_lifetime: 'プロジェクト寿命 / Project Lifetime (years)',
-                    carbon_price: '炭素価格 / Carbon Price (EUR/ton)'
+                    carbon_price: 'Carbon Price (EUR/ton)',
+                    subsidies: 'Subsidy (EUR/kg)',
+                    water_price: 'Water Price (EUR/m3)',
+                    capex_subsidy_percent: 'CAPEX Subsidy (%)',
+                    capex_subsidy_amount: 'CAPEX Subsidy (EUR)',
+                    maintenance_days: 'Maintenance Days (days/year)',
+                    labor_cost: 'Labor Cost (EUR/year)',
+                    maintenance_cost: 'Maintenance Cost (EUR/year)'
                 }
             };
             return { ...common, ...(specific[type] || {}) };
@@ -4433,7 +4481,8 @@
 
         function getOutputLabels(type) {
             return {
-                lcoh: 'LCOH (EUR/kg H₂)',
+                lcoh: 'LCOH (EUR/kg H2)',
+                annual_costs: 'Annual Costs (EUR/year)',
                 annual_h2_production: '年間生産量 / Annual Production (kg/year)',
                 total_capex: '総CAPEX / Total CAPEX (EUR)',
                 energy_efficiency: 'エネルギー効率 / Energy Efficiency (%)',
