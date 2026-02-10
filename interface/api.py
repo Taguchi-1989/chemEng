@@ -19,12 +19,13 @@ Endpoints:
 
 from __future__ import annotations
 
+import logging
 import os
 from pathlib import Path
 from typing import Any
 
 try:
-    from fastapi import FastAPI, HTTPException
+    from fastapi import FastAPI, HTTPException, Query
     from fastapi.middleware.cors import CORSMiddleware
     from fastapi.responses import FileResponse, HTMLResponse  # noqa: F401
     from fastapi.staticfiles import StaticFiles
@@ -37,6 +38,14 @@ except ImportError:
         pass
     def Field(*args, **kwargs):
         return None
+    def Query(*args, **kwargs):
+        return None
+
+from core.logging_config import setup_logging
+from core.errors import safe_error_message
+
+setup_logging()
+logger = logging.getLogger("chemeng")
 
 # Web UIディレクトリ
 WEB_DIR = Path(__file__).parent / "web"
@@ -54,12 +63,12 @@ def _parse_cors_origins(value: str | None) -> list[str]:
 
 class PropertyRequest(BaseModel):
     """物性値取得リクエスト"""
-    substance: str = Field(..., description="物質名またはCAS番号")
-    property: str = Field(..., description="物性名")
-    temperature: float | None = Field(None, description="温度 (K)")
-    pressure: float | None = Field(None, description="圧力 (Pa)")
-    quality: float | None = Field(None, description="乾き度 (0-1)")
-    engine: str | None = Field(None, description="使用するエンジン名")
+    substance: str = Field(..., description="物質名またはCAS番号", max_length=200)
+    property: str = Field(..., description="物性名", max_length=100, pattern=r"^[a-z_]+$")
+    temperature: float | None = Field(None, description="温度 (K)", ge=0, le=10000)
+    pressure: float | None = Field(None, description="圧力 (Pa)", ge=0, le=1e9)
+    quality: float | None = Field(None, description="乾き度 (0-1)", ge=0, le=1)
+    engine: str | None = Field(None, description="使用するエンジン名", max_length=50)
 
 
 class PropertyResponse(BaseModel):
@@ -94,11 +103,11 @@ class CalculationResponse(BaseModel):
 
 class EquilibriumRequest(BaseModel):
     """相平衡計算リクエスト"""
-    substances: list[str] = Field(..., description="物質リスト")
+    substances: list[str] = Field(..., description="物質リスト", max_length=10)
     composition: dict[str, float] = Field(..., description="組成（モル分率）")
-    temperature: float | None = Field(None, description="温度 (K)")
-    pressure: float | None = Field(None, description="圧力 (Pa)")
-    engine: str | None = Field(None, description="使用するエンジン名")
+    temperature: float | None = Field(None, description="温度 (K)", ge=0, le=10000)
+    pressure: float | None = Field(None, description="圧力 (Pa)", ge=0, le=1e9)
+    engine: str | None = Field(None, description="使用するエンジン名", max_length=50)
 
 
 class EngineInfo(BaseModel):
@@ -151,8 +160,8 @@ def create_app() -> FastAPI:
         CORSMiddleware,
         allow_origins=cors_origins,
         allow_credentials=allow_credentials,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_headers=["Content-Type", "Accept"],
     )
 
     # Static files for slides
@@ -328,16 +337,16 @@ def create_app() -> FastAPI:
                 success=False,
                 substance=request.substance,
                 property=request.property,
-                error=str(e),
+                error=safe_error_message(e),
                 engine=engine.name,
             )
 
     @app.post("/api/v1/txy-diagram")
     async def get_txy_diagram(
-        light_component: str,
-        heavy_component: str,
-        pressure: float = 101325.0,
-        points: int = 21
+        light_component: str = Query(..., max_length=200),
+        heavy_component: str = Query(..., max_length=200),
+        pressure: float = Query(101325.0, ge=0, le=1e9),
+        points: int = Query(21, ge=2, le=200),
     ):
         """
         T-x-y相図データを生成
@@ -402,7 +411,7 @@ def create_app() -> FastAPI:
         except Exception as e:
             return {
                 "success": False,
-                "error": str(e),
+                "error": safe_error_message(e),
             }
 
     @app.post("/api/v1/equilibrium")
@@ -453,7 +462,7 @@ def create_app() -> FastAPI:
             return {
                 "success": False,
                 "engine": engine.name,
-                "error": str(e),
+                "error": safe_error_message(e),
             }
 
     @app.get("/api/v1/substances")
@@ -503,7 +512,7 @@ def create_app() -> FastAPI:
             return {"success": True, "substances": result}
 
         except Exception as e:
-            return {"success": False, "error": str(e), "substances": []}
+            return {"success": False, "error": safe_error_message(e), "substances": []}
 
     @app.get("/api/v1/substances/{substance}")
     async def get_substance_info(substance: str, engine: str | None = None):
@@ -540,7 +549,7 @@ def create_app() -> FastAPI:
             }
 
         except Exception as e:
-            raise HTTPException(status_code=400, detail=str(e))
+            raise HTTPException(status_code=400, detail=safe_error_message(e))
 
     return app
 

@@ -60,10 +60,16 @@ Repository = "https://github.com/user/walktalk-hub"
 [tool.setuptools.package-dir]
 chemeng = "."
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["*"]
-exclude = ["tests*", "docs*", "deploy*", "api*"]
+[tool.setuptools]
+packages = [
+    "chemeng",
+    "chemeng.core",
+    "chemeng.engines",
+    "chemeng.interface",
+    "chemeng.skills",
+    "chemeng.ai",
+    "chemeng.storage",
+]
 
 [tool.ruff]
 target-version = "py310"

@@ -18,12 +18,19 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+import logging
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
+
+from core.logging_config import setup_logging
+from core.errors import safe_error_message
+
+setup_logging()
+logger = logging.getLogger("chemeng")
 
 try:
     import httpx
@@ -59,18 +66,18 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
     allow_credentials=allow_credentials,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Accept"],
 )
 
 
 # ==================== Models ====================
 
 class PropertyRequest(BaseModel):
-    substance: str = Field(..., description="物質名またはCAS番号")
-    property: str = Field(..., description="物性名")
-    temperature: float | None = Field(None, description="温度 (K)")
-    pressure: float | None = Field(None, description="圧力 (Pa)")
+    substance: str = Field(..., description="物質名またはCAS番号", max_length=200)
+    property: str = Field(..., description="物性名", max_length=100, pattern=r"^[a-z_]+$")
+    temperature: float | None = Field(None, description="温度 (K)", ge=0, le=10000)
+    pressure: float | None = Field(None, description="圧力 (Pa)", ge=0, le=1e9)
 
 
 class CalculationRequest(BaseModel):
@@ -183,7 +190,7 @@ async def list_engines(request: Request):
             ]
         }
     except Exception as e:
-        return {"engines": [], "error": str(e)}
+        return {"engines": [], "error": safe_error_message(e)}
 
 
 @app.get("/api/v1/skills")
