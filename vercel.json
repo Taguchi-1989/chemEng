@@ -8,9 +8,31 @@
       "config": {
         "maxLambdaSize": "50mb"
       }
+    },
+    {
+      "src": "interface/web/css/**",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "interface/web/js/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
+    {
+      "src": "/css/(.*)",
+      "dest": "interface/web/css/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/js/(.*)",
+      "dest": "interface/web/js/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
     {
       "src": "/(.*)",
       "dest": "api/index.py"

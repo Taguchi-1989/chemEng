@@ -164,7 +164,15 @@ def create_app() -> FastAPI:
         allow_headers=["Content-Type", "Accept"],
     )
 
-    # Static files for slides
+    # Static files for CSS, JS, slides
+    css_dir = WEB_DIR / "css"
+    if css_dir.exists():
+        app.mount("/css", StaticFiles(directory=str(css_dir)), name="css")
+
+    js_dir = WEB_DIR / "js"
+    if js_dir.exists():
+        app.mount("/js", StaticFiles(directory=str(js_dir)), name="js")
+
     slides_dir = WEB_DIR / "slides"
     if slides_dir.exists():
         app.mount("/slides", StaticFiles(directory=str(slides_dir)), name="slides")
@@ -357,57 +365,19 @@ def create_app() -> FastAPI:
             pressure: 圧力 (Pa)
             points: データ点数
         """
-        from engines import get_engine
-
-        engine = get_engine("thermo")
-        if not engine or not engine.is_available():
-            raise HTTPException(
-                status_code=500,
-                detail="Thermo engine not available"
-            )
-
-        substances = [light_component, heavy_component]
-        x_values = []  # 液相組成（軽沸成分モル分率）
-        y_values = []  # 気相組成（軽沸成分モル分率）
-        T_bubble = []  # 泡点温度
-        T_dew = []     # 露点温度
-
         try:
-            for i in range(points):
-                x_light = i / (points - 1)  # 0 から 1
-
-                # 泡点計算（液相組成を指定）
-                composition = {light_component: x_light, heavy_component: 1 - x_light}
-                bubble = engine.calculate_bubble_point(substances, composition, pressure)
-
-                x_values.append(x_light)
-                T_bubble.append(bubble["bubble_point_temperature"])
-                y_values.append(bubble["vapor_composition"].get(light_component, x_light))
-
-            # 露点曲線も計算（気相組成を指定）
-            for i in range(points):
-                y_light = i / (points - 1)
-                composition = {light_component: y_light, heavy_component: 1 - y_light}
-                dew = engine.calculate_dew_point(substances, composition, pressure)
-                T_dew.append(dew["dew_point_temperature"])
-
-            # 純成分の沸点も取得
-            bp_light = engine.get_property(light_component, "boiling_point", {"pressure": pressure})
-            bp_heavy = engine.get_property(heavy_component, "boiling_point", {"pressure": pressure})
-
-            return {
-                "success": True,
+            result = registry.execute("txy_diagram", {
                 "light_component": light_component,
                 "heavy_component": heavy_component,
                 "pressure": pressure,
-                "x": x_values,           # 液相組成
-                "y": y_values,           # 気相組成
-                "T_bubble": T_bubble,    # 泡点曲線
-                "T_dew": T_dew,          # 露点曲線
-                "bp_light": bp_light,    # 軽沸成分沸点
-                "bp_heavy": bp_heavy,    # 重沸成分沸点
+                "points": points,
+            })
+            if result.success:
+                return result.outputs
+            return {
+                "success": False,
+                "error": "; ".join(result.errors),
             }
-
         except Exception as e:
             return {
                 "success": False,

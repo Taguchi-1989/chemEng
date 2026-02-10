@@ -1,0 +1,66 @@
+# T-x-y 相図生成スキル
+# 二成分系のT-x-y線図データを生成する
+
+skill_id: "txy_diagram"
+name: "T-x-y 相図"
+description: "二成分系のT-x-y線図（泡点・露点曲線）データを生成する。"
+calculation_type: "vle"
+version: "1.0.0"
+author: "chemeng"
+tags: ["vle", "phase_diagram", "binary"]
+
+required_engines:
+  - thermo
+
+input_schema:
+  - name: light_component
+    type: str
+    description: "軽沸成分（低沸点成分）の名前またはCAS番号"
+    required: true
+    example: "ethanol"
+
+  - name: heavy_component
+    type: str
+    description: "重沸成分（高沸点成分）の名前またはCAS番号"
+    required: true
+    example: "water"
+
+  - name: pressure
+    type: float
+    description: "操作圧力"
+    unit: "Pa"
+    required: false
+    default: 101325.0
+
+  - name: points
+    type: int
+    description: "データ点数"
+    required: false
+    default: 21
+    min_value: 2
+    max_value: 200
+
+output_schema:
+  - name: x
+    type: list
+    description: "液相組成（軽沸成分モル分率）"
+
+  - name: y
+    type: list
+    description: "気相組成（軽沸成分モル分率）"
+
+  - name: T_bubble
+    type: list
+    description: "泡点温度 (K)"
+
+  - name: T_dew
+    type: list
+    description: "露点温度 (K)"
+
+  - name: bp_light
+    type: float
+    description: "軽沸成分の沸点 (K)"
+
+  - name: bp_heavy
+    type: float
+    description: "重沸成分の沸点 (K)"

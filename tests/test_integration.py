@@ -23,6 +23,7 @@ class TestSkillLoading:
         expected = {
             "property_estimation", "mass_balance", "heat_balance",
             "distillation", "extraction", "absorption", "lcoh",
+            "txy_diagram",
         }
         assert expected.issubset(skill_ids), f"Missing skills: {expected - skill_ids}"
 

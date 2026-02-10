@@ -73,12 +73,8 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
     # エンジン取得
     if engine is None:
         try:
-            # Support both package import and direct module import (Vercel)
-            try:
-                from engines.thermo_engine import ThermoEngine
-            except ImportError:
-                from chemeng.engines.thermo_engine import ThermoEngine
-            engine = ThermoEngine()
+            from core.compat import get_thermo_engine
+            engine = get_thermo_engine()
         except ImportError:
             # エンジンなしでも相対揮発度を仮定して計算可能
             warnings.append("Engine not available, using assumed relative volatility")

@@ -68,12 +68,8 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
     # エンジンがない場合はインポート
     if engine is None:
         try:
-            # Support both package import and direct module import (Vercel)
-            try:
-                from engines.thermo_engine import ThermoEngine
-            except ImportError:
-                from chemeng.engines.thermo_engine import ThermoEngine
-            engine = ThermoEngine()
+            from core.compat import get_thermo_engine
+            engine = get_thermo_engine()
         except ImportError as e:
             return {
                 "success": False,
