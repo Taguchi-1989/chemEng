@@ -78,7 +78,7 @@ class PropertyResponse(BaseModel):
     property: str
     value: float | None = None
     unit: str | None = None
-    conditions: dict[str, float] = {}
+    conditions: dict[str, float] = Field(default_factory=dict)
     engine: str | None = None
     error: str | None = None
 
@@ -92,10 +92,10 @@ class CalculationResponse(BaseModel):
     """計算レスポンス"""
     success: bool
     skill_id: str
-    inputs: dict[str, Any] = {}
-    outputs: dict[str, Any] = {}
-    warnings: list[str] = []
-    errors: list[str] = []
+    inputs: dict[str, Any] = Field(default_factory=dict)
+    outputs: dict[str, Any] = Field(default_factory=dict)
+    warnings: list[str] = Field(default_factory=list)
+    errors: list[str] = Field(default_factory=list)
     execution_time_ms: int = 0
     engine: str | None = None
     timestamp: str | None = None
@@ -126,7 +126,7 @@ class SkillInfo(BaseModel):
     description: str
     calculation_type: str
     required_engines: list[str]
-    tags: list[str] = []
+    tags: list[str] = Field(default_factory=list)
 
 
 class SkillDetail(SkillInfo):
@@ -134,7 +134,7 @@ class SkillDetail(SkillInfo):
     version: str
     input_schema: list[dict[str, Any]]
     output_schema: list[dict[str, Any]]
-    defaults: dict[str, Any] = {}
+    defaults: dict[str, Any] = Field(default_factory=dict)
 
 
 # ==================== アプリケーション ====================

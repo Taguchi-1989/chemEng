@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import importlib.util
+import logging
 import sys
 import time
 from collections.abc import Callable
@@ -16,6 +17,8 @@ from typing import Any
 import yaml
 
 from .skill import CalculationResult, SkillDefinition
+
+logger = logging.getLogger("chemeng")
 
 # Use try/except to support both package import and direct module import (Vercel)
 try:
@@ -64,7 +67,7 @@ class SkillRegistry:
                 skill.defaults = self._load_defaults(skill)
                 self._skills[skill.id] = skill
             except Exception as e:
-                print(f"Warning: Failed to load skill {schema_file}: {e}")
+                logger.warning("Failed to load skill %s: %s", schema_file.name, e)
 
     def _load_defaults(self, skill: SkillDefinition) -> dict[str, Any]:
         """スキルのデフォルト値を読み込み"""
@@ -119,7 +122,7 @@ class SkillRegistry:
                 return module.execute
 
         except Exception as e:
-            print(f"Warning: Failed to load template for {skill.id}: {e}")
+            logger.warning("Failed to load template for %s: %s", skill.id, e)
 
         return None
 

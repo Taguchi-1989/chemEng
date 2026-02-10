@@ -4,6 +4,8 @@
 純物質の熱力学物性値を計算する。
 """
 
+from __future__ import annotations
+
 from typing import Any
 
 # 物性の単位マッピング

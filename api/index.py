@@ -126,7 +126,7 @@ async def proxy_request(request: Request, path: str):
         except httpx.ConnectError:
             raise HTTPException(status_code=503, detail="Cannot connect to backend server")
         except Exception as e:
-            raise HTTPException(status_code=502, detail=f"Backend error: {str(e)}")
+            raise HTTPException(status_code=502, detail=f"Backend error: {safe_error_message(e)}")
 
 
 # ==================== Endpoints ====================
@@ -215,7 +215,7 @@ async def list_skills(request: Request):
             ]
         }
     except Exception as e:
-        return {"skills": [], "error": str(e)}
+        return {"skills": [], "error": safe_error_message(e)}
 
 
 @app.get("/api/v1/skills/{skill_id}")
@@ -250,7 +250,7 @@ async def get_skill(skill_id: str, request: Request):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=safe_error_message(e))
 
 
 @app.post("/api/v1/property")
@@ -293,7 +293,7 @@ async def get_property(request: Request):
             "success": False,
             "substance": prop_request.substance,
             "property": prop_request.property,
-            "error": str(e),
+            "error": safe_error_message(e),
         }
 
 
@@ -312,7 +312,7 @@ async def calculate(skill_id: str, request: Request):
         result = registry.execute(skill_id, calc_request.parameters)
         return result.to_dict()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=safe_error_message(e))
 
 
 # Vercel用ハンドラー

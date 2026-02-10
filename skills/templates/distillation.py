@@ -6,6 +6,8 @@
 - Fenske-Underwood-Gilliland法（簡易法）
 """
 
+from __future__ import annotations
+
 import math
 from typing import Any
 
@@ -179,8 +181,8 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
     })
 
     if R_min < 0:
-        warnings.append(f"Calculated negative Rmin ({R_min:.3f}), using 0.3")
-        R_min = 0.3
+        warnings.append(f"Calculated negative Rmin ({R_min:.3f}) - separation is very easy, using Rmin=0.01")
+        R_min = 0.01
 
     # Step 6: 実還流比
     R = R_min * R_factor
@@ -270,7 +272,10 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
     })
 
     # Step 10: 塔径の概算
-    diameter = _estimate_column_diameter(V, P, T_feed, warnings)
+    diameter = _estimate_column_diameter(
+        V, P, T_feed, warnings, engine=engine,
+        light_comp=light_comp, heavy_comp=heavy_comp, zF=zF,
+    )
 
     calculation_steps.append({
         "step": 10,
@@ -363,9 +368,9 @@ def _calculate_minimum_reflux(alpha: float, xD: float, xF: float, q: float) -> f
             return 0.5
         R_min = (xD - y_eq) / (y_eq - xF) * (1 + 0.1 * (1 - q))
 
-    # 負の値を防止
+    # 負の値は分離が容易（平衡線がxDに近い）なことを示す
     if R_min < 0:
-        R_min = 0.1
+        R_min = 0.01
 
     return R_min
 
@@ -383,8 +388,12 @@ def _gilliland_correlation(N_min: float, R_min: float, R: float) -> float:
 
     X = (R - R_min) / (R + 1)
 
-    if X <= 0 or X >= 1:
-        return N_min * 2  # フォールバック
+    if X <= 0:
+        # X <= 0 means R <= R_min, should not reach here (caught above)
+        return float('inf')
+    if X >= 1:
+        # X >= 1 means very high reflux, approaching total reflux → N ≈ N_min
+        return N_min * 1.05
 
     try:
         exponent = (1 + 54.4 * X) / (11 + 117.2 * X) * (X - 1) / math.sqrt(X)
@@ -462,7 +471,8 @@ def _calculate_heat_duties(
 
 
 def _estimate_column_diameter(
-    V: float, P: float, T: float, warnings: list[str]
+    V: float, P: float, T: float, warnings: list[str],
+    engine=None, light_comp: str = "", heavy_comp: str = "", zF: float = 0.5,
 ) -> float:
     """
     塔径の概算（Fair法の簡易版）
@@ -471,7 +481,16 @@ def _estimate_column_diameter(
     """
     # 蒸気密度の概算（理想気体）
     R_gas = 8.314  # J/(mol·K)
-    MW_avg = 50.0  # g/mol（平均分子量の仮定）
+
+    # 平均分子量をエンジンから取得（可能な場合）
+    MW_avg = 50.0  # g/mol（デフォルト）
+    if engine is not None and engine.is_available() and light_comp and heavy_comp:
+        try:
+            MW_light = engine.get_property(light_comp, "molecular_weight", {})
+            MW_heavy = engine.get_property(heavy_comp, "molecular_weight", {})
+            MW_avg = zF * MW_light + (1 - zF) * MW_heavy
+        except Exception:
+            warnings.append("Could not get molecular weights, using default MW=50 g/mol")
 
     rho_v = P * MW_avg / 1000 / (R_gas * T)  # kg/m³
 

@@ -16,6 +16,8 @@ LCOH (Levelized Cost of Hydrogen) 計算テンプレート
 - DOE Hydrogen Program
 """
 
+from __future__ import annotations
+
 from typing import Any
 
 # 製造方法別デフォルトパラメータ

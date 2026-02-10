@@ -7,6 +7,8 @@
 - 最小液ガス比の計算
 """
 
+from __future__ import annotations
+
 import math
 from typing import Any
 

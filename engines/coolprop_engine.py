@@ -5,6 +5,8 @@ CoolProp エンジン
 120種以上の流体に対応。
 """
 
+from __future__ import annotations
+
 from typing import Any
 
 from .base import (

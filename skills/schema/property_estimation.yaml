@@ -39,6 +39,7 @@ input_schema:
       - critical_pressure
       - acentric_factor
       - molecular_weight
+      - boiling_point
     example: "vapor_pressure"
 
   - name: temperature

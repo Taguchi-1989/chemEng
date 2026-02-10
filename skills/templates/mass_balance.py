@@ -181,9 +181,9 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
                         pass
                 stream.calculate_from_component_flows(components)
             else:
-                # 連立方程式を解く（簡易実装：2成分2出口の場合）
-                if len(components) == 2 and len(outlet_streams) == 2:
-                    _solve_two_component_balance(
+                # 連立方程式を解く
+                if len(outlet_streams) == 2:
+                    _solve_component_balance(
                         components, inlet_total_flows, outlet_streams, warnings
                     )
                     break
@@ -293,6 +293,83 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
     }
 
 
+def _solve_component_balance(
+    components: list[str],
+    inlet_flows: dict[str, float],
+    outlet_streams: list[Stream],
+    warnings: list[str],
+):
+    """
+    N成分2出口の物質収支を解く（最小二乗法）
+
+    入口: F, zF[i]
+    出口1: D, xD[i]（組成既知）
+    出口2: B, xB[i]（組成既知）
+
+    成分収支: F*zF[i] = D*xD[i] + B*xB[i]  (i = 1..N)
+    → [xD[i], xB[i]] [D, B]^T = [F*zF[i]]  (i = 1..N)
+
+    2成分の場合は解析解を使用し、3成分以上ではnumpy最小二乗法を使用。
+    """
+    stream1, stream2 = outlet_streams[0], outlet_streams[1]
+    F = sum(inlet_flows.values())
+    if F <= 0:
+        warnings.append("Total inlet flow is zero, cannot solve")
+        return
+
+    # 2成分の場合は解析解（numpy不要）
+    if len(components) == 2:
+        _solve_two_component_balance(components, inlet_flows, outlet_streams, warnings)
+        return
+
+    # N成分: numpy最小二乗法で解く
+    try:
+        import numpy as np
+    except ImportError:
+        warnings.append("numpy not available: only 2-component balance is supported without numpy")
+        if len(components) == 2:
+            _solve_two_component_balance(components, inlet_flows, outlet_streams, warnings)
+        return
+
+    # A * [D, B]^T = b
+    # A[i] = [xD[i], xB[i]]
+    # b[i] = inlet_flows[comp_i]
+    n = len(components)
+    A = np.zeros((n, 2))
+    b = np.zeros(n)
+
+    for i, comp in enumerate(components):
+        A[i, 0] = stream1.composition.get(comp, 0.0)
+        A[i, 1] = stream2.composition.get(comp, 0.0)
+        b[i] = inlet_flows.get(comp, 0.0)
+
+    # 最小二乗法で解く
+    result, residuals, rank, sv = np.linalg.lstsq(A, b, rcond=None)
+    D_flow, B_flow = result[0], result[1]
+
+    if D_flow < 0 or B_flow < 0:
+        warnings.append(f"Negative flow calculated: D={D_flow:.2f}, B={B_flow:.2f}")
+        D_flow = max(0.0, D_flow)
+        B_flow = max(0.0, B_flow)
+
+    # 残差チェック
+    if len(residuals) > 0 and residuals[0] > 1e-6 * F:
+        warnings.append(f"Least-squares residual = {residuals[0]:.4f}: outlet compositions may be inconsistent")
+
+    # 成分流量を設定
+    stream1.flow_rate = D_flow
+    stream1.component_flows = {
+        comp: D_flow * stream1.composition.get(comp, 0.0)
+        for comp in components
+    }
+
+    stream2.flow_rate = B_flow
+    stream2.component_flows = {
+        comp: B_flow * stream2.composition.get(comp, 0.0)
+        for comp in components
+    }
+
+
 def _solve_two_component_balance(
     components: list[str],
     inlet_flows: dict[str, float],
@@ -300,13 +377,8 @@ def _solve_two_component_balance(
     warnings: list[str],
 ):
     """
-    2成分2出口の物質収支を解く
+    2成分2出口の物質収支を解析的に解く
 
-    入口: F, zF
-    出口1: D, xD（組成既知）
-    出口2: B, xB（組成既知）
-
-    F = D + B
     F * zF[i] = D * xD[i] + B * xB[i]
     """
     comp1, comp2 = components[0], components[1]
@@ -321,7 +393,6 @@ def _solve_two_component_balance(
     xD1 = stream1.composition.get(comp1, 0.0)
     xB1 = stream2.composition.get(comp1, 0.0)
 
-    # D = F * (zF1 - xB1) / (xD1 - xB1)
     denom = xD1 - xB1
     if abs(denom) < 1e-10:
         warnings.append("Cannot solve: outlet compositions are too similar")
@@ -335,7 +406,6 @@ def _solve_two_component_balance(
         D = max(0, D)
         B = max(0, B)
 
-    # 成分流量を設定
     stream1.flow_rate = D
     stream1.component_flows = {
         comp1: D * xD1,

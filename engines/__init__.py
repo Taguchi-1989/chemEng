@@ -11,6 +11,8 @@ ChemEng 計算エンジンモジュール
 
 from __future__ import annotations
 
+import logging
+
 from .base import (
     CalculationEngine,
     ConditionsOutOfRangeError,
@@ -44,6 +46,8 @@ COMBUSTION_SPECIES = {
     "h2", "hydrogen", "co", "co2", "no", "no2", "n2o",
 }
 
+logger = logging.getLogger("chemeng")
+
 
 def get_available_engines() -> list[CalculationEngine]:
     """利用可能な計算エンジンを取得"""
@@ -55,7 +59,7 @@ def get_available_engines() -> list[CalculationEngine]:
         if engine.is_available():
             engines.append(engine)
     except ImportError:
-        pass
+        logger.debug("thermo engine not available (thermo/chemicals not installed)")
 
     try:
         from .cantera_engine import CanteraEngine
@@ -63,7 +67,7 @@ def get_available_engines() -> list[CalculationEngine]:
         if engine.is_available():
             engines.append(engine)
     except ImportError:
-        pass
+        logger.debug("cantera engine not available (cantera not installed)")
 
     try:
         from .coolprop_engine import CoolPropEngine
@@ -71,7 +75,7 @@ def get_available_engines() -> list[CalculationEngine]:
         if engine.is_available():
             engines.append(engine)
     except ImportError:
-        pass
+        logger.debug("coolprop engine not available (CoolProp not installed)")
 
     return engines
 

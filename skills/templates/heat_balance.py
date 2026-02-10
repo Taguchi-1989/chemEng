@@ -5,6 +5,8 @@
 Q = m * Cp * dT + m * Hvap (相変化時)
 """
 
+from __future__ import annotations
+
 from typing import Any
 
 

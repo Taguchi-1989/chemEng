@@ -5,6 +5,8 @@
 - Kremser式による段数・抽出率計算
 """
 
+from __future__ import annotations
+
 import math
 from typing import Any
 
