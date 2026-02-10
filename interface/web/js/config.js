@@ -126,13 +126,13 @@ const SKILL_PARAMS = {
         { name: 'discount_rate', ja: '割引率', en: 'Discount rate', required: false, unit: '%', default: 6.0 },
         { name: 'project_lifetime', ja: 'プロジェクト寿命', en: 'Project lifetime', required: false, unit: 'years', default: 20 },
         { name: 'carbon_price', ja: '炭素価格', en: 'Carbon price', required: false, unit: 'EUR/ton', default: 0 },
-        { name: 'capex_subsidy_percent', ja: 'CAPEX???', en: 'CAPEX subsidy percent', required: false, unit: '%', default: 0 },
-        { name: 'capex_subsidy_amount', ja: 'CAPEX???', en: 'CAPEX subsidy amount', required: false, unit: 'EUR', default: 0 },
-        { name: 'maintenance_days', ja: '?????????', en: 'Maintenance downtime days', required: false, unit: 'days/year', default: 0 },
-        { name: 'labor_cost', ja: '???', en: 'Labor cost', required: false, unit: 'EUR/year', default: 0 },
-        { name: 'maintenance_cost', ja: '????', en: 'Maintenance cost', required: false, unit: 'EUR/year', default: 0 },
-        { name: 'subsidies', ja: '???', en: 'Subsidy per kg', required: false, unit: 'EUR/kg H2', default: 0 },
-        { name: 'water_price', ja: '???', en: 'Water price', required: false, unit: 'EUR/m3', default: 2.0 },
+        { name: 'capex_subsidy_percent', ja: 'CAPEX補助率', en: 'CAPEX subsidy percent', required: false, unit: '%', default: 0 },
+        { name: 'capex_subsidy_amount', ja: 'CAPEX補助額', en: 'CAPEX subsidy amount', required: false, unit: 'EUR', default: 0 },
+        { name: 'maintenance_days', ja: '計画停止日数', en: 'Maintenance downtime days', required: false, unit: 'days/year', default: 0 },
+        { name: 'labor_cost', ja: '人件費', en: 'Labor cost', required: false, unit: 'EUR/year', default: 0 },
+        { name: 'maintenance_cost', ja: '保守費用', en: 'Maintenance cost', required: false, unit: 'EUR/year', default: 0 },
+        { name: 'subsidies', ja: '補助金', en: 'Subsidy per kg', required: false, unit: 'EUR/kg H2', default: 0 },
+        { name: 'water_price', ja: '水価格', en: 'Water price', required: false, unit: 'EUR/m3', default: 2.0 },
     ]
 };
 

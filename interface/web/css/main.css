@@ -1263,6 +1263,8 @@
             border-radius: 12px;
             padding: 1rem;
             margin-bottom: 1.5rem;
+            position: relative;
+            height: 350px;
         }
 
         .chart-header {

@@ -363,7 +363,7 @@ function updateDashboardChart(cases, chartType = 'bar') {
             data: { labels, datasets },
             options: {
                 responsive: true,
-                maintainAspectRatio: false,
+                maintainAspectRatio: true,
                 plugins: {
                     legend: {
                         position: 'bottom',
@@ -383,6 +383,7 @@ function updateDashboardChart(cases, chartType = 'bar') {
                     },
                     y: {
                         stacked: chartType === 'stacked',
+                        beginAtZero: true,
                         ticks: { color: 'rgba(255,255,255,0.7)' },
                         grid: { color: 'rgba(255,255,255,0.1)' },
                         title: { display: true, text: 'EUR/kg H₂', color: 'rgba(255,255,255,0.7)' }
@@ -409,7 +410,7 @@ function updateDashboardChart(cases, chartType = 'bar') {
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false,
+                maintainAspectRatio: true,
                 plugins: {
                     legend: { display: false }
                 },
@@ -419,6 +420,7 @@ function updateDashboardChart(cases, chartType = 'bar') {
                         grid: { color: 'rgba(255,255,255,0.1)' }
                     },
                     y: {
+                        beginAtZero: true,
                         ticks: { color: 'rgba(255,255,255,0.7)' },
                         grid: { color: 'rgba(255,255,255,0.1)' }
                     }

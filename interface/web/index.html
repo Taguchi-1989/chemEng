@@ -582,11 +582,11 @@
                         <input type="number" name="capex_per_kw" class="form-input" placeholder="Default based on method" step="10" min="100" max="5000">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">CAPEX Subsidy / ??? (%)</label>
+                        <label class="form-label">CAPEX Subsidy / 補助率 (%)</label>
                         <input type="number" name="capex_subsidy_percent" class="form-input" value="0" step="1" min="0" max="100">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">CAPEX Subsidy Amount / ??? (EUR)</label>
+                        <label class="form-label">CAPEX Subsidy Amount / 補助額 (EUR)</label>
                         <input type="number" name="capex_subsidy_amount" class="form-input" value="0" step="10000" min="0">
                     </div>
                     <div class="form-group" id="lcoh-elec-group">
@@ -602,7 +602,7 @@
                         <input type="number" name="operating_hours" class="form-input" value="4000" step="100" min="1000" max="8760">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Maintenance Downtime / ??????? (days/year)</label>
+                        <label class="form-label">Maintenance Downtime / 計画停止日数 (days/year)</label>
                         <input type="number" name="maintenance_days" class="form-input" value="0" step="1" min="0" max="365">
                     </div>
                     <div class="form-group">
@@ -610,11 +610,11 @@
                         <input type="number" name="opex_percent" class="form-input" value="3" step="0.1" min="0.5" max="10">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Labor Cost / ??? (EUR/year)</label>
+                        <label class="form-label">Labor Cost / 人件費 (EUR/year)</label>
                         <input type="number" name="labor_cost" class="form-input" value="0" step="10000" min="0">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Maintenance Cost / ???? (EUR/year)</label>
+                        <label class="form-label">Maintenance Cost / 保守費用 (EUR/year)</label>
                         <input type="number" name="maintenance_cost" class="form-input" value="0" step="10000" min="0">
                     </div>
                     <div class="form-group">
@@ -630,7 +630,7 @@
                         <input type="number" name="carbon_price" class="form-input" value="0" step="10" min="0" max="500">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Subsidy / ??? (EUR/kg H2)</label>
+                        <label class="form-label">Subsidy / 補助金 (EUR/kg H2)</label>
                         <input type="number" name="subsidies" class="form-input" value="0" step="0.1" min="0">
                     </div>
                     <button type="submit" class="submit-btn">Calculate LCOH</button>
@@ -1525,7 +1525,7 @@
                                 </button>
                             </div>
                         </div>
-                        <canvas id="dashboard-chart" height="300"></canvas>
+                        <canvas id="dashboard-chart" width="600" height="300"></canvas>
                     </div>
 
                     <!-- Comparison Table -->

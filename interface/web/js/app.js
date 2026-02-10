@@ -193,9 +193,54 @@ importDropzone.ondrop = (e) => {
     handleImportFile(e.dataTransfer.files[0]);
 };
 
-document.getElementById('confirm-import').onclick = () => {
+document.getElementById('confirm-import').onclick = async () => {
     if (!pendingImportData) return;
 
+    // Batch mode
+    if (pendingImportData._batch) {
+        const cases = pendingImportData.cases;
+        document.getElementById('import-modal').classList.add('hidden');
+        resetImportModal();
+
+        toast(`Executing ${cases.length} cases... / ${cases.length}件を一括実行中...`, 'info');
+
+        try {
+            const resp = await calculateBatch(cases);
+            const dashCases = loadDashboardCases();
+
+            (resp.results || []).forEach((r) => {
+                const skillType = r.skill_id === 'property_estimation' ? 'property' : r.skill_id;
+                const caseName = r.case_name || getCaseName(skillType, r.inputs || {}, r.outputs || {});
+                dashCases.unshift({
+                    id: generateCaseId(),
+                    type: skillType,
+                    name: caseName,
+                    params: r.inputs || {},
+                    result: r.outputs || {},
+                    mainValue: r.success ? getMainValue(skillType, r.outputs || {}) : 'Error',
+                    timestamp: r.timestamp || new Date().toISOString()
+                });
+            });
+
+            saveDashboardCases(dashCases);
+            renderDashboardCaseList();
+
+            // Switch to dashboard tab
+            document.querySelectorAll('.calc-tab').forEach(t => t.classList.remove('active'));
+            const dashTab = document.querySelector('[data-tab="dashboard"]');
+            if (dashTab) dashTab.classList.add('active');
+            document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+            const dashForm = document.getElementById('dashboard-form');
+            if (dashForm) dashForm.classList.add('active');
+
+            toast(`Batch complete: ${resp.succeeded}/${resp.total} succeeded (${resp.execution_time_ms}ms) / 一括実行完了`, 'success');
+        } catch (e) {
+            toast('Batch execution failed: ' + e.message, 'error');
+        }
+        return;
+    }
+
+    // Single case mode (existing behavior)
     const { skill_id, parameters } = pendingImportData;
 
     // Map skill_id to tab name

@@ -101,6 +101,18 @@ class CalculationResponse(BaseModel):
     timestamp: str | None = None
 
 
+class BatchCaseRequest(BaseModel):
+    """バッチ計算の1ケース"""
+    skill_id: str = Field(..., max_length=100)
+    case_name: str = Field("", max_length=200)
+    parameters: dict[str, Any] = Field(default_factory=dict)
+
+
+class BatchCalculationRequest(BaseModel):
+    """バッチ計算リクエスト"""
+    cases: list[BatchCaseRequest] = Field(..., min_length=1, max_length=50)
+
+
 class EquilibriumRequest(BaseModel):
     """相平衡計算リクエスト"""
     substances: list[str] = Field(..., description="物質リスト", max_length=10)
@@ -271,6 +283,63 @@ def create_app() -> FastAPI:
             defaults=skill.defaults,
         )
 
+    @app.post("/api/v1/calculate/batch")
+    async def calculate_batch(request: BatchCalculationRequest):
+        """バッチ計算実行 - 複数ケースを一括処理"""
+        import time as _time
+
+        from core import get_registry
+
+        registry = get_registry()
+        start = _time.perf_counter()
+        results = []
+        succeeded = 0
+        failed = 0
+
+        for case in request.cases:
+            try:
+                result = registry.execute(case.skill_id, case.parameters)
+                results.append({
+                    "success": result.success,
+                    "case_name": case.case_name,
+                    "skill_id": result.skill_id,
+                    "inputs": result.inputs,
+                    "outputs": result.outputs,
+                    "warnings": result.warnings,
+                    "errors": result.errors,
+                    "execution_time_ms": result.execution_time_ms,
+                    "engine": result.engine_used,
+                    "timestamp": result.timestamp.isoformat(),
+                })
+                if result.success:
+                    succeeded += 1
+                else:
+                    failed += 1
+            except Exception as e:
+                failed += 1
+                results.append({
+                    "success": False,
+                    "case_name": case.case_name,
+                    "skill_id": case.skill_id,
+                    "inputs": case.parameters,
+                    "outputs": {},
+                    "warnings": [],
+                    "errors": [safe_error_message(e)],
+                    "execution_time_ms": 0,
+                    "engine": None,
+                    "timestamp": None,
+                })
+
+        elapsed = int((_time.perf_counter() - start) * 1000)
+        return {
+            "success": failed == 0,
+            "total": len(request.cases),
+            "succeeded": succeeded,
+            "failed": failed,
+            "results": results,
+            "execution_time_ms": elapsed,
+        }
+
     @app.post("/api/v1/calculate/{skill_id}", response_model=CalculationResponse)
     async def calculate(skill_id: str, request: CalculationRequest):
         """計算実行"""
@@ -366,6 +435,9 @@ def create_app() -> FastAPI:
             points: データ点数
         """
         try:
+            from core import get_registry
+
+            registry = get_registry()
             result = registry.execute("txy_diagram", {
                 "light_component": light_component,
                 "heavy_component": heavy_component,

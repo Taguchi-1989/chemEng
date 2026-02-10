@@ -32,6 +32,16 @@ function searchSubstances(query) {
     }).slice(0, 10);
 }
 
+// ==================== Batch Calculation ====================
+async function calculateBatch(cases) {
+    const res = await fetch(`${API_BASE}/calculate/batch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cases }),
+    });
+    return res.json();
+}
+
 // ==================== API Status ====================
 async function checkStatus() {
     const dot = document.getElementById('status-dot');

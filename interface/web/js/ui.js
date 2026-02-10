@@ -656,6 +656,31 @@ async function handleImportFile(file) {
         const text = await file.text();
         const data = JSON.parse(text);
 
+        // Batch format detection: { cases: [...] }
+        if (Array.isArray(data.cases) && data.cases.length > 0) {
+            const validSkills = Object.keys(SKILL_NAMES);
+            const errors = [];
+            data.cases.forEach((c, i) => {
+                if (!c.skill_id || !c.parameters) {
+                    errors.push(`Case ${i + 1}: missing skill_id or parameters`);
+                } else if (!validSkills.includes(c.skill_id)) {
+                    errors.push(`Case ${i + 1}: unknown skill "${c.skill_id}"`);
+                }
+            });
+            if (errors.length > 0) {
+                showImportError(errors.join('\n'));
+                return;
+            }
+            if (data.cases.length > 50) {
+                showImportError('Maximum 50 cases per batch / 一括実行は最大50件です');
+                return;
+            }
+            pendingImportData = { _batch: true, cases: data.cases };
+            showBatchPreview(data.cases);
+            document.getElementById('confirm-import').disabled = false;
+            return;
+        }
+
         if (!data.skill_id || !data.parameters) {
             showImportError('Invalid format. Missing skill_id or parameters. / 無効なフォーマット。skill_idまたはparametersがありません。');
             return;
@@ -706,6 +731,27 @@ function showImportPreview(data) {
             <span class="import-param-value">${escapeHtml(JSON.stringify(val))}</span>
         </div>`)
         .join('');
+
+    document.getElementById('import-preview').classList.remove('hidden');
+    document.getElementById('import-dropzone').classList.add('hidden');
+    document.getElementById('import-error').classList.add('hidden');
+}
+
+function showBatchPreview(cases) {
+    const skillName = (id) => {
+        const s = SKILL_NAMES[id];
+        return s ? `${s.ja} / ${s.en}` : id;
+    };
+    document.getElementById('import-skill-badge').textContent = `Batch / 一括実行 (${cases.length} cases)`;
+
+    const paramsList = document.getElementById('import-params-list');
+    paramsList.innerHTML = cases.map((c, i) => {
+        const name = c.case_name || `Case ${i + 1}`;
+        return `<div class="import-param-row">
+            <span class="import-param-name">${escapeHtml(name)}</span>
+            <span class="import-param-value">${escapeHtml(skillName(c.skill_id))}</span>
+        </div>`;
+    }).join('');
 
     document.getElementById('import-preview').classList.remove('hidden');
     document.getElementById('import-dropzone').classList.add('hidden');
