@@ -14,6 +14,7 @@ sys.path.insert(0, str(parent_dir))
 # chemEngをchemengとしてエイリアス作成
 import importlib
 import importlib.util
+
 spec = importlib.util.spec_from_file_location("chemeng", str(project_root / "__init__.py"),
     submodule_search_locations=[str(project_root)])
 chemeng_module = importlib.util.module_from_spec(spec)

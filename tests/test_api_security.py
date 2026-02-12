@@ -4,6 +4,7 @@
 """
 
 import pytest
+from pydantic import ValidationError
 
 
 class TestPropertyRequestValidation:
@@ -18,43 +19,43 @@ class TestPropertyRequestValidation:
     def test_invalid_property_name_special_chars(self):
         """特殊文字を含む物性名が拒否されること"""
         from interface.api import PropertyRequest
-        with pytest.raises(Exception):  # Pydantic ValidationError
+        with pytest.raises(ValidationError):
             PropertyRequest(substance="water", property="vapor<script>")
 
     def test_invalid_property_name_uppercase(self):
         """大文字を含む物性名が拒否されること（pattern: ^[a-z_]+$）"""
         from interface.api import PropertyRequest
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             PropertyRequest(substance="water", property="VaporPressure")
 
     def test_substance_max_length(self):
         """substance が最大長を超えると拒否されること"""
         from interface.api import PropertyRequest
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             PropertyRequest(substance="x" * 201, property="vapor_pressure")
 
     def test_temperature_negative_rejected(self):
         """負の温度が拒否されること"""
         from interface.api import PropertyRequest
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             PropertyRequest(substance="water", property="vapor_pressure", temperature=-1)
 
     def test_temperature_too_high_rejected(self):
         """極端に高い温度が拒否されること"""
         from interface.api import PropertyRequest
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             PropertyRequest(substance="water", property="vapor_pressure", temperature=20000)
 
     def test_pressure_negative_rejected(self):
         """負の圧力が拒否されること"""
         from interface.api import PropertyRequest
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             PropertyRequest(substance="water", property="vapor_pressure", pressure=-100)
 
     def test_quality_out_of_range(self):
         """乾き度 > 1 が拒否されること"""
         from interface.api import PropertyRequest
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             PropertyRequest(substance="water", property="vapor_pressure", quality=1.5)
 
 
@@ -73,7 +74,7 @@ class TestEquilibriumRequestValidation:
     def test_temperature_bounds(self):
         """温度の境界値が検証されること"""
         from interface.api import EquilibriumRequest
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             EquilibriumRequest(
                 substances=["ethanol", "water"],
                 composition={"ethanol": 0.5, "water": 0.5},
@@ -126,8 +127,8 @@ class TestConditionsOutOfRange:
 
     def test_temperature_zero_rejected(self):
         """T=0 が拒否されること"""
-        from engines.thermo_engine import ThermoEngine
         from engines.base import ConditionsOutOfRangeError
+        from engines.thermo_engine import ThermoEngine
         engine = ThermoEngine()
         if not engine.is_available():
             pytest.skip("thermo engine not available")
@@ -136,8 +137,8 @@ class TestConditionsOutOfRange:
 
     def test_temperature_extreme_rejected(self):
         """T=5000K が拒否されること"""
-        from engines.thermo_engine import ThermoEngine
         from engines.base import ConditionsOutOfRangeError
+        from engines.thermo_engine import ThermoEngine
         engine = ThermoEngine()
         if not engine.is_available():
             pytest.skip("thermo engine not available")
@@ -146,8 +147,8 @@ class TestConditionsOutOfRange:
 
     def test_pressure_negative_rejected(self):
         """P<0 が拒否されること"""
-        from engines.thermo_engine import ThermoEngine
         from engines.base import ConditionsOutOfRangeError
+        from engines.thermo_engine import ThermoEngine
         engine = ThermoEngine()
         if not engine.is_available():
             pytest.skip("thermo engine not available")

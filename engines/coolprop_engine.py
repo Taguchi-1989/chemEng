@@ -40,8 +40,8 @@ class CoolPropEngine(CalculationEngine):
         "entropy": "S",
         "internal_energy": "U",
         "gibbs_energy": "G",
-        "helmholtz_energy": "A",
-        "speed_of_sound": "A",
+        "helmholtz_energy": "HELMHOLTZMASS",
+        "speed_of_sound": "SPEED_OF_SOUND",
         "vapor_pressure": "P",  # at saturation
         "saturation_temperature": "T",  # at saturation
         "surface_tension": "I",
@@ -152,8 +152,8 @@ class CoolPropEngine(CalculationEngine):
 
         except ValueError as e:
             if "not in the two-phase" in str(e) or "out of range" in str(e).lower():
-                raise ConditionsOutOfRangeError(self.name, str(e))
-            raise SubstanceNotFoundError(self.name, substance)
+                raise ConditionsOutOfRangeError(self.name, str(e)) from e
+            raise SubstanceNotFoundError(self.name, substance) from e
 
     def calculate_equilibrium(
         self,
@@ -219,7 +219,7 @@ class CoolPropEngine(CalculationEngine):
                 )
 
         except Exception as e:
-            raise ConditionsOutOfRangeError(self.name, str(e))
+            raise ConditionsOutOfRangeError(self.name, str(e)) from e
 
     def get_phase(
         self, substance: str, temperature: float, pressure: float
@@ -246,8 +246,8 @@ class CoolPropEngine(CalculationEngine):
                 "critical_pressure": PropsSI("Pcrit", fluid),
                 "critical_density": PropsSI("rhocrit", fluid),
             }
-        except Exception:
-            raise SubstanceNotFoundError(self.name, substance)
+        except Exception as e:
+            raise SubstanceNotFoundError(self.name, substance) from e
 
     def get_triple_point(self, substance: str) -> dict[str, float]:
         """三重点を取得"""
@@ -260,8 +260,8 @@ class CoolPropEngine(CalculationEngine):
                 "triple_temperature": PropsSI("Ttriple", fluid),
                 "triple_pressure": PropsSI("ptriple", fluid),
             }
-        except Exception:
-            raise SubstanceNotFoundError(self.name, substance)
+        except Exception as e:
+            raise SubstanceNotFoundError(self.name, substance) from e
 
     def calculate_refrigeration_cycle(
         self,
@@ -345,7 +345,7 @@ class CoolPropEngine(CalculationEngine):
             }
 
         except Exception as e:
-            raise ConditionsOutOfRangeError(self.name, str(e))
+            raise ConditionsOutOfRangeError(self.name, str(e)) from e
 
     def get_fluid_list(self) -> list[str]:
         """利用可能な流体のリストを取得"""
@@ -374,5 +374,5 @@ class CoolPropEngine(CalculationEngine):
                 "acentric_factor": PropsSI("acentric", fluid),
                 "gas_constant": PropsSI("gas_constant", fluid),
             }
-        except Exception:
-            raise SubstanceNotFoundError(self.name, substance)
+        except Exception as e:
+            raise SubstanceNotFoundError(self.name, substance) from e

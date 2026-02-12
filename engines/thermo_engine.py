@@ -96,7 +96,7 @@ class ThermoEngine(CalculationEngine):
     def is_available(self) -> bool:
         return THERMO_AVAILABLE and CHEMICALS_AVAILABLE
 
-    def _get_chemical(self, substance: str, T: float = 298.15, P: float = 101325) -> "Chemical":
+    def _get_chemical(self, substance: str, T: float = 298.15, P: float = 101325) -> Chemical:
         """Chemicalオブジェクトを取得"""
         if not THERMO_AVAILABLE:
             raise ImportError("thermo library not installed")
@@ -244,7 +244,7 @@ class ThermoEngine(CalculationEngine):
             converged = False
             Psats = [0.0] * len(substances)
 
-            for iteration in range(80):
+            for _iteration in range(80):
                 for j, s in enumerate(substances):
                     chem = Chemical(s, T=T, P=pressure)
                     Psats[j] = chem.Psat if chem.Psat else 0
@@ -307,7 +307,7 @@ class ThermoEngine(CalculationEngine):
             T = T_guess
             converged = False
 
-            for iteration in range(80):
+            for _iteration in range(80):
                 inv_P = 0.0
                 for i, s in enumerate(substances):
                     chem = Chemical(s, T=T, P=pressure)

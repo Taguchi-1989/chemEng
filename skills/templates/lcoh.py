@@ -576,7 +576,6 @@ def generate_sensitivity_data(
     sensitivity["capex"] = capex_sensitivity
 
     # 稼働時間感度
-    params.get("operating_hours", 4000)
     hours_sensitivity = []
     for hours in [2000, 4000, 6000, 8000]:
         test_params = params.copy()

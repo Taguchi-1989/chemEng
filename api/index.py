@@ -26,8 +26,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-from core.logging_config import setup_logging
 from core.errors import safe_error_message
+from core.logging_config import setup_logging
 
 setup_logging()
 logger = logging.getLogger("chemeng")
@@ -273,9 +273,9 @@ async def get_property(request: Request):
             )
 
         conditions = {}
-        if prop_request.temperature:
+        if prop_request.temperature is not None:
             conditions["temperature"] = prop_request.temperature
-        if prop_request.pressure:
+        if prop_request.pressure is not None:
             conditions["pressure"] = prop_request.pressure
 
         value = engine.get_property(prop_request.substance, prop_request.property, conditions)

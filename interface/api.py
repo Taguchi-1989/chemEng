@@ -41,8 +41,8 @@ except ImportError:
     def Query(*args, **kwargs):
         return None
 
-from core.logging_config import setup_logging
 from core.errors import safe_error_message
+from core.logging_config import setup_logging
 
 setup_logging()
 logger = logging.getLogger("chemeng")
