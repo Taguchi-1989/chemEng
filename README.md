@@ -1,33 +1,88 @@
-# ChemEng - 化学工学計算モジュール
+# ChemEng - Chemical Engineering Laboratory
 
-AI対話ベースで要件を収集し、OSSライブラリで化学工学計算を実行するモジュール。
+化学工学計算 Web アプリケーション。ブラウザ上で物性推算・蒸留塔設計・物質収支など7種の計算をインタラクティブに実行できます。
 
-## 主な機能
+> **Python 3.10 以上** が必要です。
 
-### 計算機能（7種類）
+---
 
-| 機能 | 説明 | 状態 |
-|------|------|------|
-| **物性推算** | 蒸気圧、密度、粘度、熱容量など | ✅ 実装済み |
-| **蒸留塔設計** | McCabe-Thiele法による段数・還流比計算 | ✅ 実装済み |
-| **物質収支** | プロセス単位での入出力バランス計算 | ✅ 実装済み |
-| **熱収支** | 顕熱・潜熱・相変化を考慮した熱計算 | ✅ 実装済み |
-| **液液抽出** | 抽出段数・回収率の計算 | ✅ 実装済み |
-| **ガス吸収** | 吸収塔の設計計算 | ✅ 実装済み |
-| **LCOH計算** | 水素製造原価（電解・SMR等）の経済性評価 | ✅ 実装済み |
+## Quick Start
 
-### Web UI機能
+### Windows
+
+```
+git clone https://github.com/Taguchi-1989/chemEng.git
+cd chemEng
+ChemEng_Start.bat
+```
+
+`ChemEng_Start.bat` が仮想環境の作成・依存インストール・サーバー起動・ブラウザオープンをすべて自動で行います。
+
+### macOS / Linux
+
+```bash
+git clone https://github.com/Taguchi-1989/chemEng.git
+cd chemEng
+bash start.sh
+```
+
+### 手動セットアップ（全OS共通）
+
+```bash
+git clone https://github.com/Taguchi-1989/chemEng.git
+cd chemEng
+
+# 仮想環境を作成・有効化
+python -m venv venv
+# Windows:
+venv\Scripts\activate
+# macOS/Linux:
+source venv/bin/activate
+
+# 依存パッケージをインストール
+pip install -r requirements_full.txt
+
+# サーバー起動
+python server.py --port 8000
+```
+
+ブラウザで http://localhost:8000 を開きます。
+
+### Docker
+
+```bash
+git clone https://github.com/Taguchi-1989/chemEng.git
+cd chemEng
+docker build -t chemeng .
+docker run -p 8000:8000 chemeng
+```
+
+---
+
+## 計算機能（7種類）
 
 | 機能 | 説明 |
 |------|------|
-| **ダークモード** | 目に優しいダークテーマ（ライトモード切替可） |
+| **物性推算** | 蒸気圧、密度、粘度、熱容量など |
+| **蒸留塔設計** | McCabe-Thiele法による段数・還流比計算 |
+| **物質収支** | プロセス単位での入出力バランス計算 |
+| **熱収支** | 顕熱・潜熱・相変化を考慮した熱計算 |
+| **液液抽出** | 抽出段数・回収率の計算 |
+| **ガス吸収** | 吸収塔の設計計算 |
+| **LCOH計算** | 水素製造原価（電解・SMR等）の経済性評価 |
+
+## Web UI 機能
+
+| 機能 | 説明 |
+|------|------|
+| **ダークモード** | ライト/ダークテーマ切替 |
 | **ダッシュボード** | 複数ケースの比較・グラフ表示 |
 | **履歴機能** | 過去20件の計算履歴を保存・再利用 |
 | **レポート出力** | HTML形式の計算レポート生成 |
 | **インポート/エクスポート** | JSON/CSVでのデータ入出力 |
 | **プロンプトテンプレート** | LLM連携用のテンプレート生成 |
 
-### LLM連携ワークフロー（NEW）
+### LLM連携ワークフロー
 
 ```
 1. Templateボタンでプロンプトテンプレートをダウンロード
@@ -41,38 +96,13 @@ AI対話ベースで要件を収集し、OSSライブラリで化学工学計算
 5. フォーム自動入力 → ワンクリックで計算実行
 ```
 
-## クイックスタート
+---
 
-### 起動方法（Windows）
-
-```
-ChemEng_Start.bat をダブルクリック
-```
-
-初回は自動で仮想環境作成・依存関係インストールが実行されます。
-
-### 手動起動
+## テスト
 
 ```bash
-cd chemeng
-pip install -e ".[all]"
-python server.py --port 8000
-```
-
-ブラウザで http://localhost:8000 を開きます。
-
-## インストール
-
-```bash
-cd chemeng
-pip install -e .
-
-# オプション依存関係
-pip install -e ".[thermo]"     # 物性計算（thermo/chemicals）
-pip install -e ".[cantera]"    # Cantera（反応工学）
-pip install -e ".[coolprop]"   # CoolProp（冷媒物性）
-pip install -e ".[api]"        # FastAPI（REST API）
-pip install -e ".[all]"        # 全て
+pip install pytest
+pytest tests/ -v
 ```
 
 ## Python API
@@ -80,7 +110,7 @@ pip install -e ".[all]"        # 全て
 ### 物性推算
 
 ```python
-from chemeng.engines.thermo_engine import ThermoEngine
+from engines.thermo_engine import ThermoEngine
 
 engine = ThermoEngine()
 
@@ -113,27 +143,14 @@ result = engine.calculate_bubble_point(
 print(f"Bubble point: {result['bubble_point_temperature']:.1f} K")
 ```
 
-## 対応ライブラリ
-
-| ライブラリ | 用途 | 状態 |
-|-----------|------|------|
-| thermo/chemicals | 物性推算、VLE | ✅ 実装済み |
-| Cantera | 反応速度、化学平衡 | 🚧 開発中 |
-| CoolProp | 冷媒物性 | 🚧 開発中 |
-
-## テスト
-
-```bash
-cd chemeng
-pip install -e ".[dev]"
-pytest tests/ -v
-```
+---
 
 ## ディレクトリ構造
 
 ```
-chemeng/
+chemEng/
 ├── ChemEng_Start.bat   # Windows用起動スクリプト
+├── start.sh            # macOS/Linux用起動スクリプト
 ├── server.py           # FastAPIサーバー
 ├── core/               # コアデータクラス
 │   ├── requirement.py  # 要件定義
@@ -150,9 +167,21 @@ chemeng/
 │   ├── cli.py          # CLI
 │   ├── api.py          # REST API
 │   └── web/            # Web UI
-│       └── index.html
+│       ├── index.html
+│       ├── css/
+│       └── js/
 └── tests/              # テスト
 ```
+
+## 対応ライブラリ
+
+| ライブラリ | 用途 | 状態 |
+|-----------|------|------|
+| thermo/chemicals | 物性推算、VLE | 実装済み |
+| Cantera | 反応速度、化学平衡 | 開発中 |
+| CoolProp | 冷媒物性 | 開発中 |
+
+---
 
 ## セキュリティ・プライバシー
 
@@ -171,28 +200,16 @@ chemeng/
 
 | 項目 | 状態 | 説明 |
 |------|------|------|
-| アナリティクス | ❌ なし | Google Analytics等のトラッキングコードなし |
-| テレメトリ | ❌ なし | 使用状況の自動送信機能なし |
-| 外部API呼び出し | ❌ なし | 計算はすべてローカルで実行 |
-| Cookie/LocalStorage | ⚠️ 最小限 | UIテーマ・履歴・ダッシュボードの保存のみ（ブラウザ内完結） |
+| アナリティクス | なし | Google Analytics等のトラッキングコードなし |
+| テレメトリ | なし | 使用状況の自動送信機能なし |
+| 外部API呼び出し | なし | 計算はすべてローカルで実行 |
+| Cookie/LocalStorage | 最小限 | UIテーマ・履歴・ダッシュボードの保存のみ（ブラウザ内完結） |
 
 **外部CDN利用（オプション）:**
-- Google Fonts (`fonts.googleapis.com`) - フォント配信のみ、トラッキングなし
+- Google Fonts (`fonts.googleapis.com`) - フォント配信のみ
 - Chart.js (`cdn.jsdelivr.net`) - グラフ描画ライブラリ
 
-※ オフライン環境ではフォント・Chart.jsをローカルにバンドル可能
-
-### 脆弱性情報
-
-| ライブラリ | バージョン要件 | 既知のCVE | 状態 |
-|-----------|--------------|----------|------|
-| pydantic | >=2.0 | CVE-2024-3772 (ReDoS) | ✅ 2.4.0以降で修正済み。2.4.0以上を推奨 |
-| fastapi | >=0.100 | なし | ✅ 問題なし |
-| pyyaml | >=6.0 | CVE-2020-14343 | ✅ 5.4以降で修正済み |
-| thermo | >=0.2.0 | なし | ✅ 問題なし |
-| chemicals | >=1.1.0 | なし | ✅ 問題なし |
-
-**推奨:** `pip install --upgrade pydantic>=2.4.0` で最新の修正を適用
+---
 
 ## ライセンス
 
@@ -214,15 +231,6 @@ Copyright (c) 2025 ZEAL-BOOT-CAMP
 | [scipy](https://github.com/scipy/scipy) | BSD-3-Clause | SciPy Developers |
 | [numpy](https://github.com/numpy/numpy) | BSD-3-Clause | NumPy Developers |
 | [fluids](https://github.com/CalebBell/fluids) | MIT | Caleb Bell |
-
-### 二次配布について
-
-本ソフトウェアを二次配布する場合は、以下の記載をお願いします：
-
-```
-Original work by ZEAL-BOOT-CAMP
-https://github.com/user/walktalk-hub/chemeng
-```
 
 ## クレジット
 

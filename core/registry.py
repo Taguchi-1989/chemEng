@@ -217,6 +217,12 @@ class SkillRegistry:
                 execution_time = int((time.time() - start_time) * 1000)
 
                 if isinstance(result, dict):
+                    if result.get("success") is False:
+                        return CalculationResult.error_result(
+                            skill_id=skill_id,
+                            inputs=full_params,
+                            errors=result.get("errors", ["Calculation failed"]),
+                        )
                     return CalculationResult.success_result(
                         skill_id=skill_id,
                         inputs=full_params,

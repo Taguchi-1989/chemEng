@@ -4,7 +4,7 @@
 FROM python:3.10-slim
 
 # メタデータ
-LABEL maintainer="WalkTalk Hub Team"
+LABEL maintainer="ZEAL-BOOT-CAMP"
 LABEL description="ChemEng - Chemical Engineering Calculation Module"
 
 # 作業ディレクトリ
@@ -16,9 +16,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # 依存関係のインストール（キャッシュ活用のため先にコピー）
-COPY requirements.txt .
+COPY requirements_full.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir -r requirements_full.txt
 
 # アプリケーションコード
 COPY . .

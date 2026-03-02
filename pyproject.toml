@@ -53,9 +53,9 @@ all = [
 chemeng = "chemeng.interface.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/user/walktalk-hub"
-Documentation = "https://github.com/user/walktalk-hub/tree/main/chemeng"
-Repository = "https://github.com/user/walktalk-hub"
+Homepage = "https://github.com/Taguchi-1989/chemEng"
+Documentation = "https://github.com/Taguchi-1989/chemEng#readme"
+Repository = "https://github.com/Taguchi-1989/chemEng"
 
 [tool.setuptools.package-dir]
 chemeng = "."
