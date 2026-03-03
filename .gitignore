@@ -87,3 +87,13 @@ nul
 
 # Playwright MCP
 .playwright-mcp/
+
+# Screenshots (use docs/ for tracked documentation images)
+screenshot-*.png
+
+# Logs
+*.log
+
+# Temp files
+*.tmp
+*.bak

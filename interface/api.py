@@ -41,8 +41,12 @@ except ImportError:
     def Query(*args, **kwargs):
         return None
 
-from core.errors import safe_error_message
-from core.logging_config import setup_logging
+try:
+    from ..core.errors import safe_error_message
+    from ..core.logging_config import setup_logging
+except ImportError:
+    from core.errors import safe_error_message
+    from core.logging_config import setup_logging
 
 setup_logging()
 logger = logging.getLogger("chemeng")
@@ -297,8 +301,10 @@ def create_app() -> FastAPI:
         failed = 0
 
         for case in request.cases:
+            case_start = _time.perf_counter()
             try:
                 result = registry.execute(case.skill_id, case.parameters)
+                case_elapsed = int((_time.perf_counter() - case_start) * 1000)
                 results.append({
                     "success": result.success,
                     "case_name": case.case_name,
@@ -307,7 +313,7 @@ def create_app() -> FastAPI:
                     "outputs": result.outputs,
                     "warnings": result.warnings,
                     "errors": result.errors,
-                    "execution_time_ms": result.execution_time_ms,
+                    "execution_time_ms": case_elapsed,
                     "engine": result.engine_used,
                     "timestamp": result.timestamp.isoformat(),
                 })
@@ -317,6 +323,7 @@ def create_app() -> FastAPI:
                     failed += 1
             except Exception as e:
                 failed += 1
+                case_elapsed = int((_time.perf_counter() - case_start) * 1000)
                 results.append({
                     "success": False,
                     "case_name": case.case_name,
@@ -325,10 +332,17 @@ def create_app() -> FastAPI:
                     "outputs": {},
                     "warnings": [],
                     "errors": [safe_error_message(e)],
-                    "execution_time_ms": 0,
+                    "execution_time_ms": case_elapsed,
                     "engine": None,
                     "timestamp": None,
                 })
+
+            # バッチ全体のタイムアウト（5分）
+            if (_time.perf_counter() - start) > 300:
+                remaining = len(request.cases) - len(results)
+                failed += remaining
+                logger.warning("Batch timeout: %d cases remaining", remaining)
+                break
 
         elapsed = int((_time.perf_counter() - start) * 1000)
         return {
@@ -343,10 +357,22 @@ def create_app() -> FastAPI:
     @app.post("/api/v1/calculate/{skill_id}", response_model=CalculationResponse)
     async def calculate(skill_id: str, request: CalculationRequest):
         """計算実行"""
+        import time as _time
+
         from core import get_registry
 
         registry = get_registry()
-        result = registry.execute(skill_id, request.parameters)
+
+        try:
+            result = registry.execute(skill_id, request.parameters)
+        except Exception as e:
+            logger.error("Unhandled error in calculate(%s): %s", skill_id, e, exc_info=True)
+            return CalculationResponse(
+                success=False,
+                skill_id=skill_id,
+                inputs=request.parameters,
+                errors=[safe_error_message(e)],
+            )
 
         return CalculationResponse(
             success=result.success,
@@ -507,9 +533,13 @@ def create_app() -> FastAPI:
                 "error": safe_error_message(e),
             }
 
+    # 物質データのキャッシュ（起動時に1回だけ読み込み）
+    _substances_cache: dict | None = None
+
     @app.get("/api/v1/substances")
     async def list_substances(query: str | None = None, category: str | None = None):
         """登録済み物質一覧を取得（検索可能）"""
+        nonlocal _substances_cache
         import yaml
 
         substances_file = Path(__file__).parent.parent / "skills" / "defaults" / "common_substances.yaml"
@@ -518,8 +548,11 @@ def create_app() -> FastAPI:
             return {"success": True, "substances": []}
 
         try:
-            with open(substances_file, encoding="utf-8") as f:
-                data = yaml.safe_load(f)
+            if _substances_cache is None:
+                with open(substances_file, encoding="utf-8") as f:
+                    _substances_cache = yaml.safe_load(f)
+
+            data = _substances_cache
 
             substances = data.get("substances", {})
             result = []

@@ -16,6 +16,7 @@ from typing import Any
 
 import yaml
 
+from .errors import safe_error_message
 from .skill import CalculationResult, SkillDefinition
 
 logger = logging.getLogger("chemeng")
@@ -244,7 +245,7 @@ class SkillRegistry:
                 return CalculationResult.error_result(
                     skill_id=skill_id,
                     inputs=full_params,
-                    errors=[str(e)],
+                    errors=[safe_error_message(e)],
                 )
 
         # テンプレートがない場合はエンジン直接実行
@@ -273,7 +274,7 @@ class SkillRegistry:
             return CalculationResult.error_result(
                 skill_id=skill_id,
                 inputs=full_params,
-                errors=[str(e)],
+                errors=[safe_error_message(e)],
             )
 
     def _execute_with_engine(
