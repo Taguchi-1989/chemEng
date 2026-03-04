@@ -95,8 +95,6 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
 
         return result
 
-    except Exception as e:
-        return {
-            "success": False,
-            "errors": [str(e)],
-        }
+    except Exception:
+        # Registry層の safe_error_message で安全に変換されるため、再raise
+        raise

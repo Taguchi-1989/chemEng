@@ -124,3 +124,97 @@ class TestCalculationResultFormat:
         if result.success:
             assert result.timestamp is not None
             assert result.execution_time_ms >= 0
+
+
+class TestPropertyEstimationSubstanceInfo:
+    """物性推算の物質情報取得テスト（キー不一致の回帰テスト）"""
+
+    def test_substance_info_keys_in_output(self, registry):
+        """物質情報（CAS番号、分子量、臨界温度等）が正しく出力に含まれること"""
+        result = registry.execute("property_estimation", {
+            "substance": "water",
+            "property": "vapor_pressure",
+            "temperature": 373.15,
+        })
+        assert result.success
+        steps = result.outputs.get("calculation_steps", [])
+        # Step 2 = 物質情報
+        info_step = next((s for s in steps if s.get("step") == 2), None)
+        assert info_step is not None
+        values = info_step.get("values", {})
+        # CAS番号と分子量が正しく取得されていること（None でないこと）
+        assert values.get("CAS") is not None and values["CAS"] != "N/A"
+        assert values.get("MW") is not None
+
+    def test_property_estimation_error_no_raw_exception(self, registry):
+        """物性推算のエラーで生の例外文字列がユーザーに漏洩しないこと"""
+        result = registry.execute("property_estimation", {
+            "substance": "totally_fake_substance_xyz",
+            "property": "vapor_pressure",
+            "temperature": 300.0,
+        })
+        assert not result.success
+        for err in result.errors:
+            # 内部パスやスタックトレースが漏れないこと
+            assert "Traceback" not in err
+            assert "File \"" not in err
+
+
+class TestLCOHErrorHandling:
+    """LCOH計算のエラーハンドリングテスト"""
+
+    def test_lcoh_success_result_format(self, registry):
+        """LCOH計算が success=True で正しい出力フォーマットを返すこと"""
+        result = registry.execute("lcoh", {
+            "production_method": "pem_electrolysis",
+            "capacity": 10,
+            "electricity_price": 50,
+            "operating_hours": 4000,
+        })
+        assert result.success
+        assert "lcoh" in result.outputs
+        assert "lcoh_breakdown" in result.outputs
+
+    def test_lcoh_zero_operating_hours_error(self, registry):
+        """稼働時間0でエラー結果が安全に返されること"""
+        result = registry.execute("lcoh", {
+            "production_method": "pem_electrolysis",
+            "capacity": 10,
+            "operating_hours": 0,
+        })
+        assert not result.success
+        for err in result.errors:
+            assert "Traceback" not in err
+
+
+class TestAbsorptionEdgeCases:
+    """ガス吸収の境界条件テスト"""
+
+    def test_absorption_y_in_1_returns_error(self, registry):
+        """入口ガス組成が1.0のときゼロ除算せずエラーを返すこと"""
+        result = registry.execute("absorption", {
+            "gas_component": "ammonia",
+            "carrier_gas": "air",
+            "solvent": "water",
+            "gas_flow_rate": 100,
+            "inlet_gas_composition": 1.0,
+            "removal_efficiency": 0.9,
+        })
+        assert not result.success
+        assert len(result.errors) > 0
+
+
+class TestTxyDiagramErrorHandling:
+    """T-x-y相図のエラーハンドリングテスト"""
+
+    def test_txy_invalid_substance_no_raw_exception(self, registry):
+        """不正な物質名でスタックトレースが漏洩しないこと"""
+        result = registry.execute("txy_diagram", {
+            "light_component": "fake_substance_abc",
+            "heavy_component": "fake_substance_xyz",
+            "pressure": 101325.0,
+        })
+        assert not result.success
+        for err in result.errors:
+            assert "Traceback" not in err
+            assert "File \"" not in err

@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
+# スクリプトのあるディレクトリに移動（どこから起動しても動作するように）
+cd "$(dirname "$0")"
+
 echo "========================================"
 echo "  ChemEng - Chemical Engineering Tool"
 echo "========================================"

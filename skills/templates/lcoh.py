@@ -621,7 +621,12 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
     Returns:
         計算結果
     """
-    return calculate_lcoh(params)
+    result = calculate_lcoh(params)
+    return {
+        "success": True,
+        "outputs": result,
+        "warnings": [],
+    }
 
 
 def run(params: dict[str, Any]) -> dict[str, Any]:

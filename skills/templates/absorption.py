@@ -60,6 +60,11 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
     })
 
     # 入口での溶質流量（キャリアガスフリー基準）
+    if y_in >= 1.0:
+        return {
+            "success": False,
+            "errors": ["入口ガス組成 y_in は 1.0 未満である必要があります"],
+        }
     solute_in = G * y_in / (1 - y_in)  # kmol/h
     calculation_steps[-1]["formulas"].append(f"入口溶質流量 = G × y_in / (1 - y_in) = {solute_in:.3f} kmol/h")
 
@@ -242,14 +247,20 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
 
     # NTU計算（連続接触の場合）
     if abs(A - 1.0) < 1e-6:
-        NTU = (y_in - y_out) / ((y_in - m*x_out + y_out - m*x_in) / 2)
+        avg_driving_force = (y_in - m*x_out + y_out - m*x_in) / 2
+        NTU = (y_in - y_out) / avg_driving_force if abs(avg_driving_force) > 1e-12 else N
     else:
         # 対数平均推進力
         delta_y1 = y_in - m * x_out  # 塔底
         delta_y2 = y_out - m * x_in  # 塔頂
         if delta_y1 > 0 and delta_y2 > 0:
-            delta_y_lm = (delta_y1 - delta_y2) / math.log(delta_y1 / delta_y2)
-            NTU = (y_in - y_out) / delta_y_lm * (A - 1) / A
+            ratio = delta_y1 / delta_y2
+            if abs(ratio - 1.0) < 1e-10:
+                # delta_y1 ≈ delta_y2 の場合、対数平均 = 算術平均
+                delta_y_lm = (delta_y1 + delta_y2) / 2
+            else:
+                delta_y_lm = (delta_y1 - delta_y2) / math.log(ratio)
+            NTU = (y_in - y_out) / delta_y_lm * (A - 1) / A if abs(delta_y_lm) > 1e-12 else N
         else:
             NTU = N  # フォールバック
 

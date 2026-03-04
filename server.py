@@ -11,7 +11,13 @@ Usage:
 """
 
 import argparse
+import os
 import sys
+
+# プロジェクトルートを sys.path に追加（どのディレクトリから起動しても動作するように）
+_PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
 
 
 def main():
@@ -26,6 +32,18 @@ def main():
     except ImportError:
         print("Error: uvicorn is not installed.")
         print("Run: pip install uvicorn")
+        sys.exit(1)
+
+    # コア依存パッケージの確認
+    missing = []
+    for pkg in ["fastapi", "yaml", "pydantic"]:
+        try:
+            __import__(pkg)
+        except ImportError:
+            missing.append(pkg)
+    if missing:
+        print(f"Error: Required packages not installed: {', '.join(missing)}")
+        print("Run: pip install -r requirements_full.txt")
         sys.exit(1)
 
     print("=" * 50)

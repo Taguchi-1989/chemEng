@@ -94,10 +94,10 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
         try:
             info = engine.get_substance_info(substance)
             substance_name = info.get("name", substance)
-            cas = info.get("CAS", "N/A")
-            mw = info.get("MW", None)
-            Tc = info.get("Tc", None)
-            Pc = info.get("Pc", None)
+            cas = info.get("cas_number", info.get("CAS", "N/A"))
+            mw = info.get("molecular_weight", info.get("MW", None))
+            Tc = info.get("critical_temperature", info.get("Tc", None))
+            Pc = info.get("critical_pressure", info.get("Pc", None))
 
             info_formulas = [
                 f"物質名: {substance_name}",
@@ -169,11 +169,9 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
             "warnings": warnings,
         }
 
-    except Exception as e:
-        return {
-            "success": False,
-            "errors": [str(e)],
-        }
+    except Exception:
+        # Registry層の safe_error_message で安全に変換されるため、再raise
+        raise
 
 
 def _get_method_info(property_name: str, T: float, P: float) -> dict:
