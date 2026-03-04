@@ -41,6 +41,7 @@ function updateHistoryUI() {
             form?.classList.add('active');
             if (form && entry.params) {
                 Object.entries(entry.params).forEach(([k, v]) => {
+                    if (!/^[a-zA-Z0-9_-]+$/.test(k)) return;
                     const inp = form.querySelector(`[name="${k}"]`);
                     if (inp) inp.value = Array.isArray(v) ? v.join(', ') : v;
                 });
@@ -180,24 +181,27 @@ function renderDashboardCaseList() {
         return;
     }
 
-    const html = filteredCases.map(c => `
-        <div class="dashboard-case-item ${selectedCases.has(c.id) ? 'selected' : ''}" data-id="${c.id}">
-            <input type="checkbox" class="case-checkbox" ${selectedCases.has(c.id) ? 'checked' : ''} onchange="toggleCaseSelection('${c.id}')">
+    const html = filteredCases.map(c => {
+        const safeId = escapeHtml(c.id);
+        return `
+        <div class="dashboard-case-item ${selectedCases.has(c.id) ? 'selected' : ''}" data-id="${safeId}">
+            <input type="checkbox" class="case-checkbox" ${selectedCases.has(c.id) ? 'checked' : ''} onchange="toggleCaseSelection('${safeId}')">
             <div class="case-info">
-                <div class="case-name">${c.name}</div>
+                <div class="case-name">${escapeHtml(c.name)}</div>
                 <div class="case-meta">
-                    <span class="case-type-badge">${c.type.toUpperCase()}</span>
-                    <span>${new Date(c.timestamp).toLocaleDateString('ja-JP')}</span>
+                    <span class="case-type-badge">${escapeHtml(c.type.toUpperCase())}</span>
+                    <span>${escapeHtml(new Date(c.timestamp).toLocaleDateString('ja-JP'))}</span>
                 </div>
             </div>
-            <div class="case-value">${c.mainValue}</div>
-            <button class="case-delete" onclick="deleteDashboardCase('${c.id}')" title="Delete case">
+            <div class="case-value">${escapeHtml(c.mainValue)}</div>
+            <button class="case-delete" onclick="deleteDashboardCase('${safeId}')" title="Delete case">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                 </svg>
             </button>
         </div>
-    `).join('');
+    `;
+    }).join('');
 
     container.innerHTML = html;
     updateCompareButton();
@@ -302,14 +306,15 @@ function updateDashboardTable(cases) {
         } else if (c.type === 'property') {
             details = `T: ${c.params.temperature}K, P: ${c.params.pressure}Pa`;
         }
+        const safeId = escapeHtml(c.id);
         return `
             <tr>
-                <td>${c.name}</td>
-                <td><span class="case-type-badge">${c.type.toUpperCase()}</span></td>
-                <td style="font-family: var(--mono); color: var(--accent-teal);">${c.mainValue}</td>
-                <td style="font-size: 0.75rem;">${details}</td>
+                <td>${escapeHtml(c.name)}</td>
+                <td><span class="case-type-badge">${escapeHtml(c.type.toUpperCase())}</span></td>
+                <td style="font-family: var(--mono); color: var(--accent-teal);">${escapeHtml(c.mainValue)}</td>
+                <td style="font-size: 0.75rem;">${escapeHtml(details)}</td>
                 <td>
-                    <button class="case-delete" onclick="deleteDashboardCase('${c.id}')" title="Delete">
+                    <button class="case-delete" onclick="deleteDashboardCase('${safeId}')" title="Delete">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
                         </svg>
@@ -337,7 +342,12 @@ function exportDashboardCSV() {
         new Date(c.timestamp).toISOString()
     ]);
 
-    const csv = [headers.join(','), ...rows.map(r => r.map(v => `"${v}"`).join(','))].join('\n');
+    const escCSV = v => {
+        let s = String(v).replace(/"/g, '""');
+        if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+        return `"${s}"`;
+    };
+    const csv = [headers.join(','), ...rows.map(r => r.map(escCSV).join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

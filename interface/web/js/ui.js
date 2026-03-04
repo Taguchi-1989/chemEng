@@ -261,7 +261,7 @@ function generateReportContent(type, data) {
     const paramLabels = getParamLabels(type);
     for (const [key, value] of Object.entries(params)) {
         const label = paramLabels[key] || key;
-        html += `<tr><th>${label}</th><td>${formatValue(value)}</td></tr>`;
+        html += `<tr><th>${escapeHtml(label)}</th><td>${escapeHtml(formatValue(value))}</td></tr>`;
     }
     html += '</table></div>';
 
@@ -276,7 +276,7 @@ function generateReportContent(type, data) {
             if (key === 'calculation_steps' || key === 'sensitivity_data' || key === 'lcoh_breakdown' || key === 'annual_costs') continue;
             if (typeof value === 'object') continue;
             const label = outputLabels[key] || key;
-            html += `<tr><th>${label}</th><td>${formatValue(value)}</td></tr>`;
+            html += `<tr><th>${escapeHtml(label)}</th><td>${escapeHtml(formatValue(value))}</td></tr>`;
         }
         html += '</table></div>';
     }
@@ -325,7 +325,7 @@ function generateReportContent(type, data) {
         html += '<div class="section"><div class="section-title">📝 計算過程 / Calculation Steps</div>';
         result.calculation_steps.forEach((step, i) => {
             html += `<div class="step">
-                <div class="step-title">Step ${i + 1}: ${step.step || step.title || ''}</div>
+                <div class="step-title">Step ${i + 1}: ${escapeHtml(step.step || step.title || '')}</div>
                 ${step.description ? `<div>${escapeHtml(step.description)}</div>` : ''}
                 ${step.formula ? `<div class="step-formula">${escapeHtml(step.formula)}</div>` : ''}
                 ${step.formulas ? `<div class="step-formula">${step.formulas.map(escapeHtml).join('<br>')}</div>` : ''}
@@ -346,14 +346,14 @@ function generateMainResult(type, result) {
     switch(type) {
         case 'property':
             html += `<div class="highlight">
-                <div class="highlight-label">${result.property || 'Result'}</div>
-                <div class="highlight-value">${formatValue(result.value)} ${result.unit || ''}</div>
+                <div class="highlight-label">${escapeHtml(result.property || 'Result')}</div>
+                <div class="highlight-value">${escapeHtml(formatValue(result.value))} ${escapeHtml(result.unit || '')}</div>
             </div>`;
             break;
         case 'distillation':
             html += `<div class="highlight">
                 <div class="highlight-label">理論段数 / Theoretical Stages</div>
-                <div class="highlight-value">${result.actual_stages || result.theoretical_stages || '-'}</div>
+                <div class="highlight-value">${escapeHtml(String(result.actual_stages || result.theoretical_stages || '-'))}</div>
             </div>`;
             break;
         case 'extraction':
@@ -371,7 +371,7 @@ function generateMainResult(type, result) {
         case 'lcoh':
             html += `<div class="highlight">
                 <div class="highlight-label">Levelized Cost of Hydrogen</div>
-                <div class="highlight-value">${result.lcoh?.toFixed(2) || '-'} EUR/kg H2</div>
+                <div class="highlight-value">${escapeHtml(result.lcoh?.toFixed(2) || '-')} EUR/kg H2</div>
             </div>`;
             // Cost breakdown
             if (result.lcoh_breakdown) {
@@ -389,7 +389,7 @@ function generateMainResult(type, result) {
                 };
                 for (const [key, value] of Object.entries(result.lcoh_breakdown)) {
                     if (key === 'total') continue;
-                    html += `<tr><th>${breakdownLabels[key] || key}</th><td>${value?.toFixed(3) || 0} EUR/kg H2</td></tr>`;
+                    html += `<tr><th>${escapeHtml(breakdownLabels[key] || key)}</th><td>${escapeHtml(String(value?.toFixed(3) || 0))} EUR/kg H2</td></tr>`;
                 }
                 html += '</table></div>';
             }
@@ -567,8 +567,19 @@ function exportCSV(skillId) {
 function formatCSVValue(val) {
     if (val === null || val === undefined) return '';
     if (typeof val === 'number') return val.toString();
-    if (typeof val === 'object') return JSON.stringify(val).replace(/,/g, ';');
-    return String(val).replace(/,/g, ';');
+    let str;
+    if (typeof val === 'object') {
+        str = JSON.stringify(val);
+    } else {
+        str = String(val);
+    }
+    // Escape double quotes by doubling them, then wrap in quotes
+    str = str.replace(/"/g, '""');
+    // Prevent CSV formula injection (=, +, -, @, tab, CR)
+    if (/^[=+\-@\t\r]/.test(str)) {
+        str = "'" + str;
+    }
+    return `"${str}"`;
 }
 
 // ==================== Prompt Template Generation ====================
@@ -779,6 +790,7 @@ function populateForm(skillId, params) {
     if (!form) return;
 
     Object.entries(params).forEach(([name, value]) => {
+        if (!/^[a-zA-Z0-9_-]+$/.test(name)) return;
         const input = form.querySelector(`[name="${name}"]`);
         if (input) {
             if (input.type === 'checkbox') {
@@ -932,7 +944,7 @@ function addSystemMessage(text) {
                 <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
             </svg>
         </div>
-        <div class="help-message-content">${text}</div>
+        <div class="help-message-content">${escapeHtml(text)}</div>
     `;
     messagesContainer.appendChild(msgEl);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
