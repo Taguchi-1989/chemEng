@@ -38,7 +38,6 @@ coolprop = ["CoolProp>=6.4"]
 calc = ["chemeng[thermo,cantera,coolprop]"]
 # API server
 api = ["fastapi>=0.100", "uvicorn>=0.20"]
-ai = ["anthropic>=0.20"]
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
@@ -46,7 +45,7 @@ dev = [
 ]
 # All features for local development
 all = [
-    "chemeng[calc,api,ai,dev]"
+    "chemeng[calc,api,dev]"
 ]
 
 [project.scripts]
@@ -67,8 +66,6 @@ packages = [
     "chemeng.engines",
     "chemeng.interface",
     "chemeng.skills",
-    "chemeng.ai",
-    "chemeng.storage",
 ]
 
 [tool.ruff]

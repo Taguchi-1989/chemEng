@@ -54,8 +54,11 @@ ngrok config add-authtoken YOUR_TOKEN_HERE
 ### 4. ローカルサーバー起動
 
 ```bash
-# 方法1: バッチファイル（推奨）
-start_server.bat
+# 方法1: 起動スクリプト（推奨）
+# Windows:
+ChemEng_Start.bat
+# macOS/Linux:
+./start.sh
 
 # 方法2: 直接実行
 python server.py --port 8000
@@ -69,10 +72,6 @@ python -m uvicorn interface.api:app --host 0.0.0.0 --port 8000
 別のターミナルウィンドウで:
 
 ```bash
-# 方法1: バッチファイル
-start_ngrok.bat
-
-# 方法2: 直接実行
 ngrok http 8000
 ```
 
