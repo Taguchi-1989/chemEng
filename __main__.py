@@ -9,13 +9,19 @@ Usage:
     python -m chemeng --api             # REST APIサーバー起動
 """
 
+import os
 import sys
+
+# プロジェクトルートを sys.path に追加（pip install なしでも動作するように）
+_PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
 
 
 def main():
     # --api オプションでAPIサーバー起動
     if "--api" in sys.argv or "api" in sys.argv:
-        from chemeng.interface.api import start_server
+        from interface.api import start_server
 
         # ポート指定
         port = 8000
@@ -28,7 +34,7 @@ def main():
         start_server(port=port)
     else:
         # CLI
-        from chemeng.interface.cli import main as cli_main
+        from interface.cli import main as cli_main
         cli_main()
 
 

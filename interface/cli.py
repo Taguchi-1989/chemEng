@@ -70,7 +70,10 @@ def print_result(result: dict[str, Any], format: str = "text"):
 
 def cmd_property(args):
     """物性値取得コマンド"""
-    from chemeng.engines import select_engine
+    try:
+        from chemeng.engines import select_engine
+    except ImportError:
+        from engines import select_engine
 
     substance = args.substance
     property_name = args.property
@@ -85,7 +88,10 @@ def cmd_property(args):
 
     # エンジン選択
     if args.engine:
-        from chemeng.engines import get_engine
+        try:
+            from chemeng.engines import get_engine
+        except ImportError:
+            from engines import get_engine
         engine = get_engine(args.engine)
         if not engine:
             print(f"Error: Engine not found: {args.engine}", file=sys.stderr)
@@ -126,7 +132,10 @@ def cmd_property(args):
 
 def cmd_calculate(args):
     """計算実行コマンド"""
-    from chemeng.core import get_registry
+    try:
+        from chemeng.core import get_registry
+    except ImportError:
+        from core import get_registry
 
     skill_id = args.skill
     registry = get_registry()
@@ -163,7 +172,10 @@ def cmd_calculate(args):
 
 def cmd_skill(args):
     """スキル管理コマンド"""
-    from chemeng.core import get_registry
+    try:
+        from chemeng.core import get_registry
+    except ImportError:
+        from core import get_registry
 
     registry = get_registry()
 
@@ -217,7 +229,10 @@ def cmd_skill(args):
 
 def cmd_engine(args):
     """エンジン管理コマンド"""
-    from chemeng.engines import get_available_engines, get_engine
+    try:
+        from chemeng.engines import get_available_engines, get_engine
+    except ImportError:
+        from engines import get_available_engines, get_engine
 
     if args.action == "list":
         engines = get_available_engines()
@@ -261,7 +276,10 @@ def cmd_engine(args):
 
 def cmd_info(args):
     """物質情報コマンド"""
-    from chemeng.engines import select_engine
+    try:
+        from chemeng.engines import select_engine
+    except ImportError:
+        from engines import select_engine
 
     substance = args.substance
     engine = select_engine(substance=substance)
