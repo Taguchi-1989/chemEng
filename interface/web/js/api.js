@@ -1,9 +1,35 @@
 // ==================== API Communication ====================
 
+// ==================== Fetch Wrapper with Timeout & Offline Detection ====================
+async function apiFetch(url, options = {}, timeoutMs = 30000) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        const response = await fetch(url, { ...options, signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (!response.ok && response.status === 429) {
+            throw new Error('Too many requests. Please wait a moment. / リクエストが多すぎます。しばらくお待ちください。');
+        }
+        if (!response.ok && response.status >= 500) {
+            throw new Error(`Server error (${response.status}) / サーバーエラー (${response.status})`);
+        }
+        return response;
+    } catch (err) {
+        clearTimeout(timeoutId);
+        if (err.name === 'AbortError') {
+            throw new Error('Request timed out. The calculation may be too complex. / タイムアウトしました。計算が複雑すぎる可能性があります。');
+        }
+        if (typeof navigator !== 'undefined' && !navigator.onLine) {
+            throw new Error('No internet connection. / インターネット接続がありません。');
+        }
+        throw err;
+    }
+}
+
 // Load substance list from API
 async function loadSubstances() {
     try {
-        const res = await fetch(`${API_BASE}/substances`);
+        const res = await apiFetch(`${API_BASE}/substances`, {}, 10000);
         const data = await res.json();
         if (data.success && data.substances.length > 0) {
             SUBSTANCES_DATA = data.substances;
@@ -34,11 +60,11 @@ function searchSubstances(query) {
 
 // ==================== Batch Calculation ====================
 async function calculateBatch(cases) {
-    const res = await fetch(`${API_BASE}/calculate/batch`, {
+    const res = await apiFetch(`${API_BASE}/calculate/batch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cases }),
-    });
+    }, 300000); // 5min for batch
     return res.json();
 }
 

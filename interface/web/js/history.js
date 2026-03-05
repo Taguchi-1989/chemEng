@@ -228,22 +228,24 @@ function updateCompareButton() {
 
 // Delete a dashboard case
 function deleteDashboardCase(caseId) {
-    const cases = loadDashboardCases();
-    const updated = cases.filter(c => c.id !== caseId);
-    saveDashboardCases(updated);
-    selectedCases.delete(caseId);
-    renderDashboardCaseList();
-    toast('Case deleted', 'success');
+    confirmAction('このケースを削除しますか？ / Delete this case?', () => {
+        const cases = loadDashboardCases();
+        const updated = cases.filter(c => c.id !== caseId);
+        saveDashboardCases(updated);
+        selectedCases.delete(caseId);
+        renderDashboardCaseList();
+        toast('Case deleted / ケースを削除しました', 'success');
+    });
 }
 
 // Clear all dashboard cases
 function clearAllDashboardCases() {
-    if (confirm('Delete all saved cases? This cannot be undone.')) {
+    confirmAction('全ケースを削除しますか？元に戻せません。 / Delete all saved cases? This cannot be undone.', () => {
         saveDashboardCases([]);
         selectedCases.clear();
         renderDashboardCaseList();
-        toast('All cases cleared', 'success');
-    }
+        toast('All cases cleared / 全ケースを削除しました', 'success');
+    });
 }
 
 // Compare selected cases

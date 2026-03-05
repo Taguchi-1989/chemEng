@@ -251,7 +251,9 @@ class ThermoEngine(CalculationEngine):
 
                 P_calc = sum(zs[j] * Psats[j] for j in range(len(substances)))
 
-                if abs(P_calc - pressure) < 10:  # 10 Pa以内で収束
+                # 相対許容差 0.01% で収束判定
+                rel_err = abs(P_calc - pressure) / max(pressure, 1.0)
+                if rel_err < 1e-4:
                     converged = True
                     break
 
@@ -316,7 +318,9 @@ class ThermoEngine(CalculationEngine):
 
                 P_calc = 1.0 / inv_P if inv_P > 0 else 0
 
-                if abs(P_calc - pressure) < 10:  # 10 Pa以内で収束
+                # 相対許容差 0.01% で収束判定
+                rel_err = abs(P_calc - pressure) / max(pressure, 1.0)
+                if rel_err < 1e-4:
                     converged = True
                     break
 

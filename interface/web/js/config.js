@@ -49,6 +49,61 @@ let propChart = null;
 let lastCalculationData = {};
 let pendingImportData = null;
 
+// ==================== Lightweight i18n ====================
+let currentLang = localStorage.getItem('chemeng_lang') || 'ja';
+
+const I18N = {
+    // Header
+    'connecting': { ja: '接続中...', en: 'Connecting...' },
+    'online': { ja: 'オンライン', en: 'Online' },
+    'offline': { ja: 'オフライン', en: 'Offline' },
+    // Tabs
+    'tab.property': { ja: '物性推算', en: 'Property' },
+    'tab.distillation': { ja: '蒸留塔設計', en: 'Distillation' },
+    'tab.mass_balance': { ja: '物質収支', en: 'Mass Balance' },
+    'tab.heat_balance': { ja: '熱収支', en: 'Heat Balance' },
+    'tab.extraction': { ja: '液液抽出', en: 'Extraction' },
+    'tab.absorption': { ja: 'ガス吸収', en: 'Absorption' },
+    'tab.lcoh': { ja: '水素原価', en: 'LCOH' },
+    // Buttons
+    'btn.calculate': { ja: '計算実行', en: 'Calculate' },
+    'btn.export_csv': { ja: 'CSV出力', en: 'Export CSV' },
+    'btn.export_json': { ja: 'JSON出力', en: 'Export JSON' },
+    'btn.save_dashboard': { ja: 'ダッシュボード保存', en: 'Save to Dashboard' },
+    'btn.generate_report': { ja: 'レポート生成', en: 'Generate Report' },
+    // Messages
+    'msg.calculating': { ja: '計算中...', en: 'Calculating...' },
+    'msg.complete': { ja: '計算完了', en: 'Calculation complete' },
+    'msg.error': { ja: 'エラー', en: 'Error' },
+    'msg.no_result': { ja: '先に計算を実行してください', en: 'Run calculation first' },
+    'msg.loaded_history': { ja: '履歴から読込みました', en: 'Loaded from history' },
+    'msg.saved_dashboard': { ja: 'ダッシュボードに保存しました', en: 'Saved to dashboard' },
+    'msg.chart_generated': { ja: 'チャート生成完了', en: 'Chart generated' },
+    // Labels
+    'label.parameters': { ja: '計算パラメータ', en: 'Calculation Parameters' },
+    'label.results': { ja: '計算結果', en: 'Results' },
+    'label.history': { ja: '計算履歴', en: 'History' },
+};
+
+function t(key) {
+    const entry = I18N[key];
+    if (!entry) return key;
+    return entry[currentLang] || entry['ja'] || key;
+}
+
+function setLanguage(lang) {
+    currentLang = lang;
+    localStorage.setItem('chemeng_lang', lang);
+    // Update elements with data-i18n attribute
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        el.textContent = t(key);
+    });
+    // Update language toggle button
+    const btn = document.getElementById('lang-toggle');
+    if (btn) btn.textContent = lang === 'ja' ? 'EN' : 'JA';
+}
+
 // ==================== Prompt Template Constants ====================
 const SKILL_NAMES = {
     property_estimation: { ja: '物性推算', en: 'Property Estimation' },
@@ -206,6 +261,53 @@ const HELP_CONTENT = {
                 <li><strong>熱効率</strong> - 0〜1 の値</li>
             </ul>
             <p><strong>出力:</strong> 顕熱、潜熱、総熱負荷、実熱負荷、相変化情報</p>
+        `
+    },
+    extraction: {
+        title: '液液抽出の使い方',
+        content: `
+            <p><strong>液液抽出</strong>では、向流多段抽出の設計計算を行います。</p>
+            <p><strong>入力項目:</strong></p>
+            <ul>
+                <li><strong>溶質</strong> - 抽出したい物質（例: acetic_acid）</li>
+                <li><strong>原溶媒</strong> - 溶質が含まれる溶媒（例: water）</li>
+                <li><strong>抽剤</strong> - 溶質を抽出する溶媒（例: ethyl_acetate）</li>
+                <li><strong>原料流量/組成</strong> - kmol/h とモル分率</li>
+                <li><strong>抽剤流量</strong> - kmol/h</li>
+                <li><strong>目標抽出率</strong> - 0〜1（デフォルト0.9 = 90%）</li>
+            </ul>
+            <p><strong>出力:</strong> Kremser式による理論段数、分配係数、抽出係数、物質収支</p>
+        `
+    },
+    absorption: {
+        title: 'ガス吸収の使い方',
+        content: `
+            <p><strong>ガス吸収</strong>では、充填塔や段塔によるガス吸収の設計計算を行います。</p>
+            <p><strong>入力項目:</strong></p>
+            <ul>
+                <li><strong>被吸収成分</strong> - 吸収する気体成分（例: ammonia）</li>
+                <li><strong>キャリアガス</strong> - 不活性ガス（例: air）</li>
+                <li><strong>吸収液</strong> - 吸収に使用する液体（例: water）</li>
+                <li><strong>ガス流量</strong> - kmol/h</li>
+                <li><strong>目標除去率</strong> - 0〜0.9999（デフォルト0.9 = 90%）</li>
+            </ul>
+            <p><strong>出力:</strong> Kremser式による理論段数、吸収係数、出口濃度、物質収支</p>
+        `
+    },
+    lcoh: {
+        title: '水素原価計算の使い方',
+        content: `
+            <p><strong>LCOH</strong>（Levelized Cost of Hydrogen）は、水素の均等化原価を計算します。</p>
+            <p><strong>製造方法:</strong></p>
+            <ul>
+                <li><strong>PEM電解</strong> - 固体高分子電解質膜方式</li>
+                <li><strong>アルカリ電解</strong> - アルカリ水電解方式</li>
+                <li><strong>SOEC電解</strong> - 固体酸化物電解方式</li>
+                <li><strong>SMR</strong> - 水蒸気メタン改質（CCS有/無）</li>
+                <li><strong>ATR+CCS</strong> - 自己熱改質+CO2回収</li>
+            </ul>
+            <p><strong>主要パラメータ:</strong> 設備容量(MW)、電力/ガス単価、稼働時間、CAPEX、割引率</p>
+            <p><strong>出力:</strong> LCOH (EUR/kg H2)、コスト内訳、感度分析チャート</p>
         `
     }
 };

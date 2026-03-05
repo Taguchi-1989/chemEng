@@ -38,6 +38,23 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
     # xB は軽沸成分のモル分率
     xB = 1.0 - xB_heavy
 
+    # ゼロ除算ガード: xD と xB が極端に近い場合
+    if abs(xD - xB) < 1e-9:
+        return {
+            "success": False,
+            "errors": ["Distillate and bottoms compositions are too similar for separation / 留出液と缶出液の組成が近すぎます"],
+        }
+
+    # Fenske式のlog(0)防止: 極端な純度をclamp
+    if xD >= 0.9999:
+        xD = 0.9999
+    if xB <= 0.0001:
+        xB = 0.0001
+    if xD <= 0.0001:
+        xD = 0.0001
+    if 1 - xB_heavy <= 0.0001:
+        xB = 0.0001
+
     warnings = []
     calculation_steps = []  # 計算過程を記録
 

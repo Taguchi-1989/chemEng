@@ -1,11 +1,96 @@
 // ==================== Form Submission Handlers ====================
 
+// ==================== Client-Side Validation ====================
+let formDirty = false;
+
+function validateRequired(form, name, label) {
+    const input = form.querySelector(`[name="${name}"]`);
+    if (!input) return true;
+    const val = input.value.trim();
+    if (!val) {
+        markInvalid(input, `${label} is required / ${label}は必須です`);
+        return false;
+    }
+    clearInvalid(input);
+    return true;
+}
+
+function validateNumber(form, name, label, min, max) {
+    const input = form.querySelector(`[name="${name}"]`);
+    if (!input) return true;
+    const val = input.value.trim();
+    if (!val) return true; // skip empty optional
+    const num = parseFloat(val);
+    if (isNaN(num)) {
+        markInvalid(input, `${label}: enter a valid number / 有効な数値を入力`);
+        return false;
+    }
+    if (min !== undefined && num < min) {
+        markInvalid(input, `${label}: min ${min} / 最小値 ${min}`);
+        return false;
+    }
+    if (max !== undefined && num > max) {
+        markInvalid(input, `${label}: max ${max} / 最大値 ${max}`);
+        return false;
+    }
+    clearInvalid(input);
+    return true;
+}
+
+function validateComposition(form, name, label) {
+    const input = form.querySelector(`[name="${name}"]`);
+    if (!input) return true;
+    const num = parseFloat(input.value);
+    if (isNaN(num) || num < 0 || num > 1) {
+        markInvalid(input, `${label}: 0~1 / モル分率は0~1の範囲`);
+        return false;
+    }
+    clearInvalid(input);
+    return true;
+}
+
+function markInvalid(input, msg) {
+    input.classList.add('invalid');
+    input.classList.remove('valid');
+    let errEl = input.parentElement.querySelector('.field-error');
+    if (!errEl) {
+        errEl = document.createElement('div');
+        errEl.className = 'field-error';
+        input.parentElement.appendChild(errEl);
+    }
+    errEl.textContent = msg;
+    errEl.classList.add('visible');
+}
+
+function clearInvalid(input) {
+    input.classList.remove('invalid');
+    let errEl = input.parentElement.querySelector('.field-error');
+    if (errEl) errEl.classList.remove('visible');
+}
+
+function handleApiError(data) {
+    toast(formatApiErrors(data.errors, data.warnings), 'error');
+    hideLoading();
+}
+
+function handleConnectionError(err) {
+    toast(err.message || 'Connection error / 接続エラー', 'error');
+    hideLoading();
+}
+
 // ==================== Property Form ====================
 function initPropertyForm() {
     document.getElementById('property-form').onsubmit = async e => {
         e.preventDefault();
+        const form = e.target;
+        const valid = [
+            validateRequired(form, 'substance', 'Substance/物質'),
+            validateRequired(form, 'property', 'Property/物性'),
+        ].every(Boolean);
+        if (!valid) return;
         showLoading();
-        const fd = new FormData(e.target);
+        formDirty = false;
+        const fd = new FormData(form);
         const tempU = activeUnits['prop-temp'] || 'K';
         const pressU = activeUnits['prop-press'] || 'Pa';
         const params = {
@@ -15,7 +100,7 @@ function initPropertyForm() {
             pressure: UNITS.pressure[pressU].toBase(parseFloat(fd.get('pressure')))
         };
         try {
-            const res = await fetch(`${API_BASE}/calculate/property_estimation`, {
+            const res = await apiFetch(`${API_BASE}/calculate/property_estimation`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ parameters: params })
@@ -36,14 +121,12 @@ function initPropertyForm() {
                 document.getElementById('chart-tmax').value = Math.min(500, params.temperature + 50);
                 saveHistory('property', params, out);
                 showResult('property');
-                toast('Calculation complete');
+                toast('Calculation complete / 計算完了');
             } else {
-                toast('Error: ' + (data.errors?.join(', ') || 'Unknown'), 'error');
-                hideLoading();
+                handleApiError(data);
             }
         } catch (err) {
-            toast('Connection error: ' + err.message, 'error');
-            hideLoading();
+            handleConnectionError(err);
         }
     };
 }
@@ -52,8 +135,20 @@ function initPropertyForm() {
 function initDistillationForm() {
     document.getElementById('distillation-form').onsubmit = async e => {
         e.preventDefault();
+        const form = e.target;
+        const valid = [
+            validateRequired(form, 'light_component', 'Light component/軽沸成分'),
+            validateRequired(form, 'heavy_component', 'Heavy component/重沸成分'),
+            validateNumber(form, 'feed_flow_rate', 'Feed flow/原料流量', 0.001),
+            validateComposition(form, 'feed_composition', 'Feed composition/原料組成'),
+            validateComposition(form, 'distillate_purity', 'Distillate purity/留出純度'),
+            validateComposition(form, 'bottoms_purity', 'Bottoms purity/缶出純度'),
+            validateNumber(form, 'reflux_ratio_factor', 'R/Rmin', 1.01, 10),
+        ].every(Boolean);
+        if (!valid) return;
         showLoading();
-        const fd = new FormData(e.target);
+        formDirty = false;
+        const fd = new FormData(form);
         const params = {
             light_component: fd.get('light_component'),
             heavy_component: fd.get('heavy_component'),
@@ -64,7 +159,7 @@ function initDistillationForm() {
             reflux_ratio_factor: parseFloat(fd.get('reflux_ratio_factor'))
         };
         try {
-            const res = await fetch(`${API_BASE}/calculate/distillation`, {
+            const res = await apiFetch(`${API_BASE}/calculate/distillation`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ parameters: params })
@@ -100,14 +195,12 @@ function initDistillationForm() {
                 if (out.calculation_steps?.length) document.getElementById('dist-steps').innerHTML = renderSteps(out.calculation_steps);
                 saveHistory('distillation', params, out);
                 showResult('distillation');
-                toast('Column design complete');
+                toast('Column design complete / 蒸留塔設計完了');
             } else {
-                toast('Error: ' + (data.errors?.join(', ') || 'Unknown'), 'error');
-                hideLoading();
+                handleApiError(data);
             }
         } catch (err) {
-            toast('Connection error: ' + err.message, 'error');
-            hideLoading();
+            handleConnectionError(err);
         }
     };
 }
@@ -116,8 +209,18 @@ function initDistillationForm() {
 function initMassBalanceForm() {
     document.getElementById('mass_balance-form').onsubmit = async e => {
         e.preventDefault();
+        const form = e.target;
+        const valid = [
+            validateRequired(form, 'components', 'Components/成分'),
+            validateNumber(form, 'feed_flow_rate', 'Feed flow/原料流量', 0.001),
+            validateComposition(form, 'feed_composition', 'Feed comp/原料組成'),
+            validateComposition(form, 'distillate_composition', 'Distillate comp/留出組成'),
+            validateComposition(form, 'bottoms_composition', 'Bottoms comp/缶出組成'),
+        ].every(Boolean);
+        if (!valid) return;
         showLoading();
-        const fd = new FormData(e.target);
+        formDirty = false;
+        const fd = new FormData(form);
         const comps = fd.get('components').split(',').map(c => c.trim());
         const feedComp = parseFloat(fd.get('feed_composition'));
         const distComp = parseFloat(fd.get('distillate_composition'));
@@ -131,7 +234,7 @@ function initMassBalanceForm() {
             ]
         };
         try {
-            const res = await fetch(`${API_BASE}/calculate/mass_balance`, {
+            const res = await apiFetch(`${API_BASE}/calculate/mass_balance`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ parameters: params })
@@ -148,14 +251,12 @@ function initMassBalanceForm() {
                 if (out.calculation_steps?.length) document.getElementById('mb-steps').innerHTML = renderSteps(out.calculation_steps);
                 saveHistory('mass_balance', { components: comps, feed_flow_rate: params.inlet_streams[0].flow_rate }, out);
                 showResult('mass_balance');
-                toast('Balance calculation complete');
+                toast('Balance calculation complete / 物質収支計算完了');
             } else {
-                toast('Error: ' + (data.errors?.join(', ') || 'Unknown'), 'error');
-                hideLoading();
+                handleApiError(data);
             }
         } catch (err) {
-            toast('Connection error: ' + err.message, 'error');
-            hideLoading();
+            handleConnectionError(err);
         }
     };
 }
@@ -164,8 +265,17 @@ function initMassBalanceForm() {
 function initHeatBalanceForm() {
     document.getElementById('heat_balance-form').onsubmit = async e => {
         e.preventDefault();
+        const form = e.target;
+        const valid = [
+            validateRequired(form, 'substance', 'Substance/物質'),
+            validateNumber(form, 'flow_rate', 'Flow rate/流量', 0.001),
+            validateNumber(form, 'inlet_temperature', 'Inlet T/入口温度', 1, 10000),
+            validateNumber(form, 'outlet_temperature', 'Outlet T/出口温度', 1, 10000),
+        ].every(Boolean);
+        if (!valid) return;
         showLoading();
-        const fd = new FormData(e.target);
+        formDirty = false;
+        const fd = new FormData(form);
         const params = {
             substance: fd.get('substance'),
             flow_rate: parseFloat(fd.get('flow_rate')),
@@ -176,7 +286,7 @@ function initHeatBalanceForm() {
             phase_change: true
         };
         try {
-            const res = await fetch(`${API_BASE}/calculate/heat_balance`, {
+            const res = await apiFetch(`${API_BASE}/calculate/heat_balance`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ parameters: params })
@@ -205,14 +315,12 @@ function initHeatBalanceForm() {
                 if (out.calculation_steps?.length) document.getElementById('hb-steps').innerHTML = renderSteps(out.calculation_steps);
                 saveHistory('heat_balance', params, out);
                 showResult('heat_balance');
-                toast('Heat duty calculation complete');
+                toast('Heat duty calculation complete / 熱収支計算完了');
             } else {
-                toast('Error: ' + (data.errors?.join(', ') || 'Unknown'), 'error');
-                hideLoading();
+                handleApiError(data);
             }
         } catch (err) {
-            toast('Connection error: ' + err.message, 'error');
-            hideLoading();
+            handleConnectionError(err);
         }
     };
 }
@@ -221,8 +329,19 @@ function initHeatBalanceForm() {
 function initExtractionForm() {
     document.getElementById('extraction-form').onsubmit = async e => {
         e.preventDefault();
+        const form = e.target;
+        const valid = [
+            validateRequired(form, 'solute', 'Solute/溶質'),
+            validateRequired(form, 'carrier', 'Carrier/キャリア'),
+            validateRequired(form, 'solvent', 'Solvent/抽剤'),
+            validateNumber(form, 'feed_flow_rate', 'Feed flow/原料流量', 0.001),
+            validateComposition(form, 'feed_composition', 'Feed comp/原料組成'),
+            validateNumber(form, 'solvent_flow_rate', 'Solvent flow/抽剤流量', 0.001),
+        ].every(Boolean);
+        if (!valid) return;
         showLoading();
-        const fd = new FormData(e.target);
+        formDirty = false;
+        const fd = new FormData(form);
         const stagesVal = fd.get('stages');
         const params = {
             solute: fd.get('solute'),
@@ -238,7 +357,7 @@ function initExtractionForm() {
             params.stages = parseInt(stagesVal);
         }
         try {
-            const res = await fetch(`${API_BASE}/calculate/extraction`, {
+            const res = await apiFetch(`${API_BASE}/calculate/extraction`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ parameters: params })
@@ -246,19 +365,15 @@ function initExtractionForm() {
             const data = await res.json();
             if (data.success) {
                 const out = data.outputs;
-                // System description
                 document.getElementById('ext-system').textContent = `${params.solute} from ${params.carrier} using ${params.solvent}`;
-                // Main results
                 document.getElementById('ext-recovery').textContent = (out.recovery * 100).toFixed(1);
                 document.getElementById('ext-stages').textContent = out.actual_stages;
                 document.getElementById('ext-factor').textContent = out.extraction_factor.toFixed(3);
                 document.getElementById('ext-m').textContent = out.distribution_coefficient.toFixed(3);
-                // Diagram labels
                 document.getElementById('ext-feed-label').textContent = `${params.feed_flow_rate} kmol/h`;
                 document.getElementById('ext-solv-label').textContent = `${params.solvent_flow_rate} kmol/h`;
                 document.getElementById('ext-raff-label').textContent = `${out.raffinate_flow_rate.toFixed(1)} kmol/h`;
                 document.getElementById('ext-extract-label').textContent = `${out.extract_flow_rate.toFixed(1)} kmol/h`;
-                // Draw stages in SVG
                 const stagesSvg = document.getElementById('ext-stages-svg');
                 stagesSvg.innerHTML = '';
                 const nStages = out.actual_stages;
@@ -271,7 +386,6 @@ function initExtractionForm() {
                 if (nStages > 10) {
                     stagesSvg.innerHTML += `<text x="240" y="270" text-anchor="middle" font-size="9" fill="var(--text-muted)">...${nStages} stages total</text>`;
                 }
-                // Table data
                 document.getElementById('ext-tbl-feed').textContent = params.feed_flow_rate.toFixed(1);
                 document.getElementById('ext-tbl-xf').textContent = params.feed_composition.toFixed(4);
                 document.getElementById('ext-tbl-solv').textContent = params.solvent_flow_rate.toFixed(1);
@@ -280,24 +394,20 @@ function initExtractionForm() {
                 document.getElementById('ext-tbl-xr').textContent = out.raffinate_composition.toFixed(6);
                 document.getElementById('ext-tbl-extract').textContent = out.extract_flow_rate.toFixed(2);
                 document.getElementById('ext-tbl-ye').textContent = out.extract_composition.toFixed(6);
-                // Warnings
                 const warn = document.getElementById('ext-warnings');
                 if (data.warnings?.length) {
                     warn.classList.remove('hidden');
                     document.getElementById('ext-warn-list').innerHTML = data.warnings.map(w => `<li>${escapeHtml(w)}</li>`).join('');
                 } else warn.classList.add('hidden');
-                // Steps
                 if (out.calculation_steps?.length) document.getElementById('ext-steps').innerHTML = renderSteps(out.calculation_steps);
                 saveHistory('extraction', params, out);
                 showResult('extraction');
-                toast('Extraction calculation complete');
+                toast('Extraction calculation complete / 抽出計算完了');
             } else {
-                toast('Error: ' + (data.errors?.join(', ') || 'Unknown'), 'error');
-                hideLoading();
+                handleApiError(data);
             }
         } catch (err) {
-            toast('Connection error: ' + err.message, 'error');
-            hideLoading();
+            handleConnectionError(err);
         }
     };
 }
@@ -306,8 +416,18 @@ function initExtractionForm() {
 function initAbsorptionForm() {
     document.getElementById('absorption-form').onsubmit = async e => {
         e.preventDefault();
+        const form = e.target;
+        const valid = [
+            validateRequired(form, 'gas_component', 'Gas component/ガス成分'),
+            validateRequired(form, 'carrier_gas', 'Carrier gas/キャリアガス'),
+            validateRequired(form, 'solvent', 'Solvent/吸収液'),
+            validateNumber(form, 'gas_flow_rate', 'Gas flow/ガス流量', 0.001),
+            validateComposition(form, 'inlet_gas_composition', 'Inlet comp/入口組成'),
+        ].every(Boolean);
+        if (!valid) return;
         showLoading();
-        const fd = new FormData(e.target);
+        formDirty = false;
+        const fd = new FormData(form);
         const liquidFlowVal = fd.get('liquid_flow_rate');
         const params = {
             gas_component: fd.get('gas_component'),
@@ -323,7 +443,7 @@ function initAbsorptionForm() {
             params.liquid_flow_rate = parseFloat(liquidFlowVal);
         }
         try {
-            const res = await fetch(`${API_BASE}/calculate/absorption`, {
+            const res = await apiFetch(`${API_BASE}/calculate/absorption`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ parameters: params })
@@ -331,18 +451,14 @@ function initAbsorptionForm() {
             const data = await res.json();
             if (data.success) {
                 const out = data.outputs;
-                // System description
                 document.getElementById('abs-system').textContent = `${params.gas_component} into ${params.solvent}`;
-                // Main results
                 document.getElementById('abs-removal').textContent = (out.removal_efficiency * 100).toFixed(1);
                 document.getElementById('abs-stages').textContent = out.actual_stages;
                 document.getElementById('abs-factor').textContent = out.absorption_factor.toFixed(3);
                 document.getElementById('abs-lg').textContent = out.liquid_gas_ratio.toFixed(3);
-                // Diagram labels
                 document.getElementById('abs-gas-in-label').textContent = `${params.gas_flow_rate} kmol/h`;
                 document.getElementById('abs-gas-out-label').textContent = `${out.outlet_gas_flow.toFixed(1)} kmol/h`;
                 document.getElementById('abs-liq-out-label').textContent = `${out.outlet_liquid_flow.toFixed(1)} kmol/h`;
-                // Draw stages in SVG
                 const stagesSvg = document.getElementById('abs-stages-svg');
                 stagesSvg.innerHTML = '';
                 const nStages = out.actual_stages;
@@ -355,7 +471,6 @@ function initAbsorptionForm() {
                 if (nStages > 10) {
                     stagesSvg.innerHTML += `<text x="210" y="285" text-anchor="middle" font-size="9" fill="var(--text-muted)">...${nStages} stages total</text>`;
                 }
-                // Table data
                 document.getElementById('abs-tbl-gin').textContent = params.gas_flow_rate.toFixed(1);
                 document.getElementById('abs-tbl-yin').textContent = params.inlet_gas_composition.toFixed(4);
                 document.getElementById('abs-tbl-gout').textContent = out.outlet_gas_flow.toFixed(2);
@@ -365,37 +480,30 @@ function initAbsorptionForm() {
                 document.getElementById('abs-tbl-xin').textContent = '0.0000';
                 document.getElementById('abs-tbl-lout').textContent = out.outlet_liquid_flow.toFixed(2);
                 document.getElementById('abs-tbl-xout').textContent = out.outlet_liquid_composition.toFixed(6);
-                // Absorbed amount
                 document.getElementById('abs-absorbed').textContent = out.absorbed_amount.toFixed(3);
-                // Warnings
                 const warn = document.getElementById('abs-warnings');
                 if (data.warnings?.length) {
                     warn.classList.remove('hidden');
                     document.getElementById('abs-warn-list').innerHTML = data.warnings.map(w => `<li>${escapeHtml(w)}</li>`).join('');
                 } else warn.classList.add('hidden');
-                // Steps
                 if (out.calculation_steps?.length) document.getElementById('abs-steps').innerHTML = renderSteps(out.calculation_steps);
                 saveHistory('absorption', params, out);
                 showResult('absorption');
-                toast('Absorption calculation complete');
+                toast('Absorption calculation complete / 吸収計算完了');
             } else {
-                toast('Error: ' + (data.errors?.join(', ') || 'Unknown'), 'error');
-                hideLoading();
+                handleApiError(data);
             }
         } catch (err) {
-            toast('Connection error: ' + err.message, 'error');
-            hideLoading();
+            handleConnectionError(err);
         }
     };
 }
 
 // ==================== LCOH Form ====================
-// Store sensitivity data globally for chart updates
 let lcohSensitivityData = null;
 let currentSensChart = 'electricity';
 
 function initLcohForm() {
-    // Method-dependent field visibility
     document.getElementById('lcoh-method').onchange = function() {
         const method = this.value;
         const isElec = method.includes('electrolysis');
@@ -405,32 +513,35 @@ function initLcohForm() {
 
     document.getElementById('lcoh-form').onsubmit = async e => {
         e.preventDefault();
+        const form = e.target;
+        const valid = [
+            validateNumber(form, 'capacity', 'Capacity/設備容量', 0.1, 10000),
+            validateNumber(form, 'operating_hours', 'Hours/稼働時間', 100, 8760),
+        ].every(Boolean);
+        if (!valid) return;
         showLoading();
-        const fd = new FormData(e.target);
+        formDirty = false;
+        const fd = new FormData(form);
         const method = fd.get('production_method');
-            const params = {
-                production_method: method,
-                capacity: parseFloat(fd.get('capacity')),
-                operating_hours: parseFloat(fd.get('operating_hours')),
-                opex_percent: parseFloat(fd.get('opex_percent')),
-                discount_rate: parseFloat(fd.get('discount_rate')),
-                project_lifetime: parseInt(fd.get('project_lifetime')),
-                carbon_price: parseFloat(fd.get('carbon_price')),
-                maintenance_days: parseFloat(fd.get('maintenance_days') || 0),
-                labor_cost: parseFloat(fd.get('labor_cost') || 0),
-                maintenance_cost: parseFloat(fd.get('maintenance_cost') || 0),
-                capex_subsidy_percent: parseFloat(fd.get('capex_subsidy_percent') || 0),
-                capex_subsidy_amount: parseFloat(fd.get('capex_subsidy_amount') || 0),
-                subsidies: parseFloat(fd.get('subsidies') || 0)
-            };
-
-        // Optional CAPEX
+        const params = {
+            production_method: method,
+            capacity: parseFloat(fd.get('capacity')),
+            operating_hours: parseFloat(fd.get('operating_hours')),
+            opex_percent: parseFloat(fd.get('opex_percent')),
+            discount_rate: parseFloat(fd.get('discount_rate')),
+            project_lifetime: parseInt(fd.get('project_lifetime')),
+            carbon_price: parseFloat(fd.get('carbon_price')),
+            maintenance_days: parseFloat(fd.get('maintenance_days') || 0),
+            labor_cost: parseFloat(fd.get('labor_cost') || 0),
+            maintenance_cost: parseFloat(fd.get('maintenance_cost') || 0),
+            capex_subsidy_percent: parseFloat(fd.get('capex_subsidy_percent') || 0),
+            capex_subsidy_amount: parseFloat(fd.get('capex_subsidy_amount') || 0),
+            subsidies: parseFloat(fd.get('subsidies') || 0)
+        };
         const capexVal = fd.get('capex_per_kw');
         if (capexVal && capexVal.trim() !== '') {
             params.capex_per_kw = parseFloat(capexVal);
         }
-
-        // Method-specific parameters
         if (method.includes('electrolysis')) {
             params.electricity_price = parseFloat(fd.get('electricity_price'));
         } else {
@@ -438,7 +549,7 @@ function initLcohForm() {
         }
 
         try {
-            const res = await fetch(`${API_BASE}/calculate/lcoh`, {
+            const res = await apiFetch(`${API_BASE}/calculate/lcoh`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ parameters: params })
@@ -447,28 +558,20 @@ function initLcohForm() {
             if (data.success) {
                 const out = data.outputs;
                 lcohSensitivityData = out.sensitivity_data;
-
-                // Method label
                 const methodLabels = {
                     'pem_electrolysis': 'PEM Electrolysis',
                     'alkaline_electrolysis': 'Alkaline Electrolysis',
                     'soec_electrolysis': 'SOEC Electrolysis',
-                    'smr': 'SMR (Gray H₂)',
-                    'smr_ccs': 'SMR + CCS (Blue H₂)',
-                    'atr_ccs': 'ATR + CCS (Blue H₂)'
+                    'smr': 'SMR (Gray H\u2082)',
+                    'smr_ccs': 'SMR + CCS (Blue H\u2082)',
+                    'atr_ccs': 'ATR + CCS (Blue H\u2082)'
                 };
                 document.getElementById('lcoh-method-label').textContent = methodLabels[method] || method;
-
-                // Main LCOH value
                 document.getElementById('lcoh-value').textContent = out.lcoh.toFixed(2);
-
-                // Summary cards
                 document.getElementById('lcoh-production').textContent = (out.annual_h2_production / 1000).toFixed(1);
                 document.getElementById('lcoh-capex').textContent = (out.total_capex / 1000000).toFixed(2);
                 document.getElementById('lcoh-efficiency').textContent = out.energy_efficiency.toFixed(1);
                 document.getElementById('lcoh-carbon').textContent = out.carbon_intensity.toFixed(2);
-
-                // Cost breakdown
                 const bd = out.lcoh_breakdown;
                 const labor = bd.labor || 0;
                 const maintenance = bd.maintenance || 0;
@@ -493,15 +596,9 @@ function initLcohForm() {
                 document.getElementById('lcoh-tbl-carbon-pct').textContent = ((bd.carbon / totalPositive) * 100).toFixed(1) + '%';
                 document.getElementById('lcoh-tbl-revenue').textContent = revenue.toFixed(3);
                 document.getElementById('lcoh-tbl-revenue-pct').textContent = totalPositive > 0 ? ((revenue / totalPositive) * 100).toFixed(1) + '%' : '-';
-
-                // Draw breakdown chart
                 drawLcohBreakdownChart(bd, totalPositive);
-
-                // Draw sensitivity chart
                 currentSensChart = method.includes('electrolysis') ? 'electricity' : 'gas';
                 drawLcohSensitivityChart();
-
-                // Steps (LCOH has different step format)
                 if (out.calculation_steps?.length) {
                     const stepsHtml = out.calculation_steps.map(s => `
                         <div class="step-item">
@@ -509,24 +606,69 @@ function initLcohForm() {
                             ${s.description ? `<div class="step-desc">${escapeHtml(s.description)}</div>` : ''}
                             ${s.formula ? `<div class="step-formula">${escapeHtml(s.formula)}</div>` : ''}
                             ${s.values ? `<div class="step-values" style="font-size: 0.8rem; color: var(--text-muted); margin: 0.25rem 0;">${Object.entries(s.values).map(([k,v]) => `${escapeHtml(k)}: ${escapeHtml(v)}`).join(', ')}</div>` : ''}
-                            ${s.result ? `<div class="step-result" style="font-weight: 500; color: var(--accent-teal);">→ ${escapeHtml(s.result)}</div>` : ''}
+                            ${s.result ? `<div class="step-result" style="font-weight: 500; color: var(--accent-teal);">\u2192 ${escapeHtml(s.result)}</div>` : ''}
                         </div>
                     `).join('');
                     document.getElementById('lcoh-steps').innerHTML = stepsHtml;
                 }
-
                 saveHistory('lcoh', params, out);
                 showResult('lcoh');
-                toast('LCOH calculation complete');
+                toast('LCOH calculation complete / LCOH計算完了');
             } else {
-                toast('Error: ' + (data.errors?.join(', ') || 'Unknown'), 'error');
-                hideLoading();
+                handleApiError(data);
             }
         } catch (err) {
-            toast('Connection error: ' + err.message, 'error');
-            hideLoading();
+            handleConnectionError(err);
         }
     };
+}
+
+// ==================== Auto-generate Tooltips from SKILL_PARAMS ====================
+function initTooltips() {
+    const formMap = {
+        property_estimation: 'property-form',
+        distillation: 'distillation-form',
+        mass_balance: 'mass_balance-form',
+        heat_balance: 'heat_balance-form',
+        extraction: 'extraction-form',
+        absorption: 'absorption-form',
+        lcoh: 'lcoh-form',
+    };
+
+    Object.entries(SKILL_PARAMS).forEach(([skill, params]) => {
+        const formId = formMap[skill];
+        const form = document.getElementById(formId);
+        if (!form) return;
+
+        params.forEach(param => {
+            const input = form.querySelector(`[name="${param.name}"]`);
+            if (!input) return;
+
+            // Find the label (parent or sibling)
+            const label = input.closest('label') || input.parentElement.querySelector('label');
+            const container = label || input.parentElement;
+
+            // Build tooltip text
+            let tip = `${param.ja} / ${param.en}`;
+            if (param.unit) tip += ` [${param.unit}]`;
+            if (param.range) tip += ` (${param.range})`;
+            if (param.default !== undefined) tip += ` default: ${param.default}`;
+
+            // Create tooltip trigger
+            const trigger = document.createElement('span');
+            trigger.className = 'tooltip-trigger';
+            trigger.setAttribute('tabindex', '0');
+            trigger.setAttribute('aria-label', tip);
+            trigger.textContent = '?';
+
+            const content = document.createElement('span');
+            content.className = 'tooltip-content';
+            content.textContent = tip;
+            trigger.appendChild(content);
+
+            container.appendChild(trigger);
+        });
+    });
 }
 
 // Initialize all form handlers
@@ -538,4 +680,16 @@ function initAllForms() {
     initExtractionForm();
     initAbsorptionForm();
     initLcohForm();
+    initTooltips();
+
+    // Track form dirty state for unsaved changes warning
+    document.querySelectorAll('.form-section input, .form-section select').forEach(el => {
+        el.addEventListener('input', () => { formDirty = true; });
+    });
+    window.addEventListener('beforeunload', e => {
+        if (formDirty) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
 }

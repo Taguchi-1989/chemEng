@@ -11,10 +11,15 @@ function initPropertyChart() {
 
         const temps = [], vals = [];
         const step = (tMax - tMin) / 20;
+        const totalSteps = Math.ceil((tMax - tMin) / step) + 1;
+        let currentStep = 0;
+        showLoading('Generating chart data... / チャートデータ生成中...', true);
         for (let t = tMin; t <= tMax; t += step) {
             temps.push(t);
+            currentStep++;
+            updateLoadingProgress(currentStep, totalSteps);
             try {
-                const res = await fetch(`${API_BASE}/calculate/property_estimation`, {
+                const res = await apiFetch(`${API_BASE}/calculate/property_estimation`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ parameters: { substance: params.substance, property: params.property, temperature: t, pressure: params.pressure }})
@@ -24,6 +29,7 @@ function initPropertyChart() {
                 vals.push(data.success ? data.outputs.value * p.factor : null);
             } catch { vals.push(null); }
         }
+        hideLoading();
 
         const ctx = document.getElementById('prop-chart').getContext('2d');
         const p = PROPERTIES[params.property] || { name: params.property, unit: '' };
@@ -71,9 +77,9 @@ function initTxyDiagram() {
         showLoading();
 
         try {
-            const res = await fetch(`${API_BASE}/txy-diagram?light_component=${encodeURIComponent(lightComp)}&heavy_component=${encodeURIComponent(heavyComp)}&pressure=101325&points=21`, {
+            const res = await apiFetch(`${API_BASE}/txy-diagram?light_component=${encodeURIComponent(lightComp)}&heavy_component=${encodeURIComponent(heavyComp)}&pressure=101325&points=21`, {
                 method: 'POST'
-            });
+            }, 60000);
             const data = await res.json();
 
             if (data.success) {

@@ -21,6 +21,9 @@ from __future__ import annotations
 
 import logging
 import os
+import time as _time
+import uuid
+from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
@@ -169,17 +172,54 @@ def create_app() -> FastAPI:
         redoc_url="/redoc",
     )
 
-    # セキュリティヘッダーミドルウェア
+    # セキュリティヘッダー + リクエストトレーシング ミドルウェア
     class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         async def dispatch(self, request: Request, call_next):
+            request_id = request.headers.get("X-Request-ID", uuid.uuid4().hex[:12])
+            start = _time.perf_counter()
             response: Response = await call_next(request)
+            elapsed = _time.perf_counter() - start
             response.headers["X-Content-Type-Options"] = "nosniff"
             response.headers["X-Frame-Options"] = "DENY"
             response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
             response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+            response.headers["X-Request-ID"] = request_id
+            if request.url.path.startswith("/api/"):
+                logger.info(
+                    "req=%s method=%s path=%s status=%s time=%.3fs",
+                    request_id, request.method, request.url.path,
+                    response.status_code, elapsed,
+                )
             return response
 
     app.add_middleware(SecurityHeadersMiddleware)
+
+    # レートリミッター（インメモリ、60 req/min per IP）
+    class RateLimitMiddleware(BaseHTTPMiddleware):
+        def __init__(self, app_instance, max_requests: int = 60, window: int = 60):
+            super().__init__(app_instance)
+            self.max_requests = max_requests
+            self.window = window
+            self._requests: dict[str, list[float]] = defaultdict(list)
+
+        async def dispatch(self, request: Request, call_next):
+            if not request.url.path.startswith("/api/v1/calculate"):
+                return await call_next(request)
+            client_ip = request.client.host if request.client else "unknown"
+            now = _time.time()
+            self._requests[client_ip] = [
+                t for t in self._requests[client_ip] if now - t < self.window
+            ]
+            if len(self._requests[client_ip]) >= self.max_requests:
+                return Response(
+                    status_code=429,
+                    content='{"detail":"Rate limit exceeded. Please wait. / レート制限超過。しばらくお待ちください。"}',
+                    media_type="application/json",
+                )
+            self._requests[client_ip].append(now)
+            return await call_next(request)
+
+    app.add_middleware(RateLimitMiddleware, max_requests=60, window=60)
 
     # CORS設定
     cors_origins = _parse_cors_origins(os.environ.get("CHEMENG_CORS_ORIGINS"))
@@ -369,15 +409,32 @@ def create_app() -> FastAPI:
 
     @app.post("/api/v1/calculate/{skill_id}", response_model=CalculationResponse)
     async def calculate(skill_id: str, request: CalculationRequest):
-        """計算実行"""
-        import time as _time
+        """計算実行（30秒タイムアウト付き）"""
+        import asyncio
+        import concurrent.futures
 
         from core import get_registry
 
         registry = get_registry()
 
+        def _run_calculation():
+            return registry.execute(skill_id, request.parameters)
+
         try:
-            result = registry.execute(skill_id, request.parameters)
+            loop = asyncio.get_event_loop()
+            with concurrent.futures.ThreadPoolExecutor() as pool:
+                result = await asyncio.wait_for(
+                    loop.run_in_executor(pool, _run_calculation),
+                    timeout=30.0,
+                )
+        except asyncio.TimeoutError:
+            logger.warning("Calculation timed out: skill=%s", skill_id)
+            return CalculationResponse(
+                success=False,
+                skill_id=skill_id,
+                inputs=request.parameters,
+                errors=["Calculation timed out (30s). Try simpler parameters. / 計算がタイムアウトしました（30秒）。パラメータを簡素化してください。"],
+            )
         except Exception as e:
             logger.error("Unhandled error in calculate(%s): %s", skill_id, e, exc_info=True)
             return CalculationResponse(

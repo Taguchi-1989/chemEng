@@ -101,6 +101,10 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
     else:
         # 除去率から出口組成を計算
         removal = removal_target
+        # 極端な除去率をclamp
+        if removal > 0.9999:
+            removal = 0.9999
+            warnings.append("Removal efficiency clamped to 99.99% / 除去率を99.99%に制限しました")
         y_out = y_in * (1 - removal)
 
     solute_absorbed = G * (y_in - y_out)  # 吸収される溶質量
@@ -220,7 +224,12 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
             if actual_removal > A / (A + 1) * 1.5:
                 warnings.append(f"Target removal {actual_removal:.1%} may be difficult with A={A:.3f}")
             try:
-                N = math.log((1 - actual_removal) / (1 - actual_removal * A)) / math.log(A)
+                log_arg = (1 - actual_removal) / (1 - actual_removal * A)
+                if log_arg <= 0:
+                    N = 50
+                    warnings.append("Kremser equation: log argument non-positive, using N=50")
+                else:
+                    N = math.log(log_arg) / math.log(A)
             except (ValueError, ZeroDivisionError):
                 N = 50
         else:

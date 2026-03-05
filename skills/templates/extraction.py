@@ -34,6 +34,9 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
     P = params.get("pressure", 101325.0)  # Pa
     N_specified = params.get("stages")  # 指定段数
     recovery_target = params.get("recovery", 0.9)  # 目標抽出率
+    # 極端な抽出率をclamp
+    if recovery_target > 0.9999:
+        recovery_target = 0.9999
 
     warnings = []
     calculation_steps = []
@@ -124,7 +127,14 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
             # E < 1 では目標抽出率に到達困難
             if recovery > E / (E + 1) * 1.5:
                 warnings.append(f"Target recovery {recovery:.1%} may be difficult with E={E:.3f}")
-            N = math.log((1 - recovery) / (1 - recovery * E)) / math.log(E) if recovery < 1 else 50
+            try:
+                log_arg = (1 - recovery) / (1 - recovery * E)
+                if log_arg <= 0 or recovery >= 1:
+                    N = 50
+                else:
+                    N = math.log(log_arg) / math.log(E)
+            except (ValueError, ZeroDivisionError):
+                N = 50
         else:
             # Kremser式の逆算
             # recovery = (E^(N+1) - E) / (E^(N+1) - 1)

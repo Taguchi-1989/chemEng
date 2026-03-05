@@ -348,7 +348,12 @@ def _solve_component_balance(
     D_flow, B_flow = result[0], result[1]
 
     if D_flow < 0 or B_flow < 0:
-        warnings.append(f"Negative flow calculated: D={D_flow:.2f}, B={B_flow:.2f}")
+        warnings.append(
+            f"Physically impossible: negative flow (D={D_flow:.2f}, B={B_flow:.2f}). "
+            "Check outlet compositions for consistency. / "
+            f"物理的に不可能: 負の流量 (D={D_flow:.2f}, B={B_flow:.2f})。出口組成を確認してください。"
+        )
+        # エラーとして流量を0に設定（計算は続行するが警告で通知）
         D_flow = max(0.0, D_flow)
         B_flow = max(0.0, B_flow)
 
@@ -402,7 +407,11 @@ def _solve_two_component_balance(
     B = F - D
 
     if D < 0 or B < 0:
-        warnings.append(f"Negative flow calculated: D={D:.2f}, B={B:.2f}")
+        warnings.append(
+            f"Physically impossible: negative flow (D={D:.2f}, B={B:.2f}). "
+            "Check outlet compositions for consistency. / "
+            f"物理的に不可能: 負の流量 (D={D:.2f}, B={B:.2f})。出口組成を確認してください。"
+        )
         D = max(0, D)
         B = max(0, B)
 

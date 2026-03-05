@@ -8,19 +8,71 @@ function escapeHtml(text) {
 }
 
 // ==================== Toast System ====================
-function toast(msg, type = 'success', duration = 4000) {
+function toast(msg, type = 'success', duration) {
+    if (!duration) duration = type === 'error' ? 8000 : 4000;
     const container = document.getElementById('toast-container');
     const el = document.createElement('div');
     el.className = `toast ${type}`;
+    el.setAttribute('role', type === 'error' ? 'alert' : 'status');
     const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : '⚠';
     el.innerHTML = `
         <span class="toast-icon">${icon}</span>
         <span class="toast-message">${escapeHtml(msg)}</span>
-        <button class="toast-close">×</button>
+        <button class="toast-close" aria-label="Close">×</button>
     `;
     container.appendChild(el);
     el.querySelector('.toast-close').onclick = () => el.remove();
     setTimeout(() => el.remove(), duration);
+}
+
+// ==================== Error Message Formatter ====================
+function formatApiErrors(errors, warnings) {
+    if (!errors || errors.length === 0) {
+        return 'An unexpected error occurred / 予期しないエラーが発生しました';
+    }
+    const TRANSLATIONS = {
+        'Skill not found': '計算タイプが見つかりません / Calculation type not found',
+        'No calculation engine available': '計算エンジンが利用できません / No engine available',
+        'No template or engine available': 'この計算はまだサポートされていません / Not yet supported',
+        'Calculation timed out': '計算がタイムアウトしました / Calculation timed out',
+        'Relative volatility': '相対揮発度が1以下です。この系では蒸留分離ができません / Relative volatility ≤ 1',
+        'Feed composition': '原料組成が留出/缶出仕様と整合しません / Feed composition inconsistent',
+        'Invalid material balance': '物質収支が成立しません。仕様を確認してください / Invalid material balance',
+        'Henry constant': 'ヘンリー定数が正でなければなりません / Henry constant must be positive',
+        'Distribution coefficient': '分配係数が正でなければなりません / Distribution coefficient must be positive',
+        'Physically impossible': '物理的に不可能な結果です。パラメータを確認してください',
+    };
+    return errors.map(e => {
+        for (const [key, translation] of Object.entries(TRANSLATIONS)) {
+            if (e.includes(key)) return translation;
+        }
+        if (e.includes('ref:')) {
+            return '内部計算エラー。異なるパラメータをお試しください / Internal error. Try different parameters.';
+        }
+        return e;
+    }).join('\n');
+}
+
+// ==================== Confirmation Dialog ====================
+function confirmAction(message, onConfirm) {
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-overlay';
+    overlay.innerHTML = `
+        <div class="confirm-dialog">
+            <p>${escapeHtml(message)}</p>
+            <div class="confirm-actions">
+                <button class="confirm-cancel">Cancel / キャンセル</button>
+                <button class="confirm-ok">OK / 確認</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    overlay.querySelector('.confirm-cancel').onclick = () => overlay.remove();
+    overlay.querySelector('.confirm-ok').onclick = () => { overlay.remove(); onConfirm(); };
+    overlay.addEventListener('keydown', e => {
+        if (e.key === 'Escape') overlay.remove();
+    });
+    overlay.querySelector('.confirm-cancel').focus();
 }
 
 // ==================== Theme ====================
@@ -43,14 +95,35 @@ function updateThemeIcon(isDark) {
 }
 
 // ==================== Loading / Result Display ====================
-function showLoading() {
+function showLoading(message, showProgress) {
     document.getElementById('empty-state').classList.add('hidden');
-    document.getElementById('loading-state').classList.add('active');
+    const loadingEl = document.getElementById('loading-state');
+    loadingEl.classList.add('active');
     document.querySelectorAll('.result-section').forEach(s => s.classList.remove('active'));
+    const msgEl = document.getElementById('loading-text');
+    if (msgEl && message) msgEl.textContent = message;
+    const progressEl = document.getElementById('loading-progress');
+    if (progressEl) {
+        progressEl.classList.toggle('active', !!showProgress);
+    }
 }
 
 function hideLoading() {
     document.getElementById('loading-state').classList.remove('active');
+    const progressEl = document.getElementById('loading-progress');
+    if (progressEl) progressEl.classList.remove('active');
+}
+
+function updateLoadingProgress(current, total) {
+    const fill = document.getElementById('loading-progress-fill');
+    if (fill) {
+        const pct = Math.round((current / total) * 100);
+        fill.style.width = `${pct}%`;
+    }
+    const textEl = document.getElementById('loading-progress-text');
+    if (textEl) textEl.textContent = `${current} / ${total}`;
+    const msgEl = document.getElementById('loading-text');
+    if (msgEl) msgEl.textContent = `Processing ${current}/${total}...`;
 }
 
 function showResult(type) {
