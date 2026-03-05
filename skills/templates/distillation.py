@@ -344,7 +344,7 @@ def _calculate_relative_volatility(
         K_heavy = K_values.get(heavy_comp, 1.0)
         alpha = K_light / K_heavy if K_heavy > 0 else 2.5
         return alpha
-    except Exception as e:
+    except Exception:
         warnings.append("VLE calculation failed, using default α=2.5")
         return 2.5
 
