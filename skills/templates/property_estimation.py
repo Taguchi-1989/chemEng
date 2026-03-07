@@ -65,6 +65,45 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
         "values": {"substance": substance, "property": property_name, "T": temperature, "P": pressure},
     })
 
+    # ローカル物性DBに値があればそちらを優先
+    try:
+        try:
+            from chemeng.data.property_db import get_property_db
+        except ImportError:
+            from data.property_db import get_property_db
+
+        db = get_property_db()
+        local_value = db.get_property_value(substance, property_name)
+        if local_value is not None:
+            unit = local_value.unit or PROPERTY_UNITS.get(property_name, "")
+            calculation_steps.append({
+                "step": 2,
+                "title": "ローカルDB / Local Database",
+                "description": f"ローカルDBから値を取得 (source: {local_value.source})",
+                "formulas": [
+                    f"出典: {local_value.reference or local_value.source}",
+                    f"信頼度: {local_value.confidence}",
+                    f"値: {local_value.value:.4g} {unit}",
+                ],
+                "values": {"value": local_value.value, "unit": unit},
+            })
+            return {
+                "success": True,
+                "outputs": {
+                    "value": local_value.value,
+                    "unit": unit,
+                    "substance": substance,
+                    "property": property_name,
+                    "conditions": {"temperature": temperature, "pressure": pressure},
+                    "source": local_value.source,
+                    "reference": local_value.reference,
+                    "calculation_steps": calculation_steps,
+                },
+                "warnings": warnings,
+            }
+    except ImportError:
+        pass  # data module not available, continue with engine
+
     # エンジンがない場合はインポート
     if engine is None:
         try:

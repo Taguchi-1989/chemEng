@@ -274,6 +274,159 @@ def cmd_engine(args):
         print(f"\n対象物質: {cap.supported_substances}")
 
 
+def cmd_data(args):
+    """物性データ管理コマンド"""
+    try:
+        from chemeng.data.property_db import get_property_db
+        from chemeng.fetchers import get_available_fetchers, get_fetcher, search_all
+    except ImportError:
+        from data.property_db import get_property_db
+        from fetchers import get_available_fetchers, get_fetcher, search_all
+
+    action = args.data_action
+
+    if action == "sources":
+        fetchers = get_available_fetchers()
+        if not fetchers:
+            print("利用可能なデータソースがありません")
+            return
+        print("\n=== データソース / Data Sources ===")
+        for f in fetchers:
+            cap = f.capabilities
+            available = "OK" if f.is_available() else "N/A"
+            print(f"\n  {f.name} [{available}]")
+            print(f"    名前: {cap.source_name}")
+            print(f"    URL: {cap.source_url}")
+            print(f"    化合物数: {cap.compound_count}")
+            print(f"    レート制限: {cap.rate_limit}")
+            print(f"    APIキー: {'必要' if cap.requires_api_key else '不要'}")
+
+    elif action == "search":
+        query = args.query
+        source = getattr(args, "source", None)
+        print(f"\n検索中: {query} ...")
+
+        if source:
+            fetcher = get_fetcher(source)
+            if not fetcher:
+                print(f"Error: ソース '{source}' が見つかりません", file=sys.stderr)
+                return
+            try:
+                results = fetcher.search(query, max_results=getattr(args, "max", 5))
+                _print_search_results({source: results})
+            except Exception as e:
+                print(f"Error: {e}", file=sys.stderr)
+        else:
+            results = search_all(query, max_per_source=getattr(args, "max", 3))
+            _print_search_results(results)
+
+    elif action == "fetch":
+        substance = args.substance
+        source = getattr(args, "source", "pubchem")
+        fetcher = get_fetcher(source)
+        if not fetcher:
+            print(f"Error: ソース '{source}' が見つかりません", file=sys.stderr)
+            return
+
+        print(f"\n{source} から {substance} のデータを取得中...")
+        try:
+            record = fetcher.fetch_properties(substance)
+        except Exception as e:
+            print(f"Error: {e}", file=sys.stderr)
+            return
+
+        _print_substance_record(record)
+
+        if not getattr(args, "no_save", False):
+            db = get_property_db()
+            saved = db.add_or_update(record)
+            prop_count = sum(len(v) for v in saved.properties.values())
+            print(f"\nローカルDBに保存しました ({prop_count} properties)")
+
+    elif action == "list":
+        db = get_property_db()
+        records = db.list_all(category=getattr(args, "category", None))
+        if not records:
+            print("\nローカルDBにデータがありません")
+            print("  data fetch <物質名> --source pubchem で追加できます")
+            return
+        print(f"\n=== ローカルDB ({db.count()} substances) ===")
+        for r in records:
+            prop_count = len(r.properties)
+            sources = ", ".join(r.sources_used) if r.sources_used else "N/A"
+            print(f"  {r.name}")
+            print(f"    CAS: {r.cas or 'N/A'} | Formula: {r.formula or 'N/A'} | "
+                  f"MW: {r.molecular_weight or 'N/A'}")
+            print(f"    物性数: {prop_count} | ソース: {sources}")
+
+    elif action == "show":
+        substance = args.substance
+        db = get_property_db()
+        record = db.get(substance)
+        if not record:
+            print(f"ローカルDBに '{substance}' が見つかりません")
+            return
+        _print_substance_record(record)
+
+    elif action == "delete":
+        substance = args.substance
+        db = get_property_db()
+        if db.delete(substance):
+            print(f"'{substance}' を削除しました")
+        else:
+            print(f"'{substance}' が見つかりません")
+
+
+def _print_search_results(results: dict[str, list]) -> None:
+    """検索結果を表示"""
+    total = sum(len(v) for v in results.values())
+    if total == 0:
+        print("  該当なし")
+        return
+
+    print(f"\n=== 検索結果 ({total} hits) ===")
+    for source, items in results.items():
+        if not items:
+            continue
+        print(f"\n[{source}] ({len(items)} results):")
+        for i, r in enumerate(items, 1):
+            mw = f"{r.molecular_weight:.2f}" if r.molecular_weight else "N/A"
+            print(f"  {i}. {r.name}")
+            line = f"     CAS: {r.cas or 'N/A'} | Formula: {r.formula or 'N/A'} | MW: {mw}"
+            if r.source_id:
+                line += f" | ID: {r.source_id}"
+            print(line)
+
+
+def _print_substance_record(record) -> None:
+    """物質レコード詳細を表示"""
+    print(f"\n=== {record.name} ===")
+    if record.name_ja:
+        print(f"  日本語名: {record.name_ja}")
+    print(f"  CAS: {record.cas or 'N/A'}")
+    print(f"  Formula: {record.formula or 'N/A'}")
+    if record.molecular_weight:
+        print(f"  MW: {record.molecular_weight:.2f} g/mol")
+    if record.smiles:
+        print(f"  SMILES: {record.smiles}")
+    if record.pubchem_cid:
+        print(f"  PubChem CID: {record.pubchem_cid}")
+    if record.sources_used:
+        print(f"  ソース: {', '.join(record.sources_used)}")
+
+    if record.properties:
+        print(f"\n  物性値 ({len(record.properties)} types):")
+        for prop_name, values in sorted(record.properties.items()):
+            for v in values:
+                cond = ""
+                if v.temperature:
+                    cond += f" @ {v.temperature:.1f} K"
+                if v.pressure and v.pressure != 101325.0:
+                    cond += f", {v.pressure:.0f} Pa"
+                conf = f"[{v.source}, {v.confidence}]" if v.source else ""
+                print(f"    {prop_name}: {v.value:.4g} {v.unit}{cond}  {conf}")
+
+
 def cmd_info(args):
     """物質情報コマンド"""
     try:
@@ -315,6 +468,7 @@ def interactive_mode():
     print("\nコマンド:")
     print("  property <物質> <物性> [--T <温度>] [--P <圧力>]")
     print("  calculate <スキル> [--param key=value ...]")
+    print("  data search|fetch|list|show|sources|delete")
     print("  skill list")
     print("  engine list")
     print("  info <物質>")
@@ -345,6 +499,12 @@ def interactive_mode():
             print("    例: property ethanol vapor_pressure --T 350")
             print("  calculate <スキル> --param key=value")
             print("    例: calculate property_estimation --param substance=water --param property=density --param temperature=300")
+            print("  data sources                          - データソース一覧")
+            print("  data search <物質名> [--source <src>] - 外部ソース検索")
+            print("  data fetch <物質名> [--source <src>]  - データ取得＆保存")
+            print("  data list                             - ローカルDB一覧")
+            print("  data show <物質名>                    - 物質詳細表示")
+            print("  data delete <物質名>                  - データ削除")
             print("  skill list / skill show <id>")
             print("  engine list / engine show <name>")
             print("  info <物質>")
@@ -383,6 +543,58 @@ def interactive_mode():
             if len(parts) > 1 and parts[1] == "list":
                 args = argparse.Namespace(action="list", engine_name=None)
                 cmd_engine(args)
+
+        elif cmd == "data":
+            if len(parts) < 2:
+                print("Usage: data <search|fetch|list|show|sources|delete> [args]")
+                continue
+            sub = parts[1].lower()
+            if sub == "sources":
+                data_args = argparse.Namespace(data_action="sources")
+            elif sub == "search" and len(parts) >= 3:
+                source = None
+                max_results = 5
+                for i, p in enumerate(parts):
+                    if p == "--source" and i + 1 < len(parts):
+                        source = parts[i + 1]
+                    if p == "--max" and i + 1 < len(parts):
+                        max_results = int(parts[i + 1])
+                data_args = argparse.Namespace(
+                    data_action="search", query=parts[2],
+                    source=source, max=max_results,
+                )
+            elif sub == "fetch" and len(parts) >= 3:
+                source = "pubchem"
+                for i, p in enumerate(parts):
+                    if p == "--source" and i + 1 < len(parts):
+                        source = parts[i + 1]
+                data_args = argparse.Namespace(
+                    data_action="fetch", substance=parts[2],
+                    source=source, no_save=False,
+                )
+            elif sub == "list":
+                category = None
+                for i, p in enumerate(parts):
+                    if p == "--category" and i + 1 < len(parts):
+                        category = parts[i + 1]
+                data_args = argparse.Namespace(
+                    data_action="list", category=category,
+                )
+            elif sub == "show" and len(parts) >= 3:
+                data_args = argparse.Namespace(
+                    data_action="show", substance=parts[2],
+                )
+            elif sub == "delete" and len(parts) >= 3:
+                data_args = argparse.Namespace(
+                    data_action="delete", substance=parts[2],
+                )
+            else:
+                print("Usage: data <search|fetch|list|show|sources|delete> [args]")
+                continue
+            try:
+                cmd_data(data_args)
+            except SystemExit:
+                pass
 
         elif cmd == "info" and len(parts) >= 2:
             args = argparse.Namespace(substance=parts[1])
@@ -442,6 +654,29 @@ def main():
     info_parser = subparsers.add_parser("info", help="物質情報を取得")
     info_parser.add_argument("substance", help="物質名")
 
+    # data コマンド
+    data_parser = subparsers.add_parser("data", help="物性データ管理")
+    data_sub = data_parser.add_subparsers(dest="data_action")
+
+    data_search = data_sub.add_parser("search", help="物質を検索")
+    data_search.add_argument("query", help="物質名、CAS番号、または分子式")
+    data_search.add_argument("--source", help="検索ソース (pubchem, thermo, all)")
+    data_search.add_argument("--max", type=int, default=5, help="最大結果数")
+
+    data_fetch = data_sub.add_parser("fetch", help="外部ソースからデータ取得")
+    data_fetch.add_argument("substance", help="物質名またはCAS番号")
+    data_fetch.add_argument("--source", default="pubchem", help="データソース")
+    data_fetch.add_argument("--no-save", action="store_true", help="ローカルに保存しない")
+
+    data_sub.add_parser("list", help="ローカルDB内の物質一覧")
+    data_sub.add_parser("sources", help="利用可能なデータソース一覧")
+
+    data_show = data_sub.add_parser("show", help="物質の詳細データ表示")
+    data_show.add_argument("substance", help="物質名")
+
+    data_del = data_sub.add_parser("delete", help="ローカルDBから物質を削除")
+    data_del.add_argument("substance", help="物質名")
+
     args = parser.parse_args()
 
     if args.command == "property":
@@ -454,6 +689,8 @@ def main():
         cmd_engine(args)
     elif args.command == "info":
         cmd_info(args)
+    elif args.command == "data":
+        cmd_data(args)
     else:
         interactive_mode()
 

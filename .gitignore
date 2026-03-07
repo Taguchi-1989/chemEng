@@ -97,3 +97,7 @@ screenshot-*.png
 # Temp files
 *.tmp
 *.bak
+
+# Property database (user-specific local data)
+data/custom_substances.yaml
+data/cache/
