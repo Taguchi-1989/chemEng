@@ -442,6 +442,49 @@
                     <div class="feature-title">熱収支</div>
                     <div class="feature-desc">加熱/冷却に必要な熱量計算</div>
                 </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M8 2l4 4-4 4"/>
+                            <path d="M16 14l-4 4 4 4"/>
+                            <line x1="4" y1="6" x2="12" y2="6"/>
+                            <line x1="12" y1="18" x2="20" y2="18"/>
+                        </svg>
+                    </div>
+                    <div class="feature-title">液液抽出</div>
+                    <div class="feature-desc">Kremser式による向流多段抽出設計</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2v6l3 3"/>
+                            <circle cx="12" cy="14" r="8"/>
+                        </svg>
+                    </div>
+                    <div class="feature-title">ガス吸収</div>
+                    <div class="feature-desc">Kremser式による多段向流ガス吸収塔設計</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M8 12h8"/>
+                            <path d="M12 8v8"/>
+                            <path d="M7 7l10 10"/>
+                        </svg>
+                    </div>
+                    <div class="feature-title">水素製造原価 (LCOH)</div>
+                    <div class="feature-desc">6種の製造方法に対応したLCOH計算</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                        </svg>
+                    </div>
+                    <div class="feature-title">T-x-y相図</div>
+                    <div class="feature-desc">2成分系の気液平衡相図を生成</div>
+                </div>
             </div>
         </div>
 
@@ -473,10 +516,13 @@
                 <div>
                     <ul>
                         <li><strong>ダーク/ライトモード</strong> - 好みに合わせて切り替え</li>
-                        <li><strong>計算履歴</strong> - 過去の計算結果を保存</li>
+                        <li><strong>計算履歴</strong> - 過去の計算結果を保存・復元</li>
                         <li><strong>単位変換</strong> - K/°C/°F、Pa/kPa/atm/bar</li>
-                        <li><strong>エクスポート</strong> - JSON/CSV形式で出力</li>
-                        <li><strong>チャート生成</strong> - 温度依存性グラフを描画</li>
+                        <li><strong>エクスポート</strong> - JSON/CSV/HTMLレポート形式で出力</li>
+                        <li><strong>インポート</strong> - JSONファイルからパラメータを読み込み</li>
+                        <li><strong>チャート生成</strong> - 温度依存性・相図・感度分析グラフ</li>
+                        <li><strong>物質オートコンプリート</strong> - 700+物質を候補表示</li>
+                        <li><strong>ダッシュボード</strong> - ケース保存・比較機能</li>
                         <li><strong>キーボードショートカット</strong> - Ctrl+Enterで計算実行</li>
                     </ul>
                 </div>
@@ -510,6 +556,8 @@
                     <span class="tech-item">Python</span>
                     <span class="tech-item">FastAPI</span>
                     <span class="tech-item">thermo/chemicals</span>
+                    <span class="tech-item">Cantera</span>
+                    <span class="tech-item">CoolProp</span>
                     <span class="tech-item">Pydantic</span>
                 </div>
                 <h3 style="margin-top: 2rem;">フロントエンド</h3>
@@ -521,6 +569,7 @@
                 <h3 style="margin-top: 2rem;">デプロイ</h3>
                 <div class="tech-stack">
                     <span class="tech-item">Vercel (Serverless)</span>
+                    <span class="tech-item">Render</span>
                     <span class="tech-item">Local Server + ngrok</span>
                 </div>
             </div>
@@ -533,9 +582,8 @@
                 <ul>
                     <li><strong>AI統合</strong> - ヘルプボットにAIを組み込み、自然言語で質問・操作</li>
                     <li><strong>パラメータ提案</strong> - AIが最適なパラメータを提案</li>
-                    <li><strong>反応工学</strong> - Canteraを使った化学反応計算</li>
-                    <li><strong>冷媒物性</strong> - CoolPropを使った冷媒計算</li>
                     <li><strong>プロセスシミュレーション</strong> - 複数ユニットの連結計算</li>
+                    <li><strong>データベース永続化</strong> - 計算結果のサーバー側保存</li>
                 </ul>
             </div>
         </div>

@@ -238,7 +238,8 @@ def create_app() -> FastAPI:
             self._requests: dict[str, list[float]] = defaultdict(list)
 
         async def dispatch(self, request: Request, call_next):
-            if not request.url.path.startswith("/api/v1/calculate"):
+            rate_limited_prefixes = ("/api/v1/calculate", "/api/v1/chat", "/api/v1/suggest")
+            if not any(request.url.path.startswith(p) for p in rate_limited_prefixes):
                 return await call_next(request)
             client_ip = request.client.host if request.client else "unknown"
             now = _time.time()
@@ -640,6 +641,77 @@ def create_app() -> FastAPI:
 
     # 物質データのキャッシュ（起動時に1回だけ読み込み）
     _substances_cache: dict | None = None
+
+    # ==================== AI Endpoints ====================
+
+    class ChatRequest(BaseModel):
+        """AI chat request."""
+        message: str = Field(..., description="User message", max_length=2000)
+        history: list[dict[str, str]] = Field(default_factory=list, max_length=20)
+        context: dict[str, Any] | None = Field(None, description="Current UI context")
+
+    class SuggestRequest(BaseModel):
+        """Parameter suggestion request."""
+        skill_id: str = Field(..., description="Skill identifier", max_length=100)
+        current_params: dict[str, Any] = Field(default_factory=dict)
+        goal: str | None = Field(None, description="User's goal description", max_length=500)
+
+    _assistant = None
+
+    @app.post("/api/v1/chat")
+    async def ai_chat(request: ChatRequest):
+        """AI chat endpoint for the help panel."""
+        nonlocal _assistant
+        try:
+            from ai.chat import ChemEngAssistant
+
+            if _assistant is None:
+                _assistant = ChemEngAssistant()
+            reply = _assistant.chat(
+                message=request.message,
+                history=request.history,
+                context=request.context,
+            )
+            return {"success": True, "reply": reply}
+        except RuntimeError as e:
+            error_msg = str(e)
+            if "API_KEY" in error_msg or "not installed" in error_msg:
+                return {
+                    "success": False,
+                    "reply": "AI機能は現在利用できません。ANTHROPIC_API_KEY環境変数を設定してください。\n\nAI feature is not available. Please set the ANTHROPIC_API_KEY environment variable.",
+                    "error": error_msg,
+                }
+            raise HTTPException(status_code=500, detail=safe_error_message(e))
+        except Exception as e:
+            logger.error("AI chat error: %s", e, exc_info=True)
+            return {
+                "success": False,
+                "reply": "エラーが発生しました。もう一度お試しください。\n\nAn error occurred. Please try again.",
+                "error": safe_error_message(e),
+            }
+
+    @app.post("/api/v1/suggest")
+    async def ai_suggest(request: SuggestRequest):
+        """AI parameter suggestion endpoint."""
+        try:
+            from ai.suggest import suggest_parameters
+
+            suggestions = suggest_parameters(
+                skill_id=request.skill_id,
+                current_params=request.current_params,
+                goal=request.goal,
+            )
+            return {"success": True, "suggestions": suggestions}
+        except RuntimeError as e:
+            error_msg = str(e)
+            if "API_KEY" in error_msg or "not installed" in error_msg:
+                return {"success": False, "suggestions": [], "error": error_msg}
+            raise HTTPException(status_code=500, detail=safe_error_message(e))
+        except Exception as e:
+            logger.error("AI suggest error: %s", e, exc_info=True)
+            return {"success": False, "suggestions": [], "error": safe_error_message(e)}
+
+    # ==================== Substance Endpoints ====================
 
     @app.get("/api/v1/substances")
     async def list_substances(query: str | None = None, category: str | None = None):

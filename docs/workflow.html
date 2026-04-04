@@ -132,6 +132,7 @@
   <a href="#absorption">Absorption</a>
   <a href="#txy">T-x-y Diagram</a>
   <a href="#extraction">Extraction</a>
+  <a href="#lcoh">LCOH</a>
   <a href="#data-flow">Data Flow</a>
 </nav>
 
@@ -179,6 +180,7 @@ flowchart TB
         ABS["absorption.py\nexecute(params, engine)"]
         TXY["txy_diagram.py\nexecute(params, engine)"]
         EXT["extraction.py\nexecute(params, engine)"]
+        LCOHSK["lcoh.py\nexecute(params, engine)"]
     end
 
     subgraph Data["Data Layer"]
@@ -248,6 +250,7 @@ flowchart TB
         ABS["absorption.py\nexecute()\nガス吸収塔設計"]
         TXY["txy_diagram.py\nexecute()\nT-x-y線図"]
         EXT["extraction.py\nexecute()\n抽出設計"]
+        LCOHSK["lcoh.py\nexecute()\n水素製造原価"]
     end
 
     subgraph Data["データ層"]
@@ -1082,6 +1085,134 @@ flowchart TD
     style DILWARN fill:#ef4444,color:#fff
     style IMMCHK fill:#fbbf24,color:#000
     style DILCHK fill:#fbbf24,color:#000
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- LCOH -->
+<!-- ============================================================ -->
+<section id="lcoh">
+  <h2 class="lang-en">LCOH (Levelized Cost of Hydrogen)</h2>
+  <h2 class="lang-ja hidden">水素製造原価 (LCOH) ワークフロー</h2>
+  <p class="desc lang-en">lcoh.py: Calculates the levelized cost of hydrogen for 6 production methods.</p>
+  <p class="desc lang-ja hidden">lcoh.py: 6種の製造方法に対応した水素製造原価を算出。</p>
+
+  <div class="mermaid lang-en">
+flowchart TD
+    IN["Input:\nproduction_method, capacity_mw,\noperating_hours, discount_rate,\nproject_lifetime, electricity/gas price,\ncarbon_price, opex_percent"]
+    METHOD{"Production\nmethod?"}
+    ELEC["Electrolysis path:\nPEM / Alkaline / SOEC"]
+    SMR["SMR/ATR path:\nSMR / SMR+CCS / ATR+CCS"]
+    CAPEX["Step 1: Total CAPEX\nnet_capex = capacity_kw × capex_per_kw\n- subsidies"]
+    H2ELEC["Step 2a: H2 production (electrolysis)\nannual_h2 = (capacity_kw × hours)\n/ electricity_consumption"]
+    H2SMR["Step 2b: H2 production (SMR/ATR)\nannual_h2 = (capacity_mw × hours)\n/ gas_consumption"]
+    CRF["Step 3: Capital Recovery Factor\nCRF = r(1+r)^n / ((1+r)^n - 1)"]
+    ANCAPEX["Step 4: Annualized CAPEX\nannual_capex = net_capex × CRF"]
+    ENERGY["Step 5: Energy cost\nelectricity or natural gas\nannual cost (EUR/year)"]
+    OPEX["Step 6: Fixed OPEX\nbase_opex + labor + maintenance"]
+    STACK["Step 7: Stack replacement\nNPV of future replacements × CRF"]
+    WATER["Step 8: Water cost\nwater_consumption × water_price"]
+    CARBON{"Has CO2\nemissions?"}
+    CARBCALC["Step 9: Carbon cost\nannual_co2 × carbon_price\n+ CCS cost (if applicable)"]
+    CARBZERO["Step 9: Carbon cost = 0"]
+    REVENUE["Step 10: Revenue offsets\nO2 byproduct + subsidies"]
+    TOTAL["Step 11: Total annual cost\n= CAPEX + energy + OPEX + stack\n+ water + carbon - revenue"]
+    LCOH["Step 12: LCOH\n= total_annual_cost / annual_h2"]
+    OUT["Output:\nlcoh (EUR/kg H2),\ncost_breakdown, annual_costs,\nsensitivity_data,\ncalculation_steps"]
+
+    IN --> METHOD
+    METHOD -->|"PEM/Alkaline/SOEC"| ELEC --> H2ELEC
+    METHOD -->|"SMR/SMR+CCS/ATR+CCS"| SMR --> H2SMR
+    IN --> CAPEX
+    CAPEX --> CRF --> ANCAPEX
+    H2ELEC --> ENERGY
+    H2SMR --> ENERGY
+    ENERGY --> OPEX --> STACK --> WATER --> CARBON
+    CARBON -->|"Yes"| CARBCALC --> REVENUE
+    CARBON -->|"No (electrolysis)"| CARBZERO --> REVENUE
+    ANCAPEX --> TOTAL
+    REVENUE --> TOTAL
+    TOTAL --> LCOH --> OUT
+
+    style IN fill:#38bdf8,color:#000
+    style OUT fill:#4ade80,color:#000
+    style METHOD fill:#fbbf24,color:#000
+    style ELEC fill:#a78bfa,color:#000
+    style SMR fill:#fb923c,color:#000
+    style CAPEX fill:#fb923c,color:#000
+    style H2ELEC fill:#a78bfa,color:#000
+    style H2SMR fill:#fb923c,color:#000
+    style CRF fill:#fb923c,color:#000
+    style ANCAPEX fill:#fb923c,color:#000
+    style ENERGY fill:#fb923c,color:#000
+    style OPEX fill:#fb923c,color:#000
+    style STACK fill:#fb923c,color:#000
+    style WATER fill:#fb923c,color:#000
+    style CARBON fill:#fbbf24,color:#000
+    style CARBCALC fill:#fb923c,color:#000
+    style CARBZERO fill:#4ade80,color:#000
+    style REVENUE fill:#a78bfa,color:#000
+    style TOTAL fill:#fb923c,color:#000
+    style LCOH fill:#4ade80,color:#000
+  </div>
+
+  <div class="mermaid lang-ja hidden">
+flowchart TD
+    IN["入力:\nproduction_method, capacity_mw,\noperating_hours, discount_rate,\nproject_lifetime, 電力/ガス価格,\ncarbon_price, opex_percent"]
+    METHOD{"製造方法?"}
+    ELEC["電解経路:\nPEM / アルカリ / SOEC"]
+    SMR["SMR/ATR経路:\nSMR / SMR+CCS / ATR+CCS"]
+    CAPEX["ステップ1: 総CAPEX\nnet_capex = 容量kW × 単価\n- 補助金"]
+    H2ELEC["ステップ2a: H2生産量（電解）\nannual_h2 = (容量kW × 時間)\n/ 電力消費量"]
+    H2SMR["ステップ2b: H2生産量（SMR/ATR）\nannual_h2 = (容量MW × 時間)\n/ ガス消費量"]
+    CRF["ステップ3: 資本回収係数\nCRF = r(1+r)^n / ((1+r)^n - 1)"]
+    ANCAPEX["ステップ4: 年間CAPEX\nannual_capex = net_capex × CRF"]
+    ENERGY["ステップ5: エネルギーコスト\n電力またはガス\n年間コスト (EUR/year)"]
+    OPEX["ステップ6: 固定OPEX\n基本OPEX + 人件費 + 保守費"]
+    STACK["ステップ7: スタック交換\n将来交換費用のNPV × CRF"]
+    WATER["ステップ8: 水コスト\n水使用量 × 水単価"]
+    CARBON{"CO2排出\nあり？"}
+    CARBCALC["ステップ9: 炭素コスト\n年間CO2 × 炭素価格\n+ CCSコスト（該当時）"]
+    CARBZERO["ステップ9: 炭素コスト = 0"]
+    REVENUE["ステップ10: 収入控除\nO2副産物 + 補助金"]
+    TOTAL["ステップ11: 年間総コスト\n= CAPEX + エネルギー + OPEX + スタック\n+ 水 + 炭素 - 収入"]
+    LCOH["ステップ12: LCOH\n= 年間総コスト / 年間H2生産量"]
+    OUT["出力:\nlcoh (EUR/kg H2),\nコスト内訳, 年間コスト,\n感度分析データ,\n計算ステップ"]
+
+    IN --> METHOD
+    METHOD -->|"PEM/アルカリ/SOEC"| ELEC --> H2ELEC
+    METHOD -->|"SMR/SMR+CCS/ATR+CCS"| SMR --> H2SMR
+    IN --> CAPEX
+    CAPEX --> CRF --> ANCAPEX
+    H2ELEC --> ENERGY
+    H2SMR --> ENERGY
+    ENERGY --> OPEX --> STACK --> WATER --> CARBON
+    CARBON -->|"はい"| CARBCALC --> REVENUE
+    CARBON -->|"いいえ（電解）"| CARBZERO --> REVENUE
+    ANCAPEX --> TOTAL
+    REVENUE --> TOTAL
+    TOTAL --> LCOH --> OUT
+
+    style IN fill:#38bdf8,color:#000
+    style OUT fill:#4ade80,color:#000
+    style METHOD fill:#fbbf24,color:#000
+    style ELEC fill:#a78bfa,color:#000
+    style SMR fill:#fb923c,color:#000
+    style CAPEX fill:#fb923c,color:#000
+    style H2ELEC fill:#a78bfa,color:#000
+    style H2SMR fill:#fb923c,color:#000
+    style CRF fill:#fb923c,color:#000
+    style ANCAPEX fill:#fb923c,color:#000
+    style ENERGY fill:#fb923c,color:#000
+    style OPEX fill:#fb923c,color:#000
+    style STACK fill:#fb923c,color:#000
+    style WATER fill:#fb923c,color:#000
+    style CARBON fill:#fbbf24,color:#000
+    style CARBCALC fill:#fb923c,color:#000
+    style CARBZERO fill:#4ade80,color:#000
+    style REVENUE fill:#a78bfa,color:#000
+    style TOTAL fill:#fb923c,color:#000
+    style LCOH fill:#4ade80,color:#000
   </div>
 </section>
 

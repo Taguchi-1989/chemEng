@@ -68,6 +68,25 @@ async function calculateBatch(cases) {
     return res.json();
 }
 
+// ==================== AI Chat & Suggest ====================
+async function sendChatMessage(message, history = [], context = null) {
+    const res = await apiFetch(`${API_BASE}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, history, context }),
+    }, 60000);
+    return res.json();
+}
+
+async function requestSuggestions(skillId, currentParams = {}, goal = null) {
+    const res = await apiFetch(`${API_BASE}/suggest`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ skill_id: skillId, current_params: currentParams, goal }),
+    }, 60000);
+    return res.json();
+}
+
 // ==================== API Status ====================
 async function checkStatus() {
     const dot = document.getElementById('status-dot');

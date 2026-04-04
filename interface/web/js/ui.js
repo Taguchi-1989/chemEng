@@ -922,25 +922,54 @@ function initHelpSystem() {
         }
     });
 
-    // Future: Enable input when AI is integrated
+    // Enable send button when input is non-empty
     input.oninput = () => {
-        // sendBtn.disabled = !input.value.trim();
+        sendBtn.disabled = !input.value.trim();
     };
 
-    // Future: Send message
-    sendBtn.onclick = () => {
-        if (sendBtn.disabled) return;
+    // Chat history for the current session
+    const chatHistory = [];
+
+    // Send message to AI
+    sendBtn.onclick = async () => {
         const text = input.value.trim();
         if (!text) return;
         addUserMessage(text);
         input.value = '';
         sendBtn.disabled = true;
-        setTimeout(() => {
-            addSystemMessage('AI機能は現在開発中です。上のトピックボタンをご利用ください。');
-        }, 500);
+
+        // Add typing indicator
+        const typingId = addTypingIndicator();
+
+        // Build context
+        const context = {};
+        const activeTab = document.querySelector('.tab-btn.active');
+        if (activeTab) {
+            context.current_skill = activeTab.dataset.tab || '';
+        }
+
+        try {
+            const data = await sendChatMessage(text, chatHistory, context);
+            removeTypingIndicator(typingId);
+
+            const reply = data.reply || 'No response.';
+            addSystemMessage(reply);
+
+            // Update history
+            chatHistory.push({ role: 'user', content: text });
+            chatHistory.push({ role: 'assistant', content: reply });
+
+            // Keep history bounded
+            while (chatHistory.length > 20) {
+                chatHistory.shift();
+            }
+        } catch (err) {
+            removeTypingIndicator(typingId);
+            addSystemMessage('エラーが発生しました: ' + (err.message || 'Unknown error'));
+        }
     };
 
-    // Enter to send (future)
+    // Enter to send
     input.onkeydown = e => {
         if (e.key === 'Enter' && !e.shiftKey && !sendBtn.disabled) {
             e.preventDefault();
@@ -1021,6 +1050,32 @@ function addSystemMessage(text) {
     `;
     messagesContainer.appendChild(msgEl);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+let _typingCounter = 0;
+function addTypingIndicator() {
+    const id = 'typing-' + (++_typingCounter);
+    const messagesContainer = document.getElementById('help-messages');
+    const el = document.createElement('div');
+    el.className = 'help-message system';
+    el.id = id;
+    el.innerHTML = `
+        <div class="help-message-avatar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+            </svg>
+        </div>
+        <div class="help-message-content"><span class="typing-dots">...</span></div>
+    `;
+    messagesContainer.appendChild(el);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    return id;
+}
+
+function removeTypingIndicator(id) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
 }
 
 function resetHelpPanel() {

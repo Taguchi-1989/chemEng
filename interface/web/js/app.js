@@ -293,5 +293,133 @@ document.addEventListener('keydown', e => {
 document.getElementById('dashboard-type-filter')?.addEventListener('change', renderDashboardCaseList);
 renderDashboardCaseList();
 
+// ==================== AI Suggest Buttons ====================
+const skillTabMap = {
+    'property': 'property_estimation',
+    'distillation': 'distillation',
+    'mass_balance': 'mass_balance',
+    'heat_balance': 'heat_balance',
+    'extraction': 'extraction',
+    'absorption': 'absorption',
+    'lcoh': 'lcoh',
+};
+
+document.querySelectorAll('.submit-btn[type="submit"]').forEach(btn => {
+    const form = btn.closest('form');
+    if (!form) return;
+
+    const tabName = form.id?.replace('-form', '');
+    const skillId = skillTabMap[tabName];
+    if (!skillId) return;
+
+    const suggestBtn = document.createElement('button');
+    suggestBtn.type = 'button';
+    suggestBtn.className = 'submit-btn secondary ai-suggest-btn';
+    suggestBtn.style.cssText = 'background: var(--accent-violet); margin-left: 0.5rem;';
+    suggestBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z"/></svg> AI提案`;
+    suggestBtn.onclick = async () => {
+        suggestBtn.disabled = true;
+        suggestBtn.textContent = '提案中...';
+
+        const formData = new FormData(form);
+        const params = {};
+        for (const [k, v] of formData.entries()) {
+            if (v) params[k] = isNaN(Number(v)) ? v : Number(v);
+        }
+
+        try {
+            const data = await requestSuggestions(skillId, params);
+            if (data.success && data.suggestions && data.suggestions.length > 0) {
+                showSuggestionPopover(data.suggestions, form, suggestBtn);
+            } else {
+                toast(data.error || 'No suggestions available / 提案はありません', 'info');
+            }
+        } catch (err) {
+            toast('AI提案エラー: ' + (err.message || 'Unknown error'), 'error');
+        } finally {
+            suggestBtn.disabled = false;
+            suggestBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z"/></svg> AI提案`;
+        }
+    };
+
+    btn.parentNode.insertBefore(suggestBtn, btn.nextSibling);
+});
+
+function showSuggestionPopover(suggestions, form, anchor) {
+    // Remove existing popover
+    document.querySelectorAll('.suggestion-popover').forEach(el => el.remove());
+
+    const popover = document.createElement('div');
+    popover.className = 'suggestion-popover';
+    popover.style.cssText = `
+        position: absolute; z-index: 1000; background: var(--bg-panel);
+        border: 1px solid var(--accent-violet); border-radius: 12px;
+        padding: 1rem; max-width: 360px; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        backdrop-filter: blur(20px);
+    `;
+
+    let html = '<div style="font-weight:600;color:var(--accent-violet);margin-bottom:0.75rem;">AI Parameter Suggestions</div>';
+    suggestions.forEach((s, i) => {
+        html += `<div style="padding:0.5rem 0;border-bottom:1px solid var(--glass-border);">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span><strong>${escapeHtml(s.param)}</strong>: ${escapeHtml(String(s.value))}</span>
+                <button class="suggest-apply-btn" data-idx="${i}" style="
+                    background:var(--accent-violet);color:#fff;border:none;
+                    border-radius:6px;padding:0.2rem 0.6rem;cursor:pointer;font-size:0.8rem;
+                ">Apply</button>
+            </div>
+            <div style="font-size:0.8rem;color:var(--text-muted);margin-top:0.25rem;">${escapeHtml(s.reason || '')}</div>
+        </div>`;
+    });
+    html += `<button class="suggest-apply-all" style="
+        margin-top:0.75rem;width:100%;background:var(--accent-violet);color:#fff;
+        border:none;border-radius:8px;padding:0.5rem;cursor:pointer;
+    ">Apply All / すべて適用</button>`;
+
+    popover.innerHTML = html;
+
+    // Position near the anchor button
+    anchor.style.position = 'relative';
+    anchor.parentNode.style.position = 'relative';
+    anchor.parentNode.appendChild(popover);
+
+    // Apply individual suggestions
+    popover.querySelectorAll('.suggest-apply-btn').forEach(btn => {
+        btn.onclick = () => {
+            const s = suggestions[Number(btn.dataset.idx)];
+            const input = form.querySelector(`[name="${s.param}"]`);
+            if (input) {
+                input.value = s.value;
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            btn.textContent = 'Applied';
+            btn.disabled = true;
+        };
+    });
+
+    // Apply all
+    popover.querySelector('.suggest-apply-all').onclick = () => {
+        suggestions.forEach(s => {
+            const input = form.querySelector(`[name="${s.param}"]`);
+            if (input) {
+                input.value = s.value;
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+        popover.remove();
+        toast('All suggestions applied / すべて適用しました', 'success');
+    };
+
+    // Close on outside click
+    setTimeout(() => {
+        document.addEventListener('click', function closePopover(e) {
+            if (!popover.contains(e.target) && e.target !== anchor) {
+                popover.remove();
+                document.removeEventListener('click', closePopover);
+            }
+        });
+    }, 100);
+}
+
 // ==================== Help System ====================
 initHelpSystem();

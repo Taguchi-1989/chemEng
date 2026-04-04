@@ -19,6 +19,26 @@ _PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 if _PROJECT_ROOT not in sys.path:
     sys.path.insert(0, _PROJECT_ROOT)
 
+# .env ファイルから環境変数を読み込み（ローカル開発用）
+_env_file = os.path.join(_PROJECT_ROOT, ".env")
+if os.path.exists(_env_file):
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(_env_file)
+    except ImportError:
+        # python-dotenv がなくても .env を手動パース
+        with open(_env_file, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if "=" in line:
+                    key, _, value = line.partition("=")
+                    key = key.strip()
+                    value = value.strip().strip('"').strip("'")
+                    if key and not os.environ.get(key):
+                        os.environ[key] = value
+
 
 def _default_port() -> int:
     raw_port = os.environ.get("PORT", "8000")
@@ -61,11 +81,16 @@ def main():
         print("Run: pip install -r requirements_full.txt")
         sys.exit(1)
 
+    # AI機能の状態チェック
+    ai_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    ai_status = "Enabled" if ai_key and not ai_key.startswith("sk-ant-api03-xxxxx") else "Disabled (set ANTHROPIC_API_KEY in .env)"
+
     print("=" * 50)
     print("ChemEng Local Server")
     print("=" * 50)
-    print(f"Starting server at http://{args.host}:{args.port}")
-    print(f"API docs available at http://localhost:{args.port}/docs")
+    print(f"  Server:  http://{args.host}:{args.port}")
+    print(f"  API docs: http://localhost:{args.port}/docs")
+    print(f"  AI chat:  {ai_status}")
     print()
     print("To expose to internet, run in another terminal:")
     print(f"  ngrok http {args.port}")

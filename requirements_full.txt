@@ -17,3 +17,7 @@ chemicals>=1.1.5
 fluids>=1.0.25
 scipy>=1.10.0
 numpy>=1.24.0
+
+# AI integration
+anthropic>=0.40.0
+python-dotenv>=1.0.0

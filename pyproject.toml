@@ -34,6 +34,8 @@ dependencies = [
 thermo = ["thermo>=0.2.0", "chemicals>=1.1.0"]
 cantera = ["cantera>=3.0"]
 coolprop = ["CoolProp>=6.4"]
+# AI integration
+ai = ["anthropic>=0.40.0"]
 # Full calculation support
 calc = ["chemeng[thermo,cantera,coolprop]"]
 # API server
@@ -45,7 +47,7 @@ dev = [
 ]
 # All features for local development
 all = [
-    "chemeng[calc,api,dev]"
+    "chemeng[calc,api,ai,dev]"
 ]
 
 [project.scripts]
@@ -62,6 +64,8 @@ chemeng = "."
 [tool.setuptools]
 packages = [
     "chemeng",
+    "chemeng.ai",
+    "chemeng.ai.prompts",
     "chemeng.core",
     "chemeng.data",
     "chemeng.engines",
