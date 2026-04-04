@@ -6,8 +6,8 @@ code that still imports `core`, `data`, `engines`, and similar packages
 directly from the repository root.
 """
 
-from importlib import import_module
 import sys
+from importlib import import_module
 
 __version__ = "0.1.0"
 __author__ = "WalkTalk Hub Team"

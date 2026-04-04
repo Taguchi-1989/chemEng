@@ -1,7 +1,6 @@
 import pytest
-from pydantic import ValidationError
-
 from chemeng.__main__ import _default_port, _parse_port
+from pydantic import ValidationError
 
 
 class TestMainPortParsing:
