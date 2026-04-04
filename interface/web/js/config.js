@@ -65,12 +65,17 @@ const I18N = {
     'tab.extraction': { ja: '液液抽出', en: 'Extraction' },
     'tab.absorption': { ja: 'ガス吸収', en: 'Absorption' },
     'tab.lcoh': { ja: '水素原価', en: 'LCOH' },
+    'tab.dashboard': { ja: 'ダッシュボード', en: 'Dashboard' },
     // Buttons
     'btn.calculate': { ja: '計算実行', en: 'Calculate' },
     'btn.export_csv': { ja: 'CSV出力', en: 'Export CSV' },
     'btn.export_json': { ja: 'JSON出力', en: 'Export JSON' },
     'btn.save_dashboard': { ja: 'ダッシュボード保存', en: 'Save to Dashboard' },
     'btn.generate_report': { ja: 'レポート生成', en: 'Generate Report' },
+    'btn.compare': { ja: 'ケース比較', en: 'Compare Cases' },
+    'btn.clear_all': { ja: '全削除', en: 'Clear All' },
+    'btn.select_more': { ja: 'あと{n}件選択してください', en: 'Select {n} more case(s)' },
+    'btn.compare_n': { ja: '{n}件を比較', en: 'Compare {n} Cases' },
     // Messages
     'msg.calculating': { ja: '計算中...', en: 'Calculating...' },
     'msg.complete': { ja: '計算完了', en: 'Calculation complete' },
@@ -79,10 +84,26 @@ const I18N = {
     'msg.loaded_history': { ja: '履歴から読込みました', en: 'Loaded from history' },
     'msg.saved_dashboard': { ja: 'ダッシュボードに保存しました', en: 'Saved to dashboard' },
     'msg.chart_generated': { ja: 'チャート生成完了', en: 'Chart generated' },
+    'msg.case_deleted': { ja: 'ケースを削除しました', en: 'Case deleted' },
+    'msg.all_cleared': { ja: '全ケースを削除しました', en: 'All cases cleared' },
+    'msg.select_2_cases': { ja: '比較するには2件以上選択してください', en: 'Select at least 2 cases to compare' },
+    'msg.no_suggestions': { ja: '提案はありません', en: 'No suggestions available' },
+    'msg.suggestions_applied': { ja: 'すべて適用しました', en: 'All suggestions applied' },
     // Labels
     'label.parameters': { ja: '計算パラメータ', en: 'Calculation Parameters' },
     'label.results': { ja: '計算結果', en: 'Results' },
     'label.history': { ja: '計算履歴', en: 'History' },
+    'label.no_saved_cases': { ja: '保存済みケースなし', en: 'No saved cases' },
+    'label.no_saved_cases_hint': { ja: '計算を実行し「ダッシュボード保存」で結果を保存してください', en: 'Run calculations and click "Save to Dashboard" to compare results' },
+    'label.comparing_n': { ja: '{n}件のケースを比較中', en: 'Comparing {n} cases' },
+    'label.best_case': { ja: 'ベストケース', en: 'Best Case' },
+    'label.average': { ja: '平均値', en: 'Average' },
+    'label.range': { ja: '範囲', en: 'Range' },
+    'label.case_count': { ja: 'ケース数', en: 'Cases' },
+    'label.mixed_type_note': { ja: '異なる計算タイプが混在しています。同一タイプのケースをフィルタすると正確な比較が可能です。', en: 'Mixed calculation types selected. Filter by type for meaningful comparison.' },
+    // Dashboard confirm
+    'confirm.delete_case': { ja: 'このケースを削除しますか？', en: 'Delete this case?' },
+    'confirm.clear_all': { ja: '全ケースを削除しますか？元に戻せません。', en: 'Delete all saved cases? This cannot be undone.' },
 };
 
 function t(key) {
@@ -102,6 +123,9 @@ function setLanguage(lang) {
     // Update language toggle button
     const btn = document.getElementById('lang-toggle');
     if (btn) btn.textContent = lang === 'ja' ? 'EN' : 'JA';
+    // Refresh dynamic components that use t()
+    if (typeof updateCompareButton === 'function') updateCompareButton();
+    if (typeof renderDashboardCaseList === 'function') renderDashboardCaseList();
 }
 
 // ==================== Prompt Template Constants ====================

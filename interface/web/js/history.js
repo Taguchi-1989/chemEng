@@ -50,7 +50,7 @@ function updateHistoryUI() {
                     if (inp) inp.value = Array.isArray(v) ? v.join(', ') : v;
                 });
             }
-            toast('Loaded from history');
+            toast(t('msg.loaded_history'));
         };
     });
 }
@@ -120,7 +120,7 @@ function getCaseName(type, params, result) {
 function getMainValue(type, result) {
     switch (type) {
         case 'lcoh':
-            return result.lcoh ? `${result.lcoh.toFixed(2)} EUR/kg H₂` : '-';
+            return result.lcoh ? `${result.lcoh.toFixed(2)} EUR/kg H\u2082` : '-';
         case 'property':
             return result.value ? `${result.value.toFixed(4)} ${result.unit || ''}` : '-';
         case 'distillation':
@@ -177,8 +177,8 @@ function renderDashboardCaseList() {
                     <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
                     <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
                 </svg>
-                <p>No saved cases</p>
-                <p class="dashboard-empty-hint">Run calculations and click "Save to Dashboard" to compare results</p>
+                <p>${escapeHtml(t('label.no_saved_cases'))}</p>
+                <p class="dashboard-empty-hint">${escapeHtml(t('label.no_saved_cases_hint'))}</p>
             </div>
         `;
         document.getElementById('compare-btn').disabled = true;
@@ -226,29 +226,29 @@ function updateCompareButton() {
     const btn = document.getElementById('compare-btn');
     btn.disabled = selectedCases.size < 2;
     btn.textContent = selectedCases.size < 2
-        ? `Select ${2 - selectedCases.size} more case(s)`
-        : `Compare ${selectedCases.size} Cases`;
+        ? t('btn.select_more').replace('{n}', 2 - selectedCases.size)
+        : t('btn.compare_n').replace('{n}', selectedCases.size);
 }
 
 // Delete a dashboard case
 function deleteDashboardCase(caseId) {
-    confirmAction('このケースを削除しますか？ / Delete this case?', () => {
+    confirmAction(t('confirm.delete_case'), () => {
         const cases = loadDashboardCases();
         const updated = cases.filter(c => c.id !== caseId);
         saveDashboardCases(updated);
         selectedCases.delete(caseId);
         renderDashboardCaseList();
-        toast('Case deleted / ケースを削除しました', 'success');
+        toast(t('msg.case_deleted'), 'success');
     });
 }
 
 // Clear all dashboard cases
 function clearAllDashboardCases() {
-    confirmAction('全ケースを削除しますか？元に戻せません。 / Delete all saved cases? This cannot be undone.', () => {
+    confirmAction(t('confirm.clear_all'), () => {
         saveDashboardCases([]);
         selectedCases.clear();
         renderDashboardCaseList();
-        toast('All cases cleared / 全ケースを削除しました', 'success');
+        toast(t('msg.all_cleared'), 'success');
     });
 }
 
@@ -258,7 +258,7 @@ function compareDashboardCases() {
     const selected = cases.filter(c => selectedCases.has(c.id));
 
     if (selected.length < 2) {
-        toast('Select at least 2 cases to compare', 'warning');
+        toast(t('msg.select_2_cases'), 'warning');
         return;
     }
 
@@ -279,25 +279,51 @@ function compareDashboardCases() {
 function updateDashboardSummary(cases) {
     document.getElementById('dash-case-count').textContent = cases.length;
 
-    // Find best case (lowest for LCOH, highest for efficiency, etc.)
-    const lcohCases = cases.filter(c => c.type === 'lcoh');
-    if (lcohCases.length > 0) {
-        const best = lcohCases.reduce((a, b) => (a.result?.lcoh || Infinity) < (b.result?.lcoh || Infinity) ? a : b);
-        document.getElementById('dash-best-case').textContent = best.result?.lcoh ? `${best.result.lcoh.toFixed(2)} EUR/kg` : '-';
+    // Check if mixed types
+    const types = new Set(cases.map(c => c.type));
+    const isMixed = types.size > 1;
+    const noteEl = document.getElementById('dash-mixed-note');
 
-        const avg = lcohCases.reduce((sum, c) => sum + (c.result?.lcoh || 0), 0) / lcohCases.length;
-        document.getElementById('dash-average').textContent = `${avg.toFixed(2)} EUR/kg`;
+    // Type-specific summary extraction
+    function extractNumericValues(cases) {
+        if (types.size === 1) {
+            const type = cases[0].type;
+            if (type === 'lcoh') return { values: cases.map(c => c.result?.lcoh).filter(v => v != null), unit: 'EUR/kg H\u2082', lower_is_better: true };
+            if (type === 'heat_balance') return { values: cases.map(c => c.result?.total_heat_duty).filter(v => v != null), unit: 'kW', lower_is_better: true };
+            if (type === 'mass_balance') return { values: cases.map(c => c.result?.closure).filter(v => v != null), unit: '%', lower_is_better: false };
+            if (type === 'extraction') return { values: cases.map(c => c.result?.recovery != null ? c.result.recovery * 100 : null).filter(v => v != null), unit: '%', lower_is_better: false };
+            if (type === 'distillation' || type === 'absorption') return { values: cases.map(c => c.result?.actual_stages).filter(v => v != null), unit: t('label.stages') || 'stages', lower_is_better: true };
+        }
+        // Fallback: parse mainValue
+        const vals = cases.map(c => { const m = String(c.mainValue || '').match(/([\d.]+)/); return m ? parseFloat(m[1]) : null; }).filter(v => v != null);
+        return { values: vals, unit: '', lower_is_better: true };
+    }
 
-        const values = lcohCases.map(c => c.result?.lcoh || 0);
+    const { values, unit, lower_is_better } = extractNumericValues(cases);
+
+    if (values.length > 0) {
+        const best = lower_is_better ? Math.min(...values) : Math.max(...values);
+        const avg = values.reduce((a, b) => a + b, 0) / values.length;
         const range = Math.max(...values) - Math.min(...values);
-        document.getElementById('dash-range').textContent = `±${(range/2).toFixed(2)} EUR/kg`;
+        document.getElementById('dash-best-case').textContent = `${best.toFixed(2)} ${unit}`;
+        document.getElementById('dash-average').textContent = `${avg.toFixed(2)} ${unit}`;
+        document.getElementById('dash-range').textContent = `\u00b1${(range / 2).toFixed(2)} ${unit}`;
     } else {
         document.getElementById('dash-best-case').textContent = '-';
         document.getElementById('dash-average').textContent = '-';
         document.getElementById('dash-range').textContent = '-';
     }
 
-    document.getElementById('dashboard-subtitle').textContent = `Comparing ${cases.length} cases`;
+    if (noteEl) {
+        if (isMixed) {
+            noteEl.textContent = t('label.mixed_type_note');
+            noteEl.classList.remove('hidden');
+        } else {
+            noteEl.classList.add('hidden');
+        }
+    }
+
+    document.getElementById('dashboard-subtitle').textContent = t('label.comparing_n').replace('{n}', cases.length);
 }
 
 // Update dashboard comparison table

@@ -697,8 +697,8 @@
                                 <rect x="3" y="14" width="7" height="7" rx="1"/>
                                 <rect x="14" y="14" width="7" height="7" rx="1"/>
                             </svg>
-                            <p>No saved cases</p>
-                            <p class="dashboard-empty-hint">Run calculations and click "Save to Dashboard" to compare results</p>
+                            <p data-i18n="label.no_saved_cases">No saved cases</p>
+                            <p class="dashboard-empty-hint" data-i18n="label.no_saved_cases_hint">Run calculations and click "Save to Dashboard" to compare results</p>
                         </div>
                     </div>
 
@@ -1522,22 +1522,23 @@
                     <!-- Comparison Summary Cards -->
                     <div class="dashboard-summary" id="dashboard-summary">
                         <div class="dashboard-summary-card">
-                            <div class="summary-label">Cases Selected</div>
+                            <div class="summary-label" data-i18n="label.case_count">Cases Selected</div>
                             <div class="summary-value" id="dash-case-count">0</div>
                         </div>
                         <div class="dashboard-summary-card">
-                            <div class="summary-label">Best Case</div>
+                            <div class="summary-label" data-i18n="label.best_case">Best Case</div>
                             <div class="summary-value" id="dash-best-case">-</div>
                         </div>
                         <div class="dashboard-summary-card">
-                            <div class="summary-label">Average</div>
+                            <div class="summary-label" data-i18n="label.average">Average</div>
                             <div class="summary-value" id="dash-average">-</div>
                         </div>
                         <div class="dashboard-summary-card">
-                            <div class="summary-label">Range</div>
+                            <div class="summary-label" data-i18n="label.range">Range</div>
                             <div class="summary-value" id="dash-range">-</div>
                         </div>
                     </div>
+                    <div id="dash-mixed-note" class="hidden" style="padding: 0.5rem 1rem; font-size: 0.85rem; color: var(--accent-amber); background: rgba(255,167,38,0.1); border-radius: 8px; margin-bottom: 1rem;"></div>
 
                     <!-- Comparison Chart -->
                     <div class="dashboard-chart-container">

@@ -21,20 +21,52 @@ document.getElementById('theme-toggle').onclick = () => {
 };
 
 // ==================== Tabs ====================
-document.querySelectorAll('.calc-tab').forEach(tab => {
-    tab.onclick = () => {
-        document.querySelectorAll('.calc-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        const name = tab.dataset.tab;
-        document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
-        document.getElementById(`${name}-form`).classList.add('active');
+const allTabs = document.querySelectorAll('.calc-tab');
 
-        // If dashboard tab, show dashboard result and render case list
-        if (name === 'dashboard') {
-            showResult('dashboard');
-            renderDashboardCaseList();
+function activateTab(tab) {
+    allTabs.forEach(t => {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+        t.setAttribute('tabindex', '-1');
+    });
+    tab.classList.add('active');
+    tab.setAttribute('aria-selected', 'true');
+    tab.setAttribute('tabindex', '0');
+    tab.focus();
+    const name = tab.dataset.tab;
+    document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
+    document.getElementById(`${name}-form`).classList.add('active');
+    if (name === 'dashboard') {
+        showResult('dashboard');
+        renderDashboardCaseList();
+    }
+}
+
+allTabs.forEach((tab, idx) => {
+    tab.onclick = () => activateTab(tab);
+    tab.onkeydown = (e) => {
+        let target = null;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            target = allTabs[(idx + 1) % allTabs.length];
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            target = allTabs[(idx - 1 + allTabs.length) % allTabs.length];
+        } else if (e.key === 'Home') {
+            e.preventDefault();
+            target = allTabs[0];
+        } else if (e.key === 'End') {
+            e.preventDefault();
+            target = allTabs[allTabs.length - 1];
         }
+        if (target) activateTab(target);
     };
+    // Set initial tabindex
+    if (tab.classList.contains('active')) {
+        tab.setAttribute('tabindex', '0');
+    } else {
+        tab.setAttribute('tabindex', '-1');
+    }
 });
 
 // ==================== Autocomplete ====================
