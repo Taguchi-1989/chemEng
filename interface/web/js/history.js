@@ -38,11 +38,16 @@ function updateHistoryUI() {
     list.querySelectorAll('.history-item').forEach(el => {
         el.onclick = () => {
             const entry = h[parseInt(el.dataset.idx)];
-            document.querySelectorAll('.calc-tab').forEach(t => t.classList.remove('active'));
-            document.querySelector(`[data-tab="${entry.type}"]`)?.classList.add('active');
-            document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
+            const targetTab = document.querySelector(`[data-tab="${entry.type}"]`);
+            if (targetTab && typeof activateTab === 'function') {
+                activateTab(targetTab);
+            } else {
+                document.querySelectorAll('.calc-tab').forEach(t => t.classList.remove('active'));
+                targetTab?.classList.add('active');
+                document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
+                document.getElementById(`${entry.type}-form`)?.classList.add('active');
+            }
             const form = document.getElementById(`${entry.type}-form`);
-            form?.classList.add('active');
             if (form && entry.params) {
                 Object.entries(entry.params).forEach(([k, v]) => {
                     if (!/^[a-zA-Z0-9_-]+$/.test(k)) return;
@@ -292,7 +297,7 @@ function updateDashboardSummary(cases) {
             if (type === 'heat_balance') return { values: cases.map(c => c.result?.total_heat_duty).filter(v => v != null), unit: 'kW', lower_is_better: true };
             if (type === 'mass_balance') return { values: cases.map(c => c.result?.closure).filter(v => v != null), unit: '%', lower_is_better: false };
             if (type === 'extraction') return { values: cases.map(c => c.result?.recovery != null ? c.result.recovery * 100 : null).filter(v => v != null), unit: '%', lower_is_better: false };
-            if (type === 'distillation' || type === 'absorption') return { values: cases.map(c => c.result?.actual_stages).filter(v => v != null), unit: t('label.stages') || 'stages', lower_is_better: true };
+            if (type === 'distillation' || type === 'absorption') return { values: cases.map(c => c.result?.actual_stages).filter(v => v != null), unit: t('label.stages'), lower_is_better: true };
         }
         // Fallback: parse mainValue
         const vals = cases.map(c => { const m = String(c.mainValue || '').match(/([\d.]+)/); return m ? parseFloat(m[1]) : null; }).filter(v => v != null);

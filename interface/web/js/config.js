@@ -93,6 +93,7 @@ const I18N = {
     'label.parameters': { ja: '計算パラメータ', en: 'Calculation Parameters' },
     'label.results': { ja: '計算結果', en: 'Results' },
     'label.history': { ja: '計算履歴', en: 'History' },
+    'label.stages': { ja: '段', en: 'stages' },
     'label.no_saved_cases': { ja: '保存済みケースなし', en: 'No saved cases' },
     'label.no_saved_cases_hint': { ja: '計算を実行し「ダッシュボード保存」で結果を保存してください', en: 'Run calculations and click "Save to Dashboard" to compare results' },
     'label.comparing_n': { ja: '{n}件のケースを比較中', en: 'Comparing {n} cases' },
