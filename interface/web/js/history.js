@@ -8,13 +8,17 @@ function saveHistory(type, params, result) {
     lastCalculationData[type] = { params, result, timestamp: new Date().toISOString() };
 
     const h = getHistory();
-    const summary = type === 'property' ? `${params.substance}: ${params.property}`
-        : type === 'distillation' ? `${params.light_component}/${params.heavy_component}`
-        : type === 'mass_balance' ? params.components?.join('/')
-        : type === 'extraction' ? `${params.solute}: ${params.carrier}→${params.solvent}`
-        : type === 'absorption' ? `${params.gas_component}: into ${params.solvent}`
-        : type === 'lcoh' ? `${params.production_method}: ${params.capacity}MW`
-        : `${params.substance}: ${params.inlet_temperature}→${params.outlet_temperature}K`;
+    let summary;
+    try {
+        if (type === 'property') summary = `${params.substance}: ${params.property}`;
+        else if (type === 'distillation') summary = `${params.light_component}/${params.heavy_component}`;
+        else if (type === 'mass_balance') summary = Array.isArray(params.components) ? params.components.join('/') : String(params.components || '');
+        else if (type === 'extraction') summary = `${params.solute || '?'}: ${params.carrier || '?'} → ${params.solvent || '?'}`;
+        else if (type === 'absorption') summary = `${params.gas_component || '?'}: into ${params.solvent || '?'}`;
+        else if (type === 'lcoh') summary = `${params.production_method || '?'}: ${params.capacity || '?'}MW`;
+        else if (type === 'heat_balance') summary = `${params.substance || '?'}: ${params.inlet_temperature || '?'} → ${params.outlet_temperature || '?'}K`;
+        else summary = type;
+    } catch { summary = type; }
     h.unshift({ type, params, summary, timestamp: new Date().toISOString() });
     if (h.length > 20) h.pop();
     localStorage.setItem('chemeng_history', JSON.stringify(h));
@@ -122,13 +126,13 @@ function getMainValue(type, result) {
         case 'distillation':
             return result.actual_stages ? `${result.actual_stages} stages` : '-';
         case 'extraction':
-            return result.extraction_efficiency ? `${(result.extraction_efficiency * 100).toFixed(1)}% eff.` : '-';
+            return result.recovery != null ? `${(result.recovery * 100).toFixed(1)}% recovery` : '-';
         case 'absorption':
-            return result.required_stages ? `${result.required_stages} stages` : '-';
+            return result.actual_stages ? `${result.actual_stages} stages` : '-';
         case 'mass_balance':
-            return result.distillate_flow ? `D=${result.distillate_flow.toFixed(2)}` : '-';
+            return result.closure != null ? `Closure: ${result.closure.toFixed(1)}%` : '-';
         case 'heat_balance':
-            return result.heat_duty ? `${result.heat_duty.toFixed(2)} kW` : '-';
+            return result.total_heat_duty != null ? `${result.total_heat_duty.toFixed(1)} kW` : '-';
         default:
             return '-';
     }

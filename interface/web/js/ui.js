@@ -943,7 +943,7 @@ function initHelpSystem() {
 
         // Build context
         const context = {};
-        const activeTab = document.querySelector('.tab-btn.active');
+        const activeTab = document.querySelector('.calc-tab.active');
         if (activeTab) {
             context.current_skill = activeTab.dataset.tab || '';
         }

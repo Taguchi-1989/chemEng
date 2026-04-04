@@ -199,13 +199,13 @@ class TestUnits:
 
 class TestPropertyDatabase:
     def test_empty_db(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmpdir:
             db = PropertyDatabase(Path(tmpdir))
             assert db.count() == 0
             assert db.list_all() == []
 
     def test_add_and_get(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmpdir:
             db = PropertyDatabase(Path(tmpdir))
             record = SubstanceRecord(
                 name="ethanol",
@@ -227,7 +227,7 @@ class TestPropertyDatabase:
             assert got.cas == "64-17-5"
 
     def test_get_by_cas(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmpdir:
             db = PropertyDatabase(Path(tmpdir))
             record = SubstanceRecord(name="ethanol", cas="64-17-5")
             db.add_or_update(record)
@@ -237,7 +237,7 @@ class TestPropertyDatabase:
             assert got.name == "ethanol"
 
     def test_persistence(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmpdir:
             db1 = PropertyDatabase(Path(tmpdir))
             db1.add_or_update(SubstanceRecord(name="water", cas="7732-18-5"))
             assert db1.count() == 1
@@ -248,7 +248,7 @@ class TestPropertyDatabase:
             assert db2.get("water") is not None
 
     def test_delete(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmpdir:
             db = PropertyDatabase(Path(tmpdir))
             db.add_or_update(SubstanceRecord(name="water"))
             assert db.count() == 1
@@ -256,7 +256,7 @@ class TestPropertyDatabase:
             assert db.count() == 0
 
     def test_search(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmpdir:
             db = PropertyDatabase(Path(tmpdir))
             db.add_or_update(SubstanceRecord(
                 name="ethanol", name_ja="エタノール", cas="64-17-5",
@@ -269,7 +269,7 @@ class TestPropertyDatabase:
             assert len(db.search("nonexistent")) == 0
 
     def test_get_property_value(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmpdir:
             db = PropertyDatabase(Path(tmpdir))
             record = SubstanceRecord(
                 name="water",
@@ -287,7 +287,7 @@ class TestPropertyDatabase:
             assert db.get_property_value("water", "density") is None
 
     def test_merge_on_update(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmpdir:
             db = PropertyDatabase(Path(tmpdir))
             r1 = SubstanceRecord(
                 name="water",
