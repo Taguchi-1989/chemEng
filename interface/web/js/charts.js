@@ -352,7 +352,7 @@ function updateDashboardChart(cases, chartType = 'bar') {
     const lcohCases = cases.filter(c => c.type === 'lcoh');
     if (lcohCases.length > 0) {
         const labels = lcohCases.map(c => c.name.replace(/LCOH: /, '').substring(0, 30));
-        const breakdownKeys = ['capex', 'energy', 'opex', 'stack_replacement', 'water', 'carbon_cost'];
+        const breakdownKeys = ['capex', 'energy', 'opex', 'stack_replacement', 'water', 'carbon'];
         const breakdownLabels = ['CAPEX', 'Energy', 'OPEX', 'Stack', 'Water', 'Carbon'];
         const colors = ['#00d4ff', '#0fa', '#ffa726', '#a78bfa', '#ff6b9d', '#94a3b8'];
 
@@ -400,7 +400,10 @@ function updateDashboardChart(cases, chartType = 'bar') {
     } else {
         // Generic bar chart for other types
         const labels = cases.map(c => c.name.substring(0, 25));
-        const values = cases.map(c => parseFloat(c.mainValue) || 0);
+        const values = cases.map(c => {
+            const m = String(c.mainValue || '').match(/([\d.]+)/);
+            return m ? parseFloat(m[1]) : 0;
+        });
 
         dashboardChart = new Chart(ctx, {
             type: 'bar',
