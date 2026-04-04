@@ -16,6 +16,16 @@ const SUBSTANCES_FALLBACK = [
     { id: 'nitrogen', name_ja: '窒素', name_en: 'Nitrogen', formula: 'N2' },
     { id: 'oxygen', name_ja: '酸素', name_en: 'Oxygen', formula: 'O2' },
     { id: 'hydrogen', name_ja: '水素', name_en: 'Hydrogen', formula: 'H2' },
+    { id: 'nmp', name_ja: 'N-メチル-2-ピロリドン', name_en: 'NMP', formula: 'C5H9NO' },
+    { id: 'dmac', name_ja: 'ジメチルアセトアミド', name_en: 'DMAC', formula: 'C4H9NO' },
+    { id: 'cyclohexane', name_ja: 'シクロヘキサン', name_en: 'Cyclohexane', formula: 'C6H12' },
+    { id: 'sulfuric_acid', name_ja: '硫酸', name_en: 'Sulfuric acid', formula: 'H2SO4' },
+    { id: 'hydrochloric_acid', name_ja: '塩酸', name_en: 'Hydrochloric acid', formula: 'HCl' },
+    { id: 'sodium_hydroxide', name_ja: '水酸化ナトリウム', name_en: 'Sodium hydroxide', formula: 'NaOH' },
+    { id: 'acetic_acid', name_ja: '酢酸', name_en: 'Acetic acid', formula: 'CH3COOH' },
+    { id: 'hexane', name_ja: 'ヘキサン', name_en: 'Hexane', formula: 'C6H14' },
+    { id: 'propanol', name_ja: 'プロパノール', name_en: 'Propanol', formula: 'C3H7OH' },
+    { id: 'isopropanol', name_ja: 'イソプロパノール', name_en: 'Isopropanol', formula: 'C3H8O' },
 ];
 
 const PROPERTIES = {
