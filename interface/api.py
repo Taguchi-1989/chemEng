@@ -32,7 +32,7 @@ try:
     from fastapi.middleware.cors import CORSMiddleware
     from fastapi.responses import FileResponse, HTMLResponse  # noqa: F401
     from fastapi.staticfiles import StaticFiles
-    from pydantic import BaseModel, Field
+    from pydantic import BaseModel, Field, field_validator
     from starlette.middleware.base import BaseHTTPMiddleware
     FASTAPI_AVAILABLE = True
 except ImportError:
@@ -44,6 +44,10 @@ except ImportError:
         return None
     def Query(*args, **kwargs):
         return None
+    def field_validator(*args, **kwargs):
+        def decorator(func):
+            return func
+        return decorator
 
 try:
     from ..core.errors import safe_error_message
@@ -70,13 +74,22 @@ def _parse_cors_origins(value: str | None) -> list[str]:
 # ==================== リクエスト/レスポンスモデル ====================
 
 class PropertyRequest(BaseModel):
-    """物性値取得リクエスト"""
-    substance: str = Field(..., description="物質名またはCAS番号", max_length=200)
-    property: str = Field(..., description="物性名", max_length=100, pattern=r"^[a-z_]+$")
-    temperature: float | None = Field(None, description="温度 (K)", ge=0, le=10000)
-    pressure: float | None = Field(None, description="圧力 (Pa)", ge=0, le=1e9)
-    quality: float | None = Field(None, description="乾き度 (0-1)", ge=0, le=1)
-    engine: str | None = Field(None, description="使用するエンジン名", max_length=50)
+    """Property lookup request."""
+
+    substance: str = Field(..., description="Substance name or CAS number", max_length=200)
+    property: str = Field(..., description="Property name", max_length=100, pattern=r"^[a-z_]+$")
+    temperature: float | None = Field(None, description="Temperature (K)", ge=0, le=10000)
+    pressure: float | None = Field(None, description="Pressure (Pa)", ge=0, le=1e9)
+    quality: float | None = Field(None, description="Vapor quality (0-1)", ge=0, le=1)
+    engine: str | None = Field(None, description="Requested engine", max_length=50)
+
+    @field_validator("substance")
+    @classmethod
+    def validate_substance(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("substance must not be empty")
+        return value
 
 
 class PropertyResponse(BaseModel):
@@ -122,12 +135,31 @@ class BatchCalculationRequest(BaseModel):
 
 
 class EquilibriumRequest(BaseModel):
-    """相平衡計算リクエスト"""
-    substances: list[str] = Field(..., description="物質リスト", max_length=10)
-    composition: dict[str, float] = Field(..., description="組成（モル分率）")
-    temperature: float | None = Field(None, description="温度 (K)", ge=0, le=10000)
-    pressure: float | None = Field(None, description="圧力 (Pa)", ge=0, le=1e9)
-    engine: str | None = Field(None, description="使用するエンジン名", max_length=50)
+    """Equilibrium calculation request."""
+
+    substances: list[str] = Field(..., description="Substance list", max_length=10)
+    composition: dict[str, float] = Field(..., description="Mole fractions")
+    temperature: float | None = Field(None, description="Temperature (K)", ge=0, le=10000)
+    pressure: float | None = Field(None, description="Pressure (Pa)", ge=0, le=1e9)
+    engine: str | None = Field(None, description="Requested engine", max_length=50)
+
+    @field_validator("substances")
+    @classmethod
+    def validate_substances(cls, value: list[str]) -> list[str]:
+        cleaned = [item.strip() for item in value if item and item.strip()]
+        if len(cleaned) < 2:
+            raise ValueError("at least two substances are required")
+        return cleaned
+
+    @field_validator("composition")
+    @classmethod
+    def validate_composition(cls, value: dict[str, float]) -> dict[str, float]:
+        if not value:
+            raise ValueError("composition must not be empty")
+        total = sum(value.values())
+        if abs(total - 1.0) > 0.05:
+            raise ValueError("composition must sum to 1.0")
+        return value
 
 
 class EngineInfo(BaseModel):
@@ -163,6 +195,9 @@ def create_app() -> FastAPI:
     """FastAPIアプリケーションを作成"""
     if not FASTAPI_AVAILABLE:
         raise ImportError("FastAPI is not installed. Run: pip install fastapi uvicorn")
+
+    def _result_timestamp(value: Any) -> str | None:
+        return value.isoformat() if value is not None else None
 
     app = FastAPI(
         title="ChemEng API",
@@ -368,7 +403,7 @@ def create_app() -> FastAPI:
                     "errors": result.errors,
                     "execution_time_ms": case_elapsed,
                     "engine": result.engine_used,
-                    "timestamp": result.timestamp.isoformat(),
+                    "timestamp": _result_timestamp(result.timestamp),
                 })
                 if result.success:
                     succeeded += 1
@@ -453,7 +488,7 @@ def create_app() -> FastAPI:
             errors=result.errors,
             execution_time_ms=result.execution_time_ms,
             engine=result.engine_used,
-            timestamp=result.timestamp.isoformat(),
+            timestamp=_result_timestamp(result.timestamp),
         )
 
     @app.post("/api/v1/property", response_model=PropertyResponse)
@@ -703,7 +738,7 @@ def create_app() -> FastAPI:
 app = create_app() if FASTAPI_AVAILABLE else None
 
 
-def start_server(host: str = "127.0.0.1", port: int = 8000):
+def start_server(host: str | None = None, port: int | None = None):
     """サーバー起動"""
     if not FASTAPI_AVAILABLE:
         print("Error: FastAPI is not installed")
@@ -711,7 +746,9 @@ def start_server(host: str = "127.0.0.1", port: int = 8000):
         return
 
     import uvicorn
-    uvicorn.run(app, host=host, port=port)
+    resolved_host = host or os.environ.get("HOST", "0.0.0.0")
+    resolved_port = port if port is not None else int(os.environ.get("PORT", "8000"))
+    uvicorn.run(app, host=resolved_host, port=resolved_port)
 
 
 if __name__ == "__main__":

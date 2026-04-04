@@ -18,6 +18,11 @@ from typing import Any
 
 import yaml
 
+try:
+    from chemeng.core.errors import safe_error_message
+except ImportError:
+    from core.errors import safe_error_message
+
 
 def load_params(path: str) -> dict[str, Any]:
     """パラメータファイルを読み込み"""
@@ -68,6 +73,11 @@ def print_result(result: dict[str, Any], format: str = "text"):
             print(f"  - {e}", file=sys.stderr)
 
 
+def _fail(message: str, exit_code: int = 1) -> None:
+    print(f"Error: {message}", file=sys.stderr)
+    raise SystemExit(exit_code)
+
+
 def cmd_property(args):
     """物性値取得コマンド"""
     try:
@@ -94,14 +104,12 @@ def cmd_property(args):
             from engines import get_engine
         engine = get_engine(args.engine)
         if not engine:
-            print(f"Error: Engine not found: {args.engine}", file=sys.stderr)
-            sys.exit(1)
+            _fail(f"Engine not found: {args.engine}")
     else:
         engine = select_engine(substance=substance, property_name=property_name)
 
     if not engine:
-        print("Error: No calculation engine available", file=sys.stderr)
-        sys.exit(1)
+        _fail("No calculation engine available")
 
     try:
         value = engine.get_property(substance, property_name, conditions)
@@ -126,8 +134,7 @@ def cmd_property(args):
             print(f"  エンジン: {engine.name}")
 
     except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
-        sys.exit(1)
+        _fail(safe_error_message(e))
 
 
 def cmd_calculate(args):
@@ -195,13 +202,11 @@ def cmd_skill(args):
 
     elif args.action == "show":
         if not args.skill_id:
-            print("Error: --skill-id required", file=sys.stderr)
-            sys.exit(1)
+            _fail("--skill-id required")
 
         skill = registry.get_skill(args.skill_id)
         if not skill:
-            print(f"Error: Skill not found: {args.skill_id}", file=sys.stderr)
-            sys.exit(1)
+            _fail(f"Skill not found: {args.skill_id}")
 
         print(f"\n=== {skill.id} ===")
         print(f"名前: {skill.name}")
@@ -254,13 +259,11 @@ def cmd_engine(args):
 
     elif args.action == "show":
         if not args.engine_name:
-            print("Error: --engine-name required", file=sys.stderr)
-            sys.exit(1)
+            _fail("--engine-name required")
 
         engine = get_engine(args.engine_name)
         if not engine:
-            print(f"Error: Engine not found: {args.engine_name}", file=sys.stderr)
-            sys.exit(1)
+            _fail(f"Engine not found: {args.engine_name}")
 
         cap = engine.capabilities
         print(f"\n=== {engine.name} ===")
@@ -315,10 +318,13 @@ def cmd_data(args):
                 results = fetcher.search(query, max_results=getattr(args, "max", 5))
                 _print_search_results({source: results})
             except Exception as e:
-                print(f"Error: {e}", file=sys.stderr)
+                _fail(safe_error_message(e))
         else:
-            results = search_all(query, max_per_source=getattr(args, "max", 3))
-            _print_search_results(results)
+            try:
+                results = search_all(query, max_per_source=getattr(args, "max", 3))
+                _print_search_results(results)
+            except Exception as e:
+                _fail(safe_error_message(e))
 
     elif action == "fetch":
         substance = args.substance
@@ -332,8 +338,7 @@ def cmd_data(args):
         try:
             record = fetcher.fetch_properties(substance)
         except Exception as e:
-            print(f"Error: {e}", file=sys.stderr)
-            return
+            _fail(safe_error_message(e))
 
         _print_substance_record(record)
 
@@ -438,8 +443,7 @@ def cmd_info(args):
     engine = select_engine(substance=substance)
 
     if not engine:
-        print("Error: No calculation engine available", file=sys.stderr)
-        sys.exit(1)
+        _fail("No calculation engine available")
 
     try:
         if hasattr(engine, "get_substance_info"):
@@ -447,8 +451,7 @@ def cmd_info(args):
         elif hasattr(engine, "get_fluid_info"):
             info = engine.get_fluid_info(substance)
         else:
-            print(f"Error: Engine {engine.name} does not support substance info")
-            sys.exit(1)
+            _fail(f"Engine {engine.name} does not support substance info")
 
         print(f"\n=== {substance} ===")
         for key, value in info.items():
@@ -456,8 +459,7 @@ def cmd_info(args):
                 print(f"  {key}: {value}")
 
     except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
-        sys.exit(1)
+        _fail(safe_error_message(e))
 
 
 def interactive_mode():

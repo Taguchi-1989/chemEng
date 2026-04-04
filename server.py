@@ -20,10 +20,25 @@ if _PROJECT_ROOT not in sys.path:
     sys.path.insert(0, _PROJECT_ROOT)
 
 
+def _default_port() -> int:
+    raw_port = os.environ.get("PORT", "8000")
+    try:
+        port = int(raw_port)
+    except ValueError as exc:
+        raise ValueError(f"Invalid PORT environment variable: {raw_port}") from exc
+    if not (1 <= port <= 65535):
+        raise ValueError("PORT environment variable must be between 1 and 65535")
+    return port
+
+
+def _default_host() -> str:
+    return os.environ.get("HOST", "0.0.0.0")
+
+
 def main():
     parser = argparse.ArgumentParser(description="ChemEng Local Server")
-    parser.add_argument("--host", default="127.0.0.1", help="Host to bind (default: 127.0.0.1)")
-    parser.add_argument("--port", type=int, default=8000, help="Port to bind (default: 8000)")
+    parser.add_argument("--host", default=_default_host(), help="Host to bind")
+    parser.add_argument("--port", type=int, default=_default_port(), help="Port to bind")
     parser.add_argument("--reload", action="store_true", help="Enable auto-reload for development")
     args = parser.parse_args()
 

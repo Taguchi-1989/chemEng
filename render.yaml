@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: chemeng
+    runtime: python
+    plan: free
+    buildCommand: pip install --upgrade pip && pip install -r requirements_full.txt && pip install -e .
+    startCommand: uvicorn chemeng.interface.api:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.14

@@ -57,6 +57,28 @@ docker build -t chemeng .
 docker run -p 8000:8000 chemeng
 ```
 
+### Render
+
+Render deployment supports two routes.
+
+1. `render.yaml` route
+2. Render dashboard route
+
+Recommended flow:
+
+1. Confirm one deployment from the Render dashboard first.
+2. After settings are confirmed, keep `render.yaml` as the source of truth.
+
+Render settings for this repo:
+
+- Build command: `pip install --upgrade pip && pip install -r requirements_full.txt && pip install -e .`
+- Start command: `uvicorn chemeng.interface.api:app --host 0.0.0.0 --port $PORT`
+- Health check path: `/api`
+- Bind host: `0.0.0.0`
+- Port: `$PORT`
+
+Blueprint deployment can use the repo root `render.yaml` directly.
+
 ---
 
 ## 計算機能（7種類）

@@ -1,164 +1,112 @@
-# ChemEng デプロイメントガイド
+# ChemEng Deployment Guide
 
-ローカルサーバー + Vercelフロントエンド構成のセットアップ手順。
+This project currently supports two practical deployment patterns:
 
-## アーキテクチャ概要
+1. Render as the main Python web service
+2. Vercel + external backend proxy
 
-```
-[ブラウザ] → [Vercel (UI)] → [ngrok トンネル] → [ローカルPC (計算サーバー)]
-```
+For the current codebase, the simplest production-style route is Render.
 
-- **Vercel**: 軽量なフロントエンドUI
-- **ローカルPC**: 重い計算処理を担当するFastAPIサーバー
-- **ngrok**: ローカルサーバーを外部からアクセス可能にするトンネル
+## Render
 
-## 前提条件
+Render can be used in two ways.
 
-- Python 3.10以上
-- pip (Python パッケージマネージャー)
-- ngrok アカウント（無料）
+1. Dashboard route
+2. `render.yaml` route
 
-## セットアップ手順
+Recommended operation:
 
-### 1. 依存パッケージのインストール
+1. Create the service once from the Render dashboard and confirm it boots correctly.
+2. After the settings are confirmed, keep `render.yaml` in sync and treat it as the source of truth.
 
-```bash
-cd d:\dev\chemEng
-pip install -e ".[api]"
-```
+### Route 1: Render Dashboard
 
-### 2. ngrokのインストール
+Create a new Web Service and use the following values.
 
-#### オプション1: winget（推奨）
+| Setting | Value |
+| --- | --- |
+| Runtime | Python |
+| Build Command | `pip install --upgrade pip && pip install -r requirements_full.txt && pip install -e .` |
+| Start Command | `uvicorn chemeng.interface.api:app --host 0.0.0.0 --port $PORT` |
+| Health Check Path | `/api` |
+| Python Version | `3.10.14` |
 
-```bash
-winget install ngrok
-```
+Notes:
 
-#### オプション2: 公式サイト
+- The service must bind to `0.0.0.0`.
+- The service must listen on Render's `$PORT`.
+- `requirements_full.txt` is used so the calculation engines match the local environment more closely.
 
-1. https://ngrok.com/download にアクセス
-2. Windows版をダウンロード
-3. 解凍してパスの通った場所に配置
+### Route 2: Blueprint / `render.yaml`
 
-### 3. ngrokアカウント設定
+This repository already includes [`render.yaml`](/d:/dev/chemEng/render.yaml).
 
-1. https://dashboard.ngrok.com/signup でアカウント作成
-2. https://dashboard.ngrok.com/get-started/your-authtoken でトークン取得
-3. 以下のコマンドでトークンを設定:
+Use it when:
 
-```bash
-ngrok config add-authtoken YOUR_TOKEN_HERE
-```
+- you want reproducible infra settings in Git
+- you want teammates to redeploy with the same commands
+- you want to reduce dashboard drift
 
-### 4. ローカルサーバー起動
+Current `render.yaml` behavior:
 
-```bash
-# 方法1: 起動スクリプト（推奨）
-# Windows:
-ChemEng_Start.bat
-# macOS/Linux:
-./start.sh
+- installs `requirements_full.txt`
+- installs the package with `pip install -e .`
+- starts `uvicorn chemeng.interface.api:app`
+- binds to `0.0.0.0`
+- listens on `$PORT`
+- health-checks `/api`
 
-# 方法2: 直接実行
-python server.py --port 8000
+## Local Verification Before Deploy
 
-# 方法3: uvicorn直接実行
-python -m uvicorn interface.api:app --host 0.0.0.0 --port 8000
-```
-
-### 5. ngrokトンネル起動
-
-別のターミナルウィンドウで:
+Run either of the following locally:
 
 ```bash
-ngrok http 8000
+python server.py
 ```
 
-ngrokが起動すると、以下のような出力が表示されます:
-
-```
-Forwarding    https://xxxx-xxx-xxx.ngrok-free.app -> http://localhost:8000
-```
-
-この `https://xxxx-xxx-xxx.ngrok-free.app` がバックエンドのURLです。
-
-### 6. Vercel環境変数の設定
-
-1. [Vercelダッシュボード](https://vercel.com/dashboard) にアクセス
-2. プロジェクトを選択
-3. Settings → Environment Variables
-4. 以下を追加:
-
-| Key           | Value                                 |
-| ------------- | ------------------------------------- |
-| `BACKEND_URL` | `https://xxxx-xxx-xxx.ngrok-free.app` |
-
-5. Productionにデプロイ
-
-## 動作確認
-
-### ローカルサーバー確認
+or
 
 ```bash
-# APIドキュメント
+python -m chemeng --api
+```
+
+Then verify:
+
+```bash
+curl http://localhost:8000/api
 curl http://localhost:8000/docs
-
-# エンジン一覧
-curl http://localhost:8000/api/v1/engines
 ```
 
-### ngrok経由確認
+## Render-Specific Checks
 
-```bash
-curl https://xxxx-xxx-xxx.ngrok-free.app/api/v1/engines
-```
+If Render deployment fails, check these first:
 
-### Vercel経由確認
+1. The start command is using `$PORT`, not a fixed `8000`.
+2. The server is binding to `0.0.0.0`, not `127.0.0.1`.
+3. The build command installs `requirements_full.txt`.
+4. The health check path is `/api`.
 
-```bash
-curl https://your-project.vercel.app/api/v1/engines
-```
+## Vercel + External Backend
 
-## トラブルシューティング
+The repo still includes the Vercel proxy route in [`api/index.py`](/d:/dev/chemEng/api/index.py).
 
-### ngrok接続エラー
+Use this route when:
 
-```
-Cannot connect to backend server
-```
+- the frontend is hosted separately
+- a lightweight proxy is enough on the edge
+- the heavy Python backend runs elsewhere
 
-- ローカルサーバーが起動しているか確認
-- ngrokが正しいポート（8000）を指しているか確認
+That route depends on:
 
-### CORS エラー
+- `BACKEND_URL`
+- a reachable backend server
+- proxy-safe CORS settings
 
-ブラウザでCORSエラーが発生する場合:
+## Operational Recommendation
 
-- `interface/api.py` のCORS設定を確認
-- `allow_origins` に適切なドメインを追加
+For this repository, use this order:
 
-### 無料プランのURL変更
-
-ngrok無料プランでは、再起動のたびにURLが変わります。
-
-対策:
-
-1. 有料プラン（月$8〜）で固定URL
-2. Cloudflare Tunnel（無料、固定URL可能）
-3. 起動スクリプトでVercel環境変数を自動更新
-
-## 将来のEC2移行
-
-ローカルサーバーをEC2に移行する場合:
-
-1. EC2インスタンスを起動
-2. 同じコードをデプロイ
-3. `BACKEND_URL` をEC2のURL/IPに変更
-
-```bash
-# EC2での起動例
-python server.py --host 0.0.0.0 --port 8000
-```
-
-Elastic IPを使用すれば固定IPが得られます。
+1. First deploy from the Render dashboard.
+2. Confirm boot, health check, and static assets.
+3. Keep the confirmed settings in `render.yaml`.
+4. Use the Vercel proxy route only when you intentionally want split hosting.

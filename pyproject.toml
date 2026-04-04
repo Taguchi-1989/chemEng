@@ -63,7 +63,9 @@ chemeng = "."
 packages = [
     "chemeng",
     "chemeng.core",
+    "chemeng.data",
     "chemeng.engines",
+    "chemeng.fetchers",
     "chemeng.interface",
     "chemeng.skills",
 ]
