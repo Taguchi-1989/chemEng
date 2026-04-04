@@ -591,7 +591,8 @@ function download(content, filename, type) {
 
 // Universal JSON Export (importable format)
 function exportJSON(skillId) {
-    const data = lastCalculationData[skillId.replace('_estimation', '').replace('property_estimation', 'property')];
+    const typeKey = skillId === 'property_estimation' ? 'property' : skillId;
+    const data = lastCalculationData[typeKey];
     if (!data) return toast('No data to export. Run calculation first.', 'warning');
 
     const exportData = {
@@ -608,7 +609,7 @@ function exportJSON(skillId) {
 
 // Universal CSV Export
 function exportCSV(skillId) {
-    const typeKey = skillId.replace('_estimation', '').replace('property_estimation', 'property');
+    const typeKey = skillId === 'property_estimation' ? 'property' : skillId;
     const data = lastCalculationData[typeKey];
     if (!data) return toast('No data to export. Run calculation first.', 'warning');
 

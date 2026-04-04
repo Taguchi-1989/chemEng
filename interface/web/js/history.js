@@ -306,17 +306,21 @@ function updateDashboardSummary(cases) {
 
     const { values, unit, lower_is_better } = extractNumericValues(cases);
 
+    const bestEl = document.getElementById('dash-best-case');
+    const avgEl = document.getElementById('dash-average');
+    const rangeEl = document.getElementById('dash-range');
+
     if (values.length > 0) {
         const best = lower_is_better ? Math.min(...values) : Math.max(...values);
         const avg = values.reduce((a, b) => a + b, 0) / values.length;
         const range = Math.max(...values) - Math.min(...values);
-        document.getElementById('dash-best-case').textContent = `${best.toFixed(2)} ${unit}`;
-        document.getElementById('dash-average').textContent = `${avg.toFixed(2)} ${unit}`;
-        document.getElementById('dash-range').textContent = `\u00b1${(range / 2).toFixed(2)} ${unit}`;
+        if (bestEl) bestEl.textContent = `${best.toFixed(2)} ${unit}`;
+        if (avgEl) avgEl.textContent = `${avg.toFixed(2)} ${unit}`;
+        if (rangeEl) rangeEl.textContent = `\u00b1${(range / 2).toFixed(2)} ${unit}`;
     } else {
-        document.getElementById('dash-best-case').textContent = '-';
-        document.getElementById('dash-average').textContent = '-';
-        document.getElementById('dash-range').textContent = '-';
+        if (bestEl) bestEl.textContent = '-';
+        if (avgEl) avgEl.textContent = '-';
+        if (rangeEl) rangeEl.textContent = '-';
     }
 
     if (noteEl) {

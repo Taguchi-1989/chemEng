@@ -527,6 +527,7 @@ def _calculate_heat_duties(
             )
             Hvap = (Hvap_light + Hvap_heavy) / 2
         except Exception:
+            Hvap = 40000.0
             warnings.append("Could not get heat of vaporization, using default")
 
     # 塔頂蒸気流量
@@ -561,7 +562,10 @@ def _estimate_column_diameter(
         try:
             MW_light = engine.get_property(light_comp, "molecular_weight", {})
             MW_heavy = engine.get_property(heavy_comp, "molecular_weight", {})
-            MW_avg = zF * MW_light + (1 - zF) * MW_heavy
+            if MW_light is not None and MW_heavy is not None:
+                MW_avg = zF * MW_light + (1 - zF) * MW_heavy
+            else:
+                warnings.append("Could not get molecular weights, using default MW=50 g/mol")
         except Exception:
             warnings.append("Could not get molecular weights, using default MW=50 g/mol")
 

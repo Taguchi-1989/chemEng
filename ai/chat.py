@@ -94,6 +94,8 @@ class ChemEngAssistant:
                 system=system_prompt,
                 messages=messages,
             )
+            if not response.content:
+                return "No response generated. Please try again."
             return response.content[0].text
         except Exception as e:
             logger.error("AI chat error: %s", e)
