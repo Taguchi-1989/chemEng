@@ -134,6 +134,7 @@
   <a href="#extraction">Extraction</a>
   <a href="#lcoh">LCOH</a>
   <a href="#data-flow">Data Flow</a>
+  <a href="#implemented-extensions">Extensions</a>
 </nav>
 
 <main>
@@ -1222,7 +1223,7 @@ flowchart TD
 <section id="data-flow">
   <h2 class="lang-en">Data Layer: Property Database & Fetchers</h2>
   <h2 class="lang-ja hidden">データ層: 物性データベース & フェッチャー</h2>
-  <p class="desc lang-en">How property data is stored, retrieved, and fetched from external sources.</p>
+  <p class="desc lang-en">How curated defaults, the writable local database, and external fetchers are used by the current implementation.</p>
   <p class="desc lang-ja hidden">物性データの保存、取得、外部ソースからのフェッチの仕組み。</p>
 
   <div class="mermaid lang-en">
@@ -1237,8 +1238,12 @@ flowchart LR
         TF["ThermoLookupFetcher\nsearch() → fetch_properties()"]
     end
 
-    subgraph DB["PropertyDatabase"]
-        YAML["custom_substances.yaml\nLocal cache file"]
+    subgraph Defaults["Curated Defaults"]
+        COMMON["skills/defaults/common_substances.yaml\nUI autocomplete + /api/v1/substances"]
+    end
+
+    subgraph DB["Writable PropertyDatabase"]
+        YAML["data/custom_substances.yaml\nLocal cache file"]
         GET["get() / search()\nRetrieve by name/CAS"]
         ADD["add_or_update()\nMerge new data"]
         GPV["get_property_value()\nSingle property lookup"]
@@ -1247,13 +1252,16 @@ flowchart LR
     subgraph Consumer["Consumers"]
         SKILL["Skill Templates\n(property_estimation etc.)"]
         CLI["CLI cmd_data()"]
-        API["API endpoints"]
+        API["Substance / property APIs"]
+        WEB["Web autocomplete\nand lookup UI"]
     end
 
     PUB --> PF
     THLK --> TF
     PF -->|"SubstanceRecord"| ADD
     TF -->|"SubstanceRecord"| ADD
+    COMMON --> WEB
+    COMMON --> API
     ADD --> YAML
     YAML --> GET
     YAML --> GPV
@@ -1263,10 +1271,17 @@ flowchart LR
     GET --> API
 
     style External fill:#3d1b2b,stroke:#f472b6
+    style Defaults fill:#3d2b1b,stroke:#fb923c
     style Fetchers fill:#2d1b4e,stroke:#a78bfa
     style DB fill:#1b3d2f,stroke:#4ade80
     style Consumer fill:#1e3a5f,stroke:#38bdf8
   </div>
+
+  <p class="desc lang-en" style="margin-top: 1rem;">
+    Important: the current `/api/v1/substances` endpoint reads the curated defaults file, while
+    `PropertyDatabase` persists fetched records in `data/custom_substances.yaml`.
+    These are related datasets, but they are not the same storage path.
+  </p>
 
   <div class="mermaid lang-ja hidden">
 flowchart LR
@@ -1309,6 +1324,88 @@ flowchart LR
     style Fetchers fill:#2d1b4e,stroke:#a78bfa
     style DB fill:#1b3d2f,stroke:#4ade80
     style Consumer fill:#1e3a5f,stroke:#38bdf8
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- IMPLEMENTED EXTENSIONS -->
+<!-- ============================================================ -->
+<section id="implemented-extensions">
+  <h2 class="lang-en">Implemented Extensions</h2>
+  <h2 class="lang-ja hidden">実装済み拡張機能</h2>
+  <p class="desc lang-en">Additional API and UI capabilities implemented in the current codebase beyond the core single-case calculation flow.</p>
+  <p class="desc lang-ja hidden">コア計算フロー以外に実装済みのAPI・UI機能。</p>
+
+  <div class="mermaid lang-en">
+flowchart TB
+    subgraph API["Additional API Endpoints"]
+        BATCH["POST /api/v1/calculate/batch\nBatch execution\nmax 50 cases"]
+        TXYAPI["POST /api/v1/txy-diagram\nBinary T-x-y data"]
+        SUBS["GET /api/v1/substances\nCurated substance list"]
+        SUBINFO["GET /api/v1/substances/{substance}\nSubstance detail lookup"]
+        CHAT["POST /api/v1/chat\nAI help panel"]
+        SUGGEST["POST /api/v1/suggest\nAI parameter suggestions"]
+    end
+
+    subgraph WEB["Web UI Features"]
+        HIST["History panel\nlocalStorage-backed"]
+        DASH["Saved-case dashboard\ncross-run comparison"]
+        IMPORT["JSON import\nsingle + batch"]
+        TXYUI["T-x-y modal chart\nfor distillation systems"]
+        HELPER["Help panel + AI suggestions"]
+    end
+
+    subgraph CLI["CLI Features"]
+        INTERACTIVE["Interactive mode\nwhen no subcommand is given"]
+        DATA["data sources/search/fetch/list/show/delete"]
+    end
+
+    BATCH --> IMPORT
+    TXYAPI --> TXYUI
+    SUBS --> HIST
+    SUBS --> DASH
+    CHAT --> HELPER
+    SUGGEST --> HELPER
+
+    style API fill:#1e3a5f,stroke:#38bdf8
+    style WEB fill:#2d1b4e,stroke:#a78bfa
+    style CLI fill:#1b3d2f,stroke:#4ade80
+  </div>
+
+  <div class="mermaid lang-ja hidden">
+flowchart TB
+    subgraph API["追加APIエンドポイント"]
+        BATCH["POST /api/v1/calculate/batch\nバッチ実行\n最大50ケース"]
+        TXYAPI["POST /api/v1/txy-diagram\n二成分T-x-yデータ"]
+        SUBS["GET /api/v1/substances\n物質一覧"]
+        SUBINFO["GET /api/v1/substances/{substance}\n物質詳細"]
+        CHAT["POST /api/v1/chat\nAIヘルプ"]
+        SUGGEST["POST /api/v1/suggest\nAIパラメータ提案"]
+    end
+
+    subgraph WEB["Web UI機能"]
+        HIST["履歴パネル\nlocalStorage保存"]
+        DASH["ダッシュボード\nケース比較"]
+        IMPORT["JSONインポート\n単体+バッチ"]
+        TXYUI["T-x-yモーダルチャート\n蒸留系"]
+        HELPER["ヘルプパネル + AI提案"]
+    end
+
+    subgraph CLI["CLI機能"]
+        INTERACTIVE["対話モード\nサブコマンドなし時"]
+        DATA["data sources/search/fetch/list/show/delete"]
+    end
+
+    BATCH --> IMPORT
+    TXYAPI --> TXYUI
+    SUBS --> HIST
+    SUBS --> DASH
+    CHAT --> HELPER
+    SUGGEST --> HELPER
+
+    style API fill:#1e3a5f,stroke:#38bdf8
+    style WEB fill:#2d1b4e,stroke:#a78bfa
+    style CLI fill:#1b3d2f,stroke:#4ade80
   </div>
 </section>
 
