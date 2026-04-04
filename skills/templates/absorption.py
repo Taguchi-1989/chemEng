@@ -185,6 +185,26 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
     if LG_min != float('inf') and LG_ratio < LG_min:
         warnings.append(f"L/G ratio ({LG_ratio:.3f}) is less than minimum ({LG_min:.3f})")
 
+    # 希薄溶液条件のバリデーション（Kremser式の前提条件チェック）
+    DILUTE_THRESHOLD = 0.10  # モル分率10%を希薄/濃厚の閾値とする
+    if y_in > DILUTE_THRESHOLD:
+        warnings.append(
+            f"High inlet gas concentration (y_in={y_in:.3f} > {DILUTE_THRESHOLD}): "
+            "Kremser equation assumes dilute solutions where operating/equilibrium lines "
+            "are straight. At high concentrations, total flow rates change significantly "
+            "and the linear approximation breaks down. Consider tray-by-tray calculation "
+            "for accurate results. / "
+            f"入口ガス濃度が高い(y_in={y_in:.3f} > {DILUTE_THRESHOLD}): "
+            "Kremser式は操作線・平衡線が直線（希薄溶液）を前提とします。"
+            "高濃度では総流量が変化し線形近似が破綻します。段落ち計算を推奨します。"
+        )
+    if x_out > DILUTE_THRESHOLD:
+        warnings.append(
+            f"High outlet liquid concentration (x_out={x_out:.6f} > {DILUTE_THRESHOLD}): "
+            "Kremser equation validity is questionable at this concentration. / "
+            f"出口液濃度が高い(x_out={x_out:.6f}): Kremser式の妥当性に疑問があります。"
+        )
+
     # Step 6: 吸収係数と段数計算（Kremser式）
     A = L / (m * G)  # 吸収係数
 

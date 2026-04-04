@@ -86,6 +86,44 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
             "errors": ["Distribution coefficient must be positive"],
         }
 
+    # 完全非互溶バリデーション（Kremser式の前提条件チェック）
+    # Kremser式は「原料溶媒と抽出溶媒が互いに全く溶け合わない」前提
+    # 部分的に溶け合う系では段ごとに流量が変動し、直線近似が破綻する
+    PARTIALLY_MISCIBLE_PAIRS = {
+        # (carrier, solvent) の組み合わせで部分溶解の代表例
+        ("water", "ethyl_acetate"),
+        ("water", "butanol"),
+        ("water", "diethyl_ether"),
+        ("water", "mibk"),
+        ("water", "isopropanol"),
+    }
+    carrier_key = carrier.lower().replace(" ", "_")
+    solvent_key = solvent.lower().replace(" ", "_")
+    pair = (carrier_key, solvent_key)
+    pair_rev = (solvent_key, carrier_key)
+
+    if pair in PARTIALLY_MISCIBLE_PAIRS or pair_rev in PARTIALLY_MISCIBLE_PAIRS:
+        warnings.append(
+            f"Partially miscible system detected ({carrier}/{solvent}): "
+            "Kremser equation assumes completely immiscible solvents where feed and "
+            "extract solvent do not dissolve in each other. In partially miscible systems, "
+            "phase flow rates change stage-by-stage and the linear approximation breaks down. "
+            "Consider Hunter-Nash method with ternary phase diagram for accurate design. / "
+            f"部分溶解系が検出されました ({carrier}/{solvent}): "
+            "Kremser式は原料溶媒と抽出溶媒が完全非互溶であることを前提とします。"
+            "部分溶解系では段ごとに流量が変化し線形近似が破綻します。"
+            "正確な設計には三角相図を用いたHunter-Nash法を推奨します。"
+        )
+
+    # 高濃度チェック（吸収塔と同様）
+    if xF > 0.10:
+        warnings.append(
+            f"High feed composition (xF={xF:.3f} > 0.10): "
+            "Kremser equation assumes dilute solutions. At high solute concentrations, "
+            "flow rates change significantly and results may be inaccurate. / "
+            f"原料組成が高濃度です(xF={xF:.3f}): Kremser式の希薄溶液前提に反する可能性があります。"
+        )
+
     # Step 3: 抽出係数の計算
     E = m * S / F  # 抽出係数
 

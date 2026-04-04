@@ -97,27 +97,55 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
             warnings.append("Engine not available, using assumed relative volatility")
             engine = None
 
-    # Step 2: 相対揮発度の計算
-    alpha = _calculate_relative_volatility(
+    # Step 2: 相対揮発度の計算（塔頂・フィード・塔底の3点幾何平均）
+    alpha_top = _calculate_relative_volatility(
+        engine, light_comp, heavy_comp, T_feed, P, xD, warnings
+    )
+    alpha_feed = _calculate_relative_volatility(
         engine, light_comp, heavy_comp, T_feed, P, zF, warnings
     )
+    alpha_bottom = _calculate_relative_volatility(
+        engine, light_comp, heavy_comp, T_feed, P, xB, warnings
+    )
+    alpha = (alpha_top * alpha_feed * alpha_bottom) ** (1.0 / 3.0)
 
     calculation_steps.append({
         "step": 2,
         "title": "相対揮発度 / Relative Volatility",
-        "description": "VLE計算から相対揮発度を算出",
+        "description": "塔頂・フィード・塔底の3点でVLE計算し、幾何平均を算出",
         "formulas": [
-            "α = K_light / K_heavy",
+            "α = K_light / K_heavy（各条件で計算）",
+            f"α_top   (x={xD:.3f}) = {alpha_top:.3f}",
+            f"α_feed  (x={zF:.3f}) = {alpha_feed:.3f}",
+            f"α_bottom(x={xB:.4f}) = {alpha_bottom:.3f}",
+            "",
+            "幾何平均: α = (α_top × α_feed × α_bottom)^(1/3)",
+            f"α = ({alpha_top:.3f} × {alpha_feed:.3f} × {alpha_bottom:.3f})^(1/3)",
             f"α = {alpha:.3f}",
             "（α > 1 で蒸留分離が可能）",
         ],
-        "values": {"alpha": alpha},
+        "values": {"alpha": alpha, "alpha_top": alpha_top, "alpha_feed": alpha_feed, "alpha_bottom": alpha_bottom},
     })
 
     if alpha <= 1.0:
         return {
             "success": False,
             "errors": [f"Relative volatility ({alpha:.3f}) must be > 1 for separation"],
+        }
+
+    # 共沸チェック: 3点のαが1.0を跨いでいないか確認
+    alphas = [alpha_top, alpha_feed, alpha_bottom]
+    if any(a < 1.0 for a in alphas) and any(a > 1.0 for a in alphas):
+        return {
+            "success": False,
+            "errors": [
+                f"Azeotrope detected: relative volatility crosses 1.0 across the column "
+                f"(α_top={alpha_top:.3f}, α_feed={alpha_feed:.3f}, α_bottom={alpha_bottom:.3f}). "
+                f"FUG method cannot be applied to azeotropic systems. "
+                f"Use rigorous tray-by-tray simulation instead. / "
+                f"共沸が検出されました: 塔内で比揮発度が1.0を跨いでいます。"
+                f"FUG法は共沸系には適用できません。厳密な段計算を使用してください。"
+            ],
         }
 
     if alpha < 1.1:
@@ -174,23 +202,21 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
     # Step 5: 最小還流比（Underwood法）
     R_min = _calculate_minimum_reflux(alpha, xD, xF=zF, q=q)
 
-    y_eq = alpha * zF / (1 + (alpha - 1) * zF)  # 計算式表示用
     calculation_steps.append({
         "step": 5,
         "title": "最小還流比（Underwood法）/ Minimum Reflux",
-        "description": "操作線とq線の交点から算出",
+        "description": f"Underwood方程式を解いてθを求め、Rminを算出（q={q}）",
         "formulas": [
-            "平衡蒸気組成: y* = α·xF / (1 + (α-1)·xF)",
-            f"y* = {alpha:.3f}×{zF} / (1 + ({alpha:.3f}-1)×{zF})",
-            f"y* = {alpha*zF:.4f} / {1+(alpha-1)*zF:.4f}",
-            f"y* = {y_eq:.4f}",
+            "Underwood方程式（二成分系）:",
+            "  1 - q = α·zF/(α-θ) + (1-zF)/(1-θ)",
+            f"  q = {q} {'(飽和液)' if q >= 0.999 else '(過冷却)' if q > 1 else '(部分蒸気)' if q > 0 else '(飽和蒸気)'}",
+            f"  α = {alpha:.3f}, zF = {zF}",
             "",
-            "Rmin = (xD - y*) / (y* - xF)",
-            f"Rmin = ({xD} - {y_eq:.4f}) / ({y_eq:.4f} - {zF})",
-            f"Rmin = {xD - y_eq:.4f} / {y_eq - zF:.4f}",
-            f"Rmin = {R_min:.4f}",
+            "θを二分法で求解（1 < θ < α）後:",
+            "  Rmin + 1 = α·xD/(α-θ) + (1-xD)/(1-θ)",
+            f"  Rmin = {R_min:.4f}",
         ],
-        "values": {"R_min": R_min, "y_eq": y_eq},
+        "values": {"R_min": R_min, "q": q},
     })
 
     if R_min < 0:
@@ -351,37 +377,71 @@ def _calculate_relative_volatility(
 
 def _calculate_minimum_reflux(alpha: float, xD: float, xF: float, q: float) -> float:
     """
-    最小還流比を計算（二成分系簡易法）
+    最小還流比を計算（Underwood法、二成分系）
 
-    飽和液原料(q=1)の場合の近似式を使用:
-    Rmin = (1/(α-1)) * [xD/xF - α*(1-xD)/(1-xF)]
+    Underwood方程式:
+      1 - q = Σ [αi * zi / (αi - θ)]  (i = 1..C)
+    を解いてθを求め、
+      Rmin + 1 = Σ [αi * xDi / (αi - θ)]
+    からRminを計算する。
 
-    より一般的な式:
-    Rmin = (xD - y_eq) / (y_eq - xF)
-    where y_eq = α*xF / (1 + (α-1)*xF)
+    二成分系(軽沸α, 重沸1.0)では解析的にθを求められる:
+      1 - q = α*zF/(α-θ) + (1-zF)/(1-θ)
+    → 二次方程式に帰着。
     """
     if alpha <= 1.0:
         return float('inf')
 
-    # 原料組成での平衡蒸気組成
-    y_eq = alpha * xF / (1 + (alpha - 1) * xF)
+    # 二成分系: α_light = alpha, α_heavy = 1.0
+    # Underwood方程式: 1 - q = α*zF/(α - θ) + (1-zF)/(1 - θ)
+    # θ は 1.0 < θ < α の範囲に存在する
+    # 二分法でθを求める
+    # f(θ) = α*zF/(α-θ) + (1-zF)/(1-θ) - (1-q) = 0
+    # θ ∈ (1.0, α)
+    def f_underwood(theta: float) -> float:
+        if abs(alpha - theta) < 1e-12 or abs(1.0 - theta) < 1e-12:
+            return float('inf')
+        return alpha * xF / (alpha - theta) + (1 - xF) / (1.0 - theta) - (1 - q)
 
-    # 原料熱状態による補正
-    # q = 1 (飽和液): 操作線と平衡線の交点がq線上
-    # 簡易的には、q線の傾きを考慮
-    if q >= 0.999:  # 飽和液
-        # Rmin = (xD - y_eq) / (y_eq - xF) が基本
+    # 二分法でθを求める (1 < θ < α)
+    theta_lo = 1.0 + 1e-8
+    theta_hi = alpha - 1e-8
+
+    # f(θ)の符号チェック
+    f_lo = f_underwood(theta_lo)
+    f_hi = f_underwood(theta_hi)
+
+    if f_lo * f_hi > 0:
+        # 根が見つからない場合（q=1の飽和液に近い場合など）は簡易式にフォールバック
+        y_eq = alpha * xF / (1 + (alpha - 1) * xF)
         if abs(y_eq - xF) < 1e-10:
             return 0.5
         R_min = (xD - y_eq) / (y_eq - xF)
-    else:
-        # q < 1 の場合、より複雑な計算が必要
-        # 簡易的に補正係数を適用
+        return max(0.01, R_min)
+
+    # 二分法 (50反復で十分な精度)
+    theta = (theta_lo + theta_hi) / 2
+    for _ in range(50):
+        theta = (theta_lo + theta_hi) / 2
+        f_mid = f_underwood(theta)
+        if abs(f_mid) < 1e-10:
+            break
+        if f_lo * f_mid < 0:
+            theta_hi = theta
+        else:
+            theta_lo = theta
+            f_lo = f_mid
+
+    # Rmin + 1 = α*xD/(α-θ) + (1-xD)/(1-θ)
+    if abs(alpha - theta) < 1e-12 or abs(1.0 - theta) < 1e-12:
+        y_eq = alpha * xF / (1 + (alpha - 1) * xF)
         if abs(y_eq - xF) < 1e-10:
             return 0.5
-        R_min = (xD - y_eq) / (y_eq - xF) * (1 + 0.1 * (1 - q))
+        return max(0.01, (xD - y_eq) / (y_eq - xF))
 
-    # 負の値は分離が容易（平衡線がxDに近い）なことを示す
+    R_min_plus_1 = alpha * xD / (alpha - theta) + (1 - xD) / (1.0 - theta)
+    R_min = R_min_plus_1 - 1.0
+
     if R_min < 0:
         R_min = 0.01
 

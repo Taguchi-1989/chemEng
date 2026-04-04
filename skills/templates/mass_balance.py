@@ -66,6 +66,9 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
     outlet_data = params.get("outlet_streams", [])
     basis = params.get("basis", "molar")
     split_fractions = params.get("split_fractions", {})
+    recycle_streams = params.get("recycle_streams", [])
+    max_iterations = params.get("max_iterations", 50)
+    convergence_tol = params.get("convergence_tol", 1e-6)
 
     warnings = []
     calculation_steps = []  # 計算過程を記録
@@ -269,6 +272,16 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
     if closure < 99.0:
         warnings.append(f"Mass balance closure is {closure:.2f}%")
 
+    # リサイクルストリーム処理（反復収束計算）
+    recycle_info = None
+    if recycle_streams:
+        recycle_info = _solve_recycle(
+            components, inlet_data, outlet_data, outlet_streams,
+            recycle_streams, split_fractions, basis,
+            max_iterations, convergence_tol,
+            calculation_steps, warnings,
+        )
+
     return {
         "success": True,
         "outputs": {
@@ -287,6 +300,7 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
             "balance_check": balance_check,
             "closure": closure,
             "basis": basis,
+            "recycle": recycle_info,
             "calculation_steps": calculation_steps,
         },
         "warnings": warnings,
@@ -426,3 +440,135 @@ def _solve_two_component_balance(
         comp1: B * xB1,
         comp2: B * (1 - xB1),
     }
+
+
+def _solve_recycle(
+    components: list[str],
+    inlet_data: list[dict[str, Any]],
+    outlet_data: list[dict[str, Any]],
+    outlet_streams: list[Stream],
+    recycle_streams: list[dict[str, Any]],
+    split_fractions: dict[str, Any],
+    basis: str,
+    max_iterations: int,
+    convergence_tol: float,
+    calculation_steps: list[dict[str, Any]],
+    warnings: list[str],
+) -> dict[str, Any]:
+    """
+    リサイクルストリームを含む物質収支を逐次代入法で収束計算する。
+
+    recycle_streams の各要素は:
+        {"from_outlet": "outlet_name", "to_inlet": "inlet_name",
+         "fraction": 0.5}  # 出口ストリームのうちリサイクルする割合
+
+    ティアストリーム（tear stream）の初期推定→反復→収束の手順:
+    1. リサイクル流量を0で初期化（初回）
+    2. メイン収支を計算 → 出口流量確定
+    3. 出口からリサイクル流量を算出
+    4. リサイクルを入口に加算して再計算
+    5. 収束判定（全成分の流量変化 < tol）
+    """
+    # リサイクル流量の初期推定（ゼロ）
+    recycle_flows: dict[str, dict[str, float]] = {}
+    for rec in recycle_streams:
+        name = rec.get("from_outlet", "recycle")
+        recycle_flows[name] = dict.fromkeys(components, 0.0)
+
+    converged = False
+    iteration = 0
+
+    for iteration in range(1, max_iterations + 1):  # noqa: B007
+        prev_recycle = {
+            name: dict(flows) for name, flows in recycle_flows.items()
+        }
+
+        # リサイクルを入口に加算した有効入口を計算
+        effective_inlet_flows = dict.fromkeys(components, 0.0)
+        for data in inlet_data:
+            stream = Stream(
+                name=data["name"],
+                flow_rate=data.get("flow_rate"),
+                composition=data.get("composition", {}),
+            )
+            stream.calculate_component_flows(components)
+            for comp in components:
+                effective_inlet_flows[comp] += stream.component_flows.get(comp, 0.0)
+
+        # リサイクルを加算
+        for _name, flows in recycle_flows.items():
+            for comp in components:
+                effective_inlet_flows[comp] += flows.get(comp, 0.0)
+
+        # 出口の再計算（split_fractionsを適用）
+        for stream in outlet_streams:
+            if split_fractions:
+                stream.component_flows = {}
+                for comp in components:
+                    if comp in split_fractions:
+                        frac = split_fractions[comp].get(stream.name, 0.0)
+                        stream.component_flows[comp] = effective_inlet_flows[comp] * frac
+                stream.calculate_from_component_flows(components)
+
+        # リサイクル流量を更新
+        for rec in recycle_streams:
+            from_outlet = rec["from_outlet"]
+            fraction = rec.get("fraction", 1.0)
+            for stream in outlet_streams:
+                if stream.name == from_outlet:
+                    recycle_flows[from_outlet] = {
+                        comp: stream.component_flows.get(comp, 0.0) * fraction
+                        for comp in components
+                    }
+                    break
+
+        # 収束判定
+        max_change = 0.0
+        for name, flows in recycle_flows.items():
+            for comp in components:
+                old_val = prev_recycle.get(name, {}).get(comp, 0.0)
+                new_val = flows.get(comp, 0.0)
+                if abs(old_val) > 1e-15:
+                    max_change = max(max_change, abs(new_val - old_val) / abs(old_val))
+                elif abs(new_val) > 1e-15:
+                    max_change = max(max_change, abs(new_val))
+
+        if max_change < convergence_tol:
+            converged = True
+            break
+
+    recycle_summary = {
+        "converged": converged,
+        "iterations": iteration,
+        "max_relative_change": max_change,
+        "recycle_flows": {
+            name: {comp: round(v, 6) for comp, v in flows.items()}
+            for name, flows in recycle_flows.items()
+        },
+    }
+
+    if not converged:
+        warnings.append(
+            f"Recycle loop did not converge after {max_iterations} iterations "
+            f"(max change={max_change:.2e}). Try increasing max_iterations or "
+            "check for oscillation. / "
+            f"リサイクルループが{max_iterations}回の反復で収束しませんでした。"
+        )
+
+    calculation_steps.append({
+        "step": len(calculation_steps) + 1,
+        "title": "リサイクル収束計算 / Recycle Convergence",
+        "description": f"逐次代入法（{'収束' if converged else '未収束'}）",
+        "formulas": [
+            f"反復回数: {iteration}",
+            f"収束判定: max(Δ) = {max_change:.2e} {'< ' if converged else '> '}{convergence_tol}",
+            "",
+            "リサイクル流量:",
+        ] + [
+            f"  {name}: {sum(flows.values()):.4f} {basis}"
+            for name, flows in recycle_flows.items()
+        ],
+        "values": recycle_summary,
+    })
+
+    return recycle_summary

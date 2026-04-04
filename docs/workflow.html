@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChemEng - Calculation Workflow</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --border: #334155;
+    --text: #e2e8f0;
+    --accent: #38bdf8;
+    --accent2: #a78bfa;
+    --green: #4ade80;
+    --orange: #fb923c;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  header h1 { font-size: 1.4rem; color: var(--accent); }
+  .lang-toggle {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .lang-toggle button {
+    padding: 0.4rem 1rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+  }
+  .lang-toggle button.active {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0.5rem 2rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 56px;
+    z-index: 99;
+  }
+  nav a {
+    color: var(--text);
+    text-decoration: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+  }
+  nav a:hover { background: var(--border); }
+  main { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+  section {
+    margin-bottom: 3rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+  }
+  section h2 {
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+    font-size: 1.3rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.5rem;
+  }
+  section p.desc {
+    color: #94a3b8;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+  }
+  .mermaid {
+    background: #0b1222;
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-x: auto;
+  }
+  .mermaid svg { max-width: 100%; height: auto; }
+  .hidden { display: none !important; }
+  footer {
+    text-align: center;
+    padding: 2rem;
+    color: #64748b;
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>ChemEng Workflow Diagrams</h1>
+  <div class="lang-toggle">
+    <button id="btn-en" class="active" onclick="switchLang('en')">English</button>
+    <button id="btn-ja" onclick="switchLang('ja')">日本語</button>
+  </div>
+</header>
+
+<nav>
+  <a href="#overview">Overview</a>
+  <a href="#engine-select">Engine Selection</a>
+  <a href="#registry">Registry</a>
+  <a href="#property">Property Estimation</a>
+  <a href="#distillation">Distillation</a>
+  <a href="#mass-balance">Mass Balance</a>
+  <a href="#heat-balance">Heat Balance</a>
+  <a href="#absorption">Absorption</a>
+  <a href="#txy">T-x-y Diagram</a>
+  <a href="#extraction">Extraction</a>
+  <a href="#data-flow">Data Flow</a>
+</nav>
+
+<main>
+
+<!-- ============================================================ -->
+<!-- OVERVIEW -->
+<!-- ============================================================ -->
+<section id="overview">
+  <h2 class="lang-en">Overall Architecture</h2>
+  <h2 class="lang-ja hidden">全体アーキテクチャ</h2>
+  <p class="desc lang-en">How user requests flow through the system from entry to result.</p>
+  <p class="desc lang-ja hidden">ユーザーリクエストがシステム内をどう流れるかの全体像。</p>
+
+  <div class="mermaid lang-en">
+flowchart TB
+    subgraph Entry["Entry Points"]
+        CLI["__main__.py\nmain()\nCLI entry point"]
+        API["server.py\nmain()\nAPI server entry"]
+    end
+
+    subgraph Interface["Interface Layer"]
+        CLIH["interface/cli.py\nmain()\nParse args & route commands"]
+        APIH["interface/api.py\ncreate_app()\nFastAPI endpoints"]
+    end
+
+    subgraph Core["Core Framework"]
+        REG["core/registry.py\nSkillRegistry.execute()\nLoad skill, validate, dispatch"]
+        SKILL["core/skill.py\nSkillDefinition\nSchema & validation"]
+        REQ["core/requirement.py\nSubstance / Condition\nStructured specs"]
+    end
+
+    subgraph Engines["Calculation Engines"]
+        SEL["engines/__init__.py\nselect_engine()\nAuto-select best engine"]
+        THERMO["engines/thermo_engine.py\nThermoEngine\nget_property() / calc_equilibrium()"]
+        CANTERA["engines/cantera_engine.py\nCanteraEngine\nReaction kinetics"]
+        COOL["engines/coolprop_engine.py\nCoolPropEngine\nRefrigerant properties"]
+    end
+
+    subgraph Skills["Skill Templates"]
+        PROP["property_estimation.py\nexecute(params, engine)"]
+        DIST["distillation.py\nexecute(params, engine)"]
+        MB["mass_balance.py\nexecute(params, engine)"]
+        HB["heat_balance.py\nexecute(params, engine)"]
+        ABS["absorption.py\nexecute(params, engine)"]
+        TXY["txy_diagram.py\nexecute(params, engine)"]
+        EXT["extraction.py\nexecute(params, engine)"]
+    end
+
+    subgraph Data["Data Layer"]
+        DB["data/property_db.py\nPropertyDatabase\nLocal substance cache"]
+        FETCH["fetchers/\nPubChem / ThermoLookup\nExternal data sources"]
+    end
+
+    CLI --> CLIH
+    API --> APIH
+    CLIH --> REG
+    APIH --> REG
+    CLIH -->|"cmd_property()"| SEL
+    REG --> SKILL
+    REG --> SEL
+    SEL --> THERMO
+    SEL --> CANTERA
+    SEL --> COOL
+    REG -->|"load template"| Skills
+    PROP --> THERMO
+    PROP --> DB
+    DIST --> THERMO
+    MB --> THERMO
+    HB --> THERMO
+    ABS --> THERMO
+    TXY --> THERMO
+    EXT --> THERMO
+    DB --> FETCH
+
+    style Entry fill:#1e3a5f,stroke:#38bdf8
+    style Interface fill:#1e3a5f,stroke:#38bdf8
+    style Core fill:#2d1b4e,stroke:#a78bfa
+    style Engines fill:#1b3d2f,stroke:#4ade80
+    style Skills fill:#3d2b1b,stroke:#fb923c
+    style Data fill:#3d1b2b,stroke:#f472b6
+  </div>
+
+  <div class="mermaid lang-ja hidden">
+flowchart TB
+    subgraph Entry["エントリーポイント"]
+        CLI["__main__.py\nmain()\nCLIエントリー"]
+        API["server.py\nmain()\nAPIサーバー起動"]
+    end
+
+    subgraph Interface["インターフェース層"]
+        CLIH["interface/cli.py\nmain()\n引数解析・コマンド振り分け"]
+        APIH["interface/api.py\ncreate_app()\nFastAPI エンドポイント"]
+    end
+
+    subgraph Core["コアフレームワーク"]
+        REG["core/registry.py\nSkillRegistry.execute()\nスキル読込・検証・実行"]
+        SKILL["core/skill.py\nSkillDefinition\nスキーマ定義・バリデーション"]
+        REQ["core/requirement.py\nSubstance / Condition\n構造化仕様"]
+    end
+
+    subgraph Engines["計算エンジン"]
+        SEL["engines/__init__.py\nselect_engine()\n最適エンジン自動選択"]
+        THERMO["engines/thermo_engine.py\nThermoEngine\n物性計算・気液平衡"]
+        CANTERA["engines/cantera_engine.py\nCanteraEngine\n反応速度論"]
+        COOL["engines/coolprop_engine.py\nCoolPropEngine\n冷媒物性"]
+    end
+
+    subgraph Skills["スキルテンプレート（計算本体）"]
+        PROP["property_estimation.py\nexecute()\n物性推算"]
+        DIST["distillation.py\nexecute()\n蒸留塔設計"]
+        MB["mass_balance.py\nexecute()\n物質収支"]
+        HB["heat_balance.py\nexecute()\n熱収支"]
+        ABS["absorption.py\nexecute()\nガス吸収塔設計"]
+        TXY["txy_diagram.py\nexecute()\nT-x-y線図"]
+        EXT["extraction.py\nexecute()\n抽出設計"]
+    end
+
+    subgraph Data["データ層"]
+        DB["data/property_db.py\nPropertyDatabase\nローカル物性キャッシュ"]
+        FETCH["fetchers/\nPubChem / ThermoLookup\n外部データ取得"]
+    end
+
+    CLI --> CLIH
+    API --> APIH
+    CLIH --> REG
+    APIH --> REG
+    CLIH -->|"cmd_property()"| SEL
+    REG --> SKILL
+    REG --> SEL
+    SEL --> THERMO
+    SEL --> CANTERA
+    SEL --> COOL
+    REG -->|"テンプレート読込"| Skills
+    PROP --> THERMO
+    PROP --> DB
+    DIST --> THERMO
+    MB --> THERMO
+    HB --> THERMO
+    ABS --> THERMO
+    TXY --> THERMO
+    EXT --> THERMO
+    DB --> FETCH
+
+    style Entry fill:#1e3a5f,stroke:#38bdf8
+    style Interface fill:#1e3a5f,stroke:#38bdf8
+    style Core fill:#2d1b4e,stroke:#a78bfa
+    style Engines fill:#1b3d2f,stroke:#4ade80
+    style Skills fill:#3d2b1b,stroke:#fb923c
+    style Data fill:#3d1b2b,stroke:#f472b6
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- ENGINE SELECTION -->
+<!-- ============================================================ -->
+<section id="engine-select">
+  <h2 class="lang-en">Engine Selection Logic</h2>
+  <h2 class="lang-ja hidden">エンジン選択ロジック</h2>
+  <p class="desc lang-en">How select_engine() chooses the best calculation backend.</p>
+  <p class="desc lang-ja hidden">select_engine()が最適な計算バックエンドを選ぶ仕組み。</p>
+
+  <div class="mermaid lang-en">
+flowchart TD
+    START(["select_engine(substance, calc_type, property)"])
+    REFRIG{"substance in\nREFRIGERANTS?"}
+    COOLPROP["CoolProp\n(all refrigerant calcs)"]
+    COMBUST{"substance in\nCOMBUSTION_SPECIES?"}
+    COMBVLE{"calc_type is\nVLE/flash/property?"}
+    CANTERA["Cantera\n(combustion/kinetics)"]
+    CT{"calculation_type?"}
+    KINETICS["Cantera\n(reaction kinetics)"]
+    COOLPROP2["CoolProp\n(refrigeration cycle)"]
+    VLE["ThermoEngine\n(VLE/flash)"]
+    DEFAULT["ThermoEngine\n(default: 30k+ compounds)"]
+
+    START --> REFRIG
+    REFRIG -->|"Yes"| COOLPROP
+    REFRIG -->|"No"| COMBUST
+    COMBUST -->|"Yes"| COMBVLE
+    COMBVLE -->|"Yes → thermo"| CT
+    COMBVLE -->|"No"| CANTERA
+    COMBUST -->|"No"| CT
+    CT -->|"kinetics / combustion"| KINETICS
+    CT -->|"refrigeration / saturation"| COOLPROP2
+    CT -->|"vle / flash / bubble / dew"| VLE
+    CT -->|"other / none"| DEFAULT
+
+    style START fill:#38bdf8,color:#000
+    style COOLPROP fill:#a78bfa,color:#000
+    style COOLPROP2 fill:#a78bfa,color:#000
+    style CANTERA fill:#fb923c,color:#000
+    style KINETICS fill:#fb923c,color:#000
+    style VLE fill:#4ade80,color:#000
+    style DEFAULT fill:#4ade80,color:#000
+  </div>
+
+  <div class="mermaid lang-ja hidden">
+flowchart TD
+    START(["select_engine(substance, calc_type, property)"])
+    REFRIG{"物質は冷媒？"}
+    COOLPROP["CoolProp\n（冷媒の全計算で優先）"]
+    COMBUST{"物質は燃焼種？"}
+    COMBVLE{"計算タイプは\nVLE/フラッシュ/物性？"}
+    CANTERA["Cantera\n（燃焼/速度論）"]
+    CT{"計算タイプは？"}
+    KINETICS["Cantera\n（反応速度論）"]
+    COOLPROP2["CoolProp\n（冷凍サイクル）"]
+    VLE["ThermoEngine\n（気液平衡/フラッシュ）"]
+    DEFAULT["ThermoEngine\n（デフォルト: 3万+化合物）"]
+
+    START --> REFRIG
+    REFRIG -->|"はい"| COOLPROP
+    REFRIG -->|"いいえ"| COMBUST
+    COMBUST -->|"はい"| COMBVLE
+    COMBVLE -->|"はい → thermo"| CT
+    COMBVLE -->|"いいえ"| CANTERA
+    COMBUST -->|"いいえ"| CT
+    CT -->|"反応速度 / 燃焼"| KINETICS
+    CT -->|"冷凍 / 飽和"| COOLPROP2
+    CT -->|"VLE / フラッシュ / 露点 / 泡点"| VLE
+    CT -->|"その他 / なし"| DEFAULT
+
+    style START fill:#38bdf8,color:#000
+    style COOLPROP fill:#a78bfa,color:#000
+    style COOLPROP2 fill:#a78bfa,color:#000
+    style CANTERA fill:#fb923c,color:#000
+    style KINETICS fill:#fb923c,color:#000
+    style VLE fill:#4ade80,color:#000
+    style DEFAULT fill:#4ade80,color:#000
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- REGISTRY EXECUTION -->
+<!-- ============================================================ -->
+<section id="registry">
+  <h2 class="lang-en">SkillRegistry.execute() Flow</h2>
+  <h2 class="lang-ja hidden">SkillRegistry.execute() 実行フロー</h2>
+  <p class="desc lang-en">Step-by-step execution within the registry.</p>
+  <p class="desc lang-ja hidden">レジストリ内部の段階的な処理フロー。</p>
+
+  <div class="mermaid lang-en">
+sequenceDiagram
+    participant U as User / API
+    participant R as SkillRegistry
+    participant S as SkillDefinition
+    participant E as EngineSelector
+    participant T as SkillTemplate
+    participant EN as Engine
+
+    U->>R: execute(skill_id, params)
+    R->>R: get_skill(skill_id)
+    R->>S: get_input_with_defaults(params)
+    S-->>R: merged params
+    R->>S: validate_inputs(params)
+    S-->>R: validation OK / errors
+    R->>E: select_engine(substance, calc_type)
+    E-->>R: best engine
+    R->>R: _load_template(skill)
+    R->>T: execute(params, engine)
+    T->>EN: get_property() / calc_equilibrium()
+    EN-->>T: property values
+    T-->>R: result dict
+    R->>R: CalculationResult.success_result(...)
+    R-->>U: CalculationResult
+  </div>
+
+  <div class="mermaid lang-ja hidden">
+sequenceDiagram
+    participant U as ユーザー / API
+    participant R as SkillRegistry
+    participant S as SkillDefinition
+    participant E as エンジン選択
+    participant T as スキルテンプレート
+    participant EN as 計算エンジン
+
+    U->>R: execute(skill_id, params)
+    R->>R: get_skill(skill_id) スキル定義取得
+    R->>S: get_input_with_defaults(params) デフォルト値マージ
+    S-->>R: マージ済みパラメータ
+    R->>S: validate_inputs(params) 入力検証
+    S-->>R: 検証OK / エラー
+    R->>E: select_engine() エンジン自動選択
+    E-->>R: 最適エンジン
+    R->>R: _load_template() テンプレート動的読込
+    R->>T: execute(params, engine) 計算実行
+    T->>EN: get_property() / calc_equilibrium() 物性取得
+    EN-->>T: 計算値
+    T-->>R: 結果dict
+    R->>R: CalculationResult作成
+    R-->>U: CalculationResult
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- PROPERTY ESTIMATION -->
+<!-- ============================================================ -->
+<section id="property">
+  <h2 class="lang-en">Property Estimation Workflow</h2>
+  <h2 class="lang-ja hidden">物性推算ワークフロー</h2>
+  <p class="desc lang-en">property_estimation.py: Calculate a single thermodynamic property.</p>
+  <p class="desc lang-ja hidden">property_estimation.py: 単一の熱力学物性を計算する。</p>
+
+  <div class="mermaid lang-en">
+flowchart TD
+    IN["Input:\nsubstance, property, T, P"]
+    DB{"Check PropertyDatabase\nget_property_value()"}
+    HIT["Cache hit!\nReturn cached value\n+ confidence level"]
+    MISS["Cache miss"]
+    ENG["Engine.get_property()\nsubstance, property, T, P"]
+    CHEM["Create Chemical object\nChemical(name, T, P)"]
+    CALC["Access property attribute\ne.g. chem.Psat, chem.rho_l\n(Antoine/Wagner/Rackett)"]
+    INFO["Engine.get_substance_info()\nCAS, MW, Tc, Pc, ω"]
+    STEPS["Build calculation_steps\n(educational explanation)"]
+    OUT["Output:\nvalue, unit, conditions,\ncalculation_steps, source"]
+
+    IN --> DB
+    DB -->|"found"| HIT
+    DB -->|"not found"| MISS
+    MISS --> ENG
+    ENG --> CHEM
+    CHEM --> CALC
+    ENG --> INFO
+    CALC --> STEPS
+    INFO --> STEPS
+    STEPS --> OUT
+    HIT --> OUT
+
+    style IN fill:#38bdf8,color:#000
+    style OUT fill:#4ade80,color:#000
+    style HIT fill:#a78bfa,color:#000
+  </div>
+
+  <div class="mermaid lang-ja hidden">
+flowchart TD
+    IN["入力:\n物質名, 物性名, 温度T, 圧力P"]
+    DB{"ローカルDB確認\nget_property_value()"}
+    HIT["キャッシュヒット!\nキャッシュ値を返す\n+ 信頼度レベル"]
+    MISS["キャッシュミス"]
+    ENG["Engine.get_property()\n物質, 物性, T, P"]
+    CHEM["Chemicalオブジェクト生成\nChemical(name, T, P)"]
+    CALC["物性属性にアクセス\n例: chem.Psat, chem.rho_l\n(Antoine/Wagner/Rackett式)"]
+    INFO["Engine.get_substance_info()\nCAS, 分子量, 臨界定数, 偏心因子"]
+    STEPS["計算ステップ構築\n（教育的な説明付き）"]
+    OUT["出力:\n値, 単位, 条件,\n計算ステップ, データソース"]
+
+    IN --> DB
+    DB -->|"あり"| HIT
+    DB -->|"なし"| MISS
+    MISS --> ENG
+    ENG --> CHEM
+    CHEM --> CALC
+    ENG --> INFO
+    CALC --> STEPS
+    INFO --> STEPS
+    STEPS --> OUT
+    HIT --> OUT
+
+    style IN fill:#38bdf8,color:#000
+    style OUT fill:#4ade80,color:#000
+    style HIT fill:#a78bfa,color:#000
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- DISTILLATION -->
+<!-- ============================================================ -->
+<section id="distillation">
+  <h2 class="lang-en">Distillation Column Design</h2>
+  <h2 class="lang-ja hidden">蒸留塔設計ワークフロー</h2>
+  <p class="desc lang-en">distillation.py: Binary column design via McCabe-Thiele + Fenske-Underwood-Gilliland.</p>
+  <p class="desc lang-ja hidden">distillation.py: McCabe-Thiele法 + Fenske-Underwood-Gilliland法による二成分蒸留塔設計。</p>
+
+  <div class="mermaid lang-en">
+flowchart TD
+    IN["Input:\nlight_comp, heavy_comp,\nF, zF, xD, xB,\nR_factor, P, T_feed, q"]
+
+    VAL["Validate compositions\nzF < xD, zF > xB"]
+
+    MB["Material Balance\nF = D + B\nD = F·(zF−xB)/(xD−xB)\nB = F − D"]
+
+    VLE["engine.calculate_equilibrium()\n→ K-values at 3 conditions:\ntop (xD), feed (zF), bottom (xB)"]
+
+    ALPHA["Geometric Mean Volatility\nα = (α_top · α_feed · α_bottom)^(1/3)"]
+
+    AZEO{"Azeotrope check:\nAll α_i > 1.0?\n(no crossing of 1.0)"}
+
+    AZEOFAIL["✗ Azeotrope detected:\nα crosses 1.0 across column.\nFUG method cannot be applied.\nUse rigorous simulation."]
+
+    FENSKE["Fenske Equation (min stages)\nN_min = ln[(xD/(1−xD))·((1−xB)/xB)] / ln(α)"]
+
+    UNDERWOOD["Underwood Equation (min reflux)\nSolve: 1−q = Σ[αi·zi/(αi−θ)]\nfor θ, then:\nRmin+1 = Σ[αi·xDi/(αi−θ)]"]
+
+    REFLUX["Actual Reflux\nR = R_min × reflux_ratio_factor"]
+
+    GILLILAND["Gilliland Correlation (actual stages)\nX = (R−R_min)/(R+1)\nY = f(X)\nN = (N_min+Y)/(1−Y)"]
+
+    KIRKBRIDE["Kirkbride Equation (feed stage)\nlog(Nr/Ns) = 0.206·log[...]"]
+
+    DUTY["Heat Duties\nQ_c = D·(R+1)·ΔH_vap (condenser)\nQ_r = Q_c + F·Cp·ΔT (reboiler)"]
+
+    OUT["Output:\nα, R_min, R, N_min, N,\nfeed_stage, D, B,\nQ_c, Q_r, diameter"]
+
+    IN --> VAL --> MB
+    MB --> VLE
+    VLE --> ALPHA
+    ALPHA --> AZEO
+    AZEO -->|"✗ crosses 1.0"| AZEOFAIL
+    AZEO -->|"✓ OK"| FENSKE
+    AZEO -->|"✓ OK"| UNDERWOOD
+    FENSKE --> GILLILAND
+    UNDERWOOD --> REFLUX --> GILLILAND
+    GILLILAND --> KIRKBRIDE --> DUTY --> OUT
+
+    style IN fill:#38bdf8,color:#000
+    style OUT fill:#4ade80,color:#000
+    style VLE fill:#a78bfa,color:#000
+    style FENSKE fill:#fb923c,color:#000
+    style UNDERWOOD fill:#fb923c,color:#000
+    style GILLILAND fill:#fb923c,color:#000
+    style KIRKBRIDE fill:#fb923c,color:#000
+    style AZEO fill:#fbbf24,color:#000
+    style AZEOFAIL fill:#ef4444,color:#fff
+  </div>
+
+  <div class="mermaid lang-ja hidden">
+flowchart TD
+    IN["入力:\n軽沸成分, 重沸成分,\n供給量F, 供給組成zF,\n留出純度xD, 缶出純度xB,\n還流比倍率, 圧力P, 供給温度, q"]
+
+    VAL["組成検証\nzF < xD, zF > xB"]
+
+    MB["物質収支\nF = D + B\nD = F·(zF−xB)/(xD−xB)\nB = F − D"]
+
+    VLE["engine.calculate_equilibrium()\n→ 3条件でK値取得:\n塔頂(xD), フィード(zF), 塔底(xB)"]
+
+    ALPHA["幾何平均比揮発度\nα = (α_塔頂 · α_フィード · α_塔底)^(1/3)"]
+
+    AZEO{"共沸チェック:\n全αi > 1.0？\n（1.0を跨いでいないか）"}
+
+    AZEOFAIL["✗ 共沸検出:\nα が塔内で1.0を跨ぐ。\nFUG法は適用不可。\n厳密シミュレーションを使用。"]
+
+    FENSKE["Fenske式（最小理論段数）\nN_min = ln[(xD/(1−xD))·((1−xB)/xB)] / ln(α)"]
+
+    UNDERWOOD["Underwood式（最小還流比）\nθを求解: 1−q = Σ[αi·zi/(αi−θ)]\nRmin+1 = Σ[αi·xDi/(αi−θ)]"]
+
+    REFLUX["実還流比\nR = R_min × 還流比倍率"]
+
+    GILLILAND["Gilliland相関式（実理論段数）\nX = (R−R_min)/(R+1)\nY = f(X)\nN = (N_min+Y)/(1−Y)"]
+
+    KIRKBRIDE["Kirkbride式（供給段位置）\nlog(Nr/Ns) = 0.206·log[...]"]
+
+    DUTY["熱負荷\nQ_c = D·(R+1)·ΔH_vap（凝縮器）\nQ_r = Q_c + F·Cp·ΔT（再沸器）"]
+
+    OUT["出力:\nα, R_min, R, N_min, N,\n供給段, 留出量D, 缶出量B,\nQ_c, Q_r, 塔径"]
+
+    IN --> VAL --> MB
+    MB --> VLE
+    VLE --> ALPHA
+    ALPHA --> AZEO
+    AZEO -->|"✗ 1.0を跨ぐ"| AZEOFAIL
+    AZEO -->|"✓ OK"| FENSKE
+    AZEO -->|"✓ OK"| UNDERWOOD
+    FENSKE --> GILLILAND
+    UNDERWOOD --> REFLUX --> GILLILAND
+    GILLILAND --> KIRKBRIDE --> DUTY --> OUT
+
+    style IN fill:#38bdf8,color:#000
+    style OUT fill:#4ade80,color:#000
+    style VLE fill:#a78bfa,color:#000
+    style FENSKE fill:#fb923c,color:#000
+    style UNDERWOOD fill:#fb923c,color:#000
+    style GILLILAND fill:#fb923c,color:#000
+    style KIRKBRIDE fill:#fb923c,color:#000
+    style AZEO fill:#fbbf24,color:#000
+    style AZEOFAIL fill:#ef4444,color:#fff
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- MASS BALANCE -->
+<!-- ============================================================ -->
+<section id="mass-balance">
+  <h2 class="lang-en">Mass Balance Workflow</h2>
+  <h2 class="lang-ja hidden">物質収支ワークフロー</h2>
+  <p class="desc lang-en">mass_balance.py: Multi-stream material balance calculations.</p>
+  <p class="desc lang-ja hidden">mass_balance.py: 複数流れの物質収支計算。</p>
+
+  <div class="mermaid lang-en">
+flowchart TD
+    IN["Input:\ncomponents[], inlet_streams[],\noutlet_streams[], basis,\nsplit_fractions, recycle_streams[]"]
+
+    PARSE["Parse inlet streams\nExtract component flows\nflow_i = total × x_i"]
+
+    AGG["Aggregate inlet totals\n+ recycle flows (if iterating)\nΣ flow_in for each component"]
+
+    CHECK{"Outlet specs\ncomplete?"}
+
+    SPLIT["Apply split_fractions\noutlet_flow_i = inlet_total_i × f_i"]
+
+    SOLVE["Solve conservation\nΣ inlet = Σ outlet\nfor each component"]
+
+    TWOOUT["2-outlet system:\nSolve linear system\noutlet2 = inlet − outlet1"]
+
+    CLOSE["Calculate closure\nclosure% = (Σout / Σin) × 100"]
+
+    RECYCLE{"Recycle streams\ndefined?"}
+
+    TEAR["Tear stream update:\nrecycle_flow = outlet × fraction\nAdd to effective inlet"]
+
+    CONV{"Converged?\nmax(Δ) < tol"}
+
+    OUT["Output:\ninlet_total, outlet_streams[],\nclosure%, recycle_info,\ncalculation_steps"]
+
+    IN --> PARSE --> AGG
+    AGG --> CHECK
+    CHECK -->|"split given"| SPLIT --> CLOSE
+    CHECK -->|"partial specs"| SOLVE --> CLOSE
+    CHECK -->|"2 outlets, 1 known"| TWOOUT --> CLOSE
+    CLOSE --> RECYCLE
+    RECYCLE -->|"No"| OUT
+    RECYCLE -->|"Yes"| TEAR --> CONV
+    CONV -->|"No → iterate"| AGG
+    CONV -->|"Yes"| OUT
+
+    style IN fill:#38bdf8,color:#000
+    style OUT fill:#4ade80,color:#000
+    style CLOSE fill:#a78bfa,color:#000
+    style TEAR fill:#fb923c,color:#000
+    style CONV fill:#fbbf24,color:#000
+  </div>
+
+  <div class="mermaid lang-ja hidden">
+flowchart TD
+    IN["入力:\n成分リスト, 入口流れ[],\n出口流れ[], 基準(モル/質量),\n分配率, リサイクル流れ[]"]
+
+    PARSE["入口流れ解析\n各成分流量を算出\nflow_i = 総量 × x_i"]
+
+    AGG["入口合計集計\n+ リサイクル流量(反復時)\n各成分のΣ flow_in"]
+
+    CHECK{"出口仕様は\n完全？"}
+
+    SPLIT["分配率を適用\noutlet_flow_i = inlet_total_i × f_i"]
+
+    SOLVE["保存則で解く\nΣ入口 = Σ出口\n（各成分）"]
+
+    TWOOUT["2出口系:\n線形系を解く\n出口2 = 入口 − 出口1"]
+
+    CLOSE["収支チェック\nclosure% = (Σ出口 / Σ入口) × 100"]
+
+    RECYCLE{"リサイクル流れ\n定義あり？"}
+
+    TEAR["ティアストリーム更新:\nリサイクル流量 = 出口 × 割合\n有効入口に加算"]
+
+    CONV{"収束？\nmax(Δ) < tol"}
+
+    OUT["出力:\n入口合計, 出口流れ[],\nclosure%, リサイクル情報,\n計算ステップ"]
+
+    IN --> PARSE --> AGG
+    AGG --> CHECK
+    CHECK -->|"分配率あり"| SPLIT --> CLOSE
+    CHECK -->|"一部仕様"| SOLVE --> CLOSE
+    CHECK -->|"2出口・1つ既知"| TWOOUT --> CLOSE
+    CLOSE --> RECYCLE
+    RECYCLE -->|"なし"| OUT
+    RECYCLE -->|"あり"| TEAR --> CONV
+    CONV -->|"未収束 → 反復"| AGG
+    CONV -->|"収束"| OUT
+
+    style IN fill:#38bdf8,color:#000
+    style OUT fill:#4ade80,color:#000
+    style CLOSE fill:#a78bfa,color:#000
+    style TEAR fill:#fb923c,color:#000
+    style CONV fill:#fbbf24,color:#000
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- HEAT BALANCE -->
+<!-- ============================================================ -->
+<section id="heat-balance">
+  <h2 class="lang-en">Heat Balance Workflow</h2>
+  <h2 class="lang-ja hidden">熱収支ワークフロー</h2>
+  <p class="desc lang-en">heat_balance.py: Heat duty for temperature change ± phase change.</p>
+  <p class="desc lang-ja hidden">heat_balance.py: 温度変化±相変化の熱負荷計算。</p>
+
+  <div class="mermaid lang-en">
+flowchart TD
+    IN["Input:\nsubstance, flow_rate,\nT_in, T_out, P,\nphase_change, η"]
+
+    MIX{"Mixture\ndetected?"}
+
+    MIXBYPASS["⚠ Mixture bypass:\nNo single boiling point.\nSkip phase change.\nSensible heat only.\n(Use flash calc for full analysis)"]
+
+    BP["engine.get_property()\n→ boiling_point at P"]
+
+    PHASE["Determine phases\ninlet_phase = f(T_in, T_bp)\noutlet_phase = f(T_out, T_bp)"]
+
+    DTCHK{"ΔT > 50K?"}
+
+    CPINT["Multi-point Cp integration\n∫Cp(T)dT via trapezoid rule\n(5 points from T_in to T_out)"]
+
+    CPAVG["Single-point Cp\nCp at T_avg = (T_in+T_out)/2"]
+
+    SENS["Sensible Heat\nQ_sens = ṅ × ∫Cp dT"]
+
+    PHCHK{"Phase change\noccurs?"}
+
+    HVAP["engine.get_property()\n→ ΔH_vap"]
+
+    LAT["Latent Heat\nQ_lat = ṅ × ΔH_vap"]
+
+    NOLAT["Q_lat = 0"]
+
+    RXN{"Reaction heat\ngiven?"}
+
+    QRXN["Q_rxn = ṅ × ΔH_rxn"]
+
+    EFF["Apply efficiency\nQ_total = (Q_sens + Q_lat + Q_rxn) / η"]
+
+    OUT["Output:\ninlet/outlet_phase,\nQ_sensible, Q_latent,\ntotal_duty (W or kW)"]
+
+    IN --> MIX
+    MIX -->|"Yes"| MIXBYPASS --> DTCHK
+    MIX -->|"No (pure)"| BP
+    BP --> PHASE --> DTCHK
+    DTCHK -->|"Yes (large ΔT)"| CPINT --> SENS
+    DTCHK -->|"No (small ΔT)"| CPAVG --> SENS
+    SENS --> PHCHK
+    PHCHK -->|"Yes (pure only)"| HVAP --> LAT --> RXN
+    PHCHK -->|"No"| NOLAT --> RXN
+    RXN -->|"Yes"| QRXN --> EFF
+    RXN -->|"No"| EFF
+    EFF --> OUT
+
+    style IN fill:#38bdf8,color:#000
+    style OUT fill:#4ade80,color:#000
+    style SENS fill:#fb923c,color:#000
+    style LAT fill:#fb923c,color:#000
+    style MIXBYPASS fill:#ef4444,color:#fff
+    style CPINT fill:#a78bfa,color:#000
+  </div>
+
+  <div class="mermaid lang-ja hidden">
+flowchart TD
+    IN["入力:\n物質, 流量,\n入口温度T_in, 出口温度T_out,\n圧力P, 相変化有無, 効率η"]
+
+    MIX{"混合物\n検出？"}
+
+    MIXBYPASS["⚠ 混合物バイパス:\n単一沸点が存在しない。\n相変化計算をスキップ。\n顕熱のみ計算。\n（正確にはフラッシュ計算が必要）"]
+
+    BP["engine.get_property()\n→ 圧力Pでの沸点取得"]
+
+    PHASE["相の判定\n入口相 = f(T_in, 沸点)\n出口相 = f(T_out, 沸点)"]
+
+    DTCHK{"ΔT > 50K？"}
+
+    CPINT["多点Cp積分\n∫Cp(T)dT を台形則で計算\n（T_in〜T_outを5点で取得）"]
+
+    CPAVG["1点Cp\nT_avg = (T_in+T_out)/2 でのCp"]
+
+    SENS["顕熱\nQ_顕 = ṅ × ∫Cp dT"]
+
+    PHCHK{"相変化\nあり？"}
+
+    HVAP["engine.get_property()\n→ 蒸発潜熱ΔH_vap"]
+
+    LAT["潜熱\nQ_潜 = ṅ × ΔH_vap"]
+
+    NOLAT["Q_潜 = 0"]
+
+    RXN{"反応熱\nあり？"}
+
+    QRXN["Q_反応 = ṅ × ΔH_rxn"]
+
+    EFF["効率補正\nQ_合計 = (Q_顕 + Q_潜 + Q_反応) / η"]
+
+    OUT["出力:\n入口/出口相,\n顕熱, 潜熱,\n合計熱負荷 (W or kW)"]
+
+    IN --> MIX
+    MIX -->|"はい"| MIXBYPASS --> DTCHK
+    MIX -->|"いいえ（純物質）"| BP
+    BP --> PHASE --> DTCHK
+    DTCHK -->|"はい（大ΔT）"| CPINT --> SENS
+    DTCHK -->|"いいえ（小ΔT）"| CPAVG --> SENS
+    SENS --> PHCHK
+    PHCHK -->|"はい（純物質のみ）"| HVAP --> LAT --> RXN
+    PHCHK -->|"いいえ"| NOLAT --> RXN
+    RXN -->|"はい"| QRXN --> EFF
+    RXN -->|"いいえ"| EFF
+    EFF --> OUT
+
+    style IN fill:#38bdf8,color:#000
+    style OUT fill:#4ade80,color:#000
+    style SENS fill:#fb923c,color:#000
+    style LAT fill:#fb923c,color:#000
+    style MIXBYPASS fill:#ef4444,color:#fff
+    style CPINT fill:#a78bfa,color:#000
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- ABSORPTION -->
+<!-- ============================================================ -->
+<section id="absorption">
+  <h2 class="lang-en">Gas Absorption Tower Design</h2>
+  <h2 class="lang-ja hidden">ガス吸収塔設計ワークフロー</h2>
+  <p class="desc lang-en">absorption.py: Design using Kremser equation + Henry's law.</p>
+  <p class="desc lang-ja hidden">absorption.py: Kremser式 + ヘンリーの法則による設計。</p>
+
+  <div class="mermaid lang-en">
+flowchart TD
+    IN["Input:\ngas_comp, carrier, solvent,\nG, y_in, removal%,\nT, P"]
+
+    HENRY["Estimate Henry's constant\nH = f(T) for gas in solvent"]
+
+    MEQU["Equilibrium constant\nm = H / P"]
+
+    YOUT["Target outlet gas\ny_out = y_in × (1 − removal%)"]
+
+    LGMIN["Minimum L/G ratio\n(L/G)_min = (y_in − y_out) / (y_in/m − x_in)"]
+
+    LG["Actual L/G\nL/G = 1.3~1.5 × (L/G)_min"]
+
+    XOUT["Outlet liquid composition\nx_out = (G/L) × (y_in − y_out) + x_in"]
+
+    DILUTE{"Dilute solution\ncheck:\ny_in < 10%?\nx_out < 10%?"}
+
+    WARN["⚠ Warning:\nKremser assumes linear\noperating/equilibrium lines.\nHigh concentration violates\nthis assumption."]
+
+    KREMSER["Kremser Equation\nA = L / (m·G)\nN = ln[(y_in−m·x_in)/(y_out−m·x_in)·(1−1/A)+1/A] / ln(A)"]
+
+    HEIGHT["Tower Height (if HTU known)\nZ = N × HETP"]
+
+    OUT["Output:\nH, m, removal%,\n(L/G)_min, L/G,\nN_stages, x_out, height"]
+
+    IN --> HENRY --> MEQU --> YOUT
+    YOUT --> LGMIN --> LG --> XOUT
+    XOUT --> DILUTE
+    DILUTE -->|"OK"| KREMSER
+    DILUTE -->|"High conc."| WARN --> KREMSER
+    KREMSER --> HEIGHT --> OUT
+
+    style IN fill:#38bdf8,color:#000
+    style OUT fill:#4ade80,color:#000
+    style KREMSER fill:#fb923c,color:#000
+    style HENRY fill:#a78bfa,color:#000
+    style WARN fill:#ef4444,color:#fff
+    style DILUTE fill:#fbbf24,color:#000
+  </div>
+
+  <div class="mermaid lang-ja hidden">
+flowchart TD
+    IN["入力:\n吸収ガス, キャリアガス, 溶媒,\nガス流量G, 入口ガス組成y_in,\n除去率, 温度T, 圧力P"]
+
+    HENRY["ヘンリー定数推算\nH = f(T) ガスの溶媒中溶解度"]
+
+    MEQU["平衡定数\nm = H / P"]
+
+    YOUT["目標出口ガス組成\ny_out = y_in × (1 − 除去率)"]
+
+    LGMIN["最小液ガス比\n(L/G)_min = (y_in − y_out) / (y_in/m − x_in)"]
+
+    LG["実液ガス比\nL/G = 1.3~1.5 × (L/G)_min"]
+
+    XOUT["出口液組成\nx_out = (G/L) × (y_in − y_out) + x_in"]
+
+    DILUTE{"希薄条件\nチェック:\ny_in < 10%?\nx_out < 10%?"}
+
+    WARN["⚠ 警告:\nKremser式は操作線・平衡線が\n直線（希薄溶液）を前提。\n高濃度では線形近似が破綻。"]
+
+    KREMSER["Kremser式\nA = L / (m·G)\nN = ln[(y_in−m·x_in)/(y_out−m·x_in)·(1−1/A)+1/A] / ln(A)"]
+
+    HEIGHT["塔高さ（HTU既知の場合）\nZ = N × HETP"]
+
+    OUT["出力:\nH, m, 除去率,\n(L/G)_min, L/G,\n理論段数N, x_out, 塔高さ"]
+
+    IN --> HENRY --> MEQU --> YOUT
+    YOUT --> LGMIN --> LG --> XOUT
+    XOUT --> DILUTE
+    DILUTE -->|"OK"| KREMSER
+    DILUTE -->|"高濃度"| WARN --> KREMSER
+    KREMSER --> HEIGHT --> OUT
+
+    style IN fill:#38bdf8,color:#000
+    style OUT fill:#4ade80,color:#000
+    style KREMSER fill:#fb923c,color:#000
+    style HENRY fill:#a78bfa,color:#000
+    style WARN fill:#ef4444,color:#fff
+    style DILUTE fill:#fbbf24,color:#000
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- T-x-y DIAGRAM -->
+<!-- ============================================================ -->
+<section id="txy">
+  <h2 class="lang-en">T-x-y Diagram Generation</h2>
+  <h2 class="lang-ja hidden">T-x-y線図生成ワークフロー</h2>
+  <p class="desc lang-en">txy_diagram.py: Generate phase diagram data for binary mixture.</p>
+  <p class="desc lang-ja hidden">txy_diagram.py: 二成分混合系の相図データを生成。</p>
+
+  <div class="mermaid lang-en">
+flowchart TD
+    IN["Input:\nlight_comp, heavy_comp,\npressure P, points N"]
+
+    BP["engine.get_property()\n→ bp_light, bp_heavy\n(pure component boiling points)"]
+
+    LOOP["For x = 0 to 1 (N points)"]
+
+    BUBBLE["Bubble point calculation\nfind T where Σ(Ki·xi) = 1\n→ T_bubble, y_eq"]
+
+    DEW["Dew point calculation\nfind T where Σ(yi/Ki) = 1\n→ T_dew"]
+
+    ARRAYS["Collect arrays:\nx[], y[], T_bubble[], T_dew[]"]
+
+    OUT["Output:\nx, y, T_bubble, T_dew,\nbp_light, bp_heavy"]
+
+    IN --> BP --> LOOP
+    LOOP --> BUBBLE
+    LOOP --> DEW
+    BUBBLE --> ARRAYS
+    DEW --> ARRAYS
+    ARRAYS --> OUT
+
+    style IN fill:#38bdf8,color:#000
+    style OUT fill:#4ade80,color:#000
+    style BUBBLE fill:#fb923c,color:#000
+    style DEW fill:#fb923c,color:#000
+  </div>
+
+  <div class="mermaid lang-ja hidden">
+flowchart TD
+    IN["入力:\n軽沸成分, 重沸成分,\n圧力P, データ点数N"]
+
+    BP["engine.get_property()\n→ 軽沸点, 重沸点\n（純成分沸点）"]
+
+    LOOP["x = 0 〜 1 をN点でループ"]
+
+    BUBBLE["泡点計算\nΣ(Ki·xi) = 1 となるTを探索\n→ 泡点温度, 平衡蒸気組成y"]
+
+    DEW["露点計算\nΣ(yi/Ki) = 1 となるTを探索\n→ 露点温度"]
+
+    ARRAYS["配列に格納:\nx[], y[], T_泡点[], T_露点[]"]
+
+    OUT["出力:\nx, y, T_泡点, T_露点,\n軽沸点, 重沸点"]
+
+    IN --> BP --> LOOP
+    LOOP --> BUBBLE
+    LOOP --> DEW
+    BUBBLE --> ARRAYS
+    DEW --> ARRAYS
+    ARRAYS --> OUT
+
+    style IN fill:#38bdf8,color:#000
+    style OUT fill:#4ade80,color:#000
+    style BUBBLE fill:#fb923c,color:#000
+    style DEW fill:#fb923c,color:#000
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- EXTRACTION -->
+<!-- ============================================================ -->
+<section id="extraction">
+  <h2 class="lang-en">Liquid-Liquid Extraction Design</h2>
+  <h2 class="lang-ja hidden">液液抽出設計ワークフロー</h2>
+  <p class="desc lang-en">extraction.py: Design using distribution coefficient and Kremser equation.</p>
+  <p class="desc lang-ja hidden">extraction.py: 分配係数とKremser式による設計。</p>
+
+  <div class="mermaid lang-en">
+flowchart TD
+    IN["Input:\nsolute, feed_solvent, extract_solvent,\nF, x_in, recovery%, S,\nT, P"]
+
+    KD["Distribution coefficient\nK_d = y*/x* (solute partition)"]
+
+    IMMCHK{"Immiscibility\ncheck:\nCarrier/solvent\nfully immiscible?"}
+
+    IMMWARN["⚠ Warning:\nPartially miscible system.\nKremser assumes immiscible solvents.\nConsider Hunter-Nash method\nwith ternary phase diagram."]
+
+    DILCHK{"Dilute check:\nx_in < 10%?"}
+
+    DILWARN["⚠ Warning:\nHigh solute concentration.\nLinear approximation\nmay break down."]
+
+    SFMIN["Minimum solvent ratio\n(S/F)_min = x_in / (K_d · x_in)"]
+
+    SF["Actual S/F\nS/F = 1.3~1.5 × (S/F)_min"]
+
+    KREMSER["Kremser Equation\nE = K_d · S/F (extraction factor)\nN = ln[(x_in/x_out)·(1−1/E)+1/E] / ln(E)"]
+
+    XOUT["Outlet compositions\nx_out = x_in × (1 − recovery%)\ny_out = F·(x_in − x_out) / S"]
+
+    OUT["Output:\nK_d, (S/F)_min, S/F,\nN_stages, recovery%,\nx_out, y_out"]
+
+    IN --> KD --> IMMCHK
+    IMMCHK -->|"Yes (OK)"| DILCHK
+    IMMCHK -->|"No (partial)"| IMMWARN --> DILCHK
+    DILCHK -->|"OK"| SFMIN
+    DILCHK -->|"High conc."| DILWARN --> SFMIN
+    SFMIN --> SF --> KREMSER --> XOUT --> OUT
+
+    style IN fill:#38bdf8,color:#000
+    style OUT fill:#4ade80,color:#000
+    style KREMSER fill:#fb923c,color:#000
+    style KD fill:#a78bfa,color:#000
+    style IMMWARN fill:#ef4444,color:#fff
+    style DILWARN fill:#ef4444,color:#fff
+    style IMMCHK fill:#fbbf24,color:#000
+    style DILCHK fill:#fbbf24,color:#000
+  </div>
+
+  <div class="mermaid lang-ja hidden">
+flowchart TD
+    IN["入力:\n溶質, 原料溶媒, 抽出溶媒,\n原料流量F, 入口組成x_in,\n回収率, 溶媒量S, T, P"]
+
+    KD["分配係数\nK_d = y*/x*（溶質の分配）"]
+
+    IMMCHK{"非互溶性\nチェック:\nキャリア/溶媒は\n完全非互溶？"}
+
+    IMMWARN["⚠ 警告:\n部分溶解系が検出。\nKremser式は完全非互溶を前提。\n三角相図を用いたHunter-Nash法\nを推奨。"]
+
+    DILCHK{"希薄条件\nチェック:\nx_in < 10%？"}
+
+    DILWARN["⚠ 警告:\n原料組成が高濃度。\n線形近似が破綻\nする可能性。"]
+
+    SFMIN["最小溶媒比\n(S/F)_min = x_in / (K_d · x_in)"]
+
+    SF["実溶媒比\nS/F = 1.3~1.5 × (S/F)_min"]
+
+    KREMSER["Kremser式\nE = K_d · S/F（抽出係数）\nN = ln[(x_in/x_out)·(1−1/E)+1/E] / ln(E)"]
+
+    XOUT["出口組成計算\nx_out = x_in × (1 − 回収率)\ny_out = F·(x_in − x_out) / S"]
+
+    OUT["出力:\nK_d, (S/F)_min, S/F,\n理論段数N, 回収率,\nx_out, y_out"]
+
+    IN --> KD --> IMMCHK
+    IMMCHK -->|"はい（OK）"| DILCHK
+    IMMCHK -->|"いいえ（部分溶解）"| IMMWARN --> DILCHK
+    DILCHK -->|"OK"| SFMIN
+    DILCHK -->|"高濃度"| DILWARN --> SFMIN
+    SFMIN --> SF --> KREMSER --> XOUT --> OUT
+
+    style IN fill:#38bdf8,color:#000
+    style OUT fill:#4ade80,color:#000
+    style KREMSER fill:#fb923c,color:#000
+    style KD fill:#a78bfa,color:#000
+    style IMMWARN fill:#ef4444,color:#fff
+    style DILWARN fill:#ef4444,color:#fff
+    style IMMCHK fill:#fbbf24,color:#000
+    style DILCHK fill:#fbbf24,color:#000
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- DATA FLOW -->
+<!-- ============================================================ -->
+<section id="data-flow">
+  <h2 class="lang-en">Data Layer: Property Database & Fetchers</h2>
+  <h2 class="lang-ja hidden">データ層: 物性データベース & フェッチャー</h2>
+  <p class="desc lang-en">How property data is stored, retrieved, and fetched from external sources.</p>
+  <p class="desc lang-ja hidden">物性データの保存、取得、外部ソースからのフェッチの仕組み。</p>
+
+  <div class="mermaid lang-en">
+flowchart LR
+    subgraph External["External Sources"]
+        PUB["PubChem API\n115M+ compounds\nFree, no API key"]
+        THLK["thermo library\nOffline database"]
+    end
+
+    subgraph Fetchers["fetchers/"]
+        PF["PubChemFetcher\nsearch() → fetch_properties()"]
+        TF["ThermoLookupFetcher\nsearch() → fetch_properties()"]
+    end
+
+    subgraph DB["PropertyDatabase"]
+        YAML["custom_substances.yaml\nLocal cache file"]
+        GET["get() / search()\nRetrieve by name/CAS"]
+        ADD["add_or_update()\nMerge new data"]
+        GPV["get_property_value()\nSingle property lookup"]
+    end
+
+    subgraph Consumer["Consumers"]
+        SKILL["Skill Templates\n(property_estimation etc.)"]
+        CLI["CLI cmd_data()"]
+        API["API endpoints"]
+    end
+
+    PUB --> PF
+    THLK --> TF
+    PF -->|"SubstanceRecord"| ADD
+    TF -->|"SubstanceRecord"| ADD
+    ADD --> YAML
+    YAML --> GET
+    YAML --> GPV
+    GET --> SKILL
+    GPV --> SKILL
+    GET --> CLI
+    GET --> API
+
+    style External fill:#3d1b2b,stroke:#f472b6
+    style Fetchers fill:#2d1b4e,stroke:#a78bfa
+    style DB fill:#1b3d2f,stroke:#4ade80
+    style Consumer fill:#1e3a5f,stroke:#38bdf8
+  </div>
+
+  <div class="mermaid lang-ja hidden">
+flowchart LR
+    subgraph External["外部ソース"]
+        PUB["PubChem API\n1.15億+化合物\n無料・APIキー不要"]
+        THLK["thermoライブラリ\nオフラインDB"]
+    end
+
+    subgraph Fetchers["fetchers/（データ取得）"]
+        PF["PubChemFetcher\nsearch() → fetch_properties()"]
+        TF["ThermoLookupFetcher\nsearch() → fetch_properties()"]
+    end
+
+    subgraph DB["PropertyDatabase（物性DB）"]
+        YAML["custom_substances.yaml\nローカルキャッシュ"]
+        GET["get() / search()\n名前/CASで取得"]
+        ADD["add_or_update()\n新データをマージ"]
+        GPV["get_property_value()\n単一物性取得"]
+    end
+
+    subgraph Consumer["利用側"]
+        SKILL["スキルテンプレート\n（物性推算等）"]
+        CLI["CLI cmd_data()"]
+        API["APIエンドポイント"]
+    end
+
+    PUB --> PF
+    THLK --> TF
+    PF -->|"SubstanceRecord"| ADD
+    TF -->|"SubstanceRecord"| ADD
+    ADD --> YAML
+    YAML --> GET
+    YAML --> GPV
+    GET --> SKILL
+    GPV --> SKILL
+    GET --> CLI
+    GET --> API
+
+    style External fill:#3d1b2b,stroke:#f472b6
+    style Fetchers fill:#2d1b4e,stroke:#a78bfa
+    style DB fill:#1b3d2f,stroke:#4ade80
+    style Consumer fill:#1e3a5f,stroke:#38bdf8
+  </div>
+</section>
+
+</main>
+
+<footer>
+  ChemEng Workflow Diagrams — Auto-generated
+</footer>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'dark',
+    themeVariables: {
+      primaryColor: '#1e3a5f',
+      primaryTextColor: '#e2e8f0',
+      primaryBorderColor: '#38bdf8',
+      lineColor: '#64748b',
+      secondaryColor: '#2d1b4e',
+      tertiaryColor: '#1b3d2f',
+      fontSize: '14px'
+    },
+    flowchart: { curve: 'basis', padding: 20 },
+    sequence: { actorMargin: 50, messageMargin: 40 }
+  });
+
+  async function renderVisible() {
+    const diagrams = document.querySelectorAll('.mermaid:not(.hidden)');
+    for (const el of diagrams) {
+      if (el.dataset.rendered) continue;
+      const id = 'mermaid-' + Math.random().toString(36).slice(2, 9);
+      const code = el.textContent.trim();
+      try {
+        const { svg } = await mermaid.render(id, code);
+        el.innerHTML = svg;
+        el.dataset.rendered = 'true';
+      } catch (e) {
+        console.error('Mermaid render error:', e);
+      }
+    }
+  }
+
+  function switchLang(lang) {
+    // Update buttons
+    document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+    document.getElementById('btn-ja').classList.toggle('active', lang === 'ja');
+
+    // Toggle elements
+    document.querySelectorAll('.lang-en').forEach(el => {
+      el.classList.toggle('hidden', lang !== 'en');
+      if (lang === 'en') delete el.dataset.rendered;
+    });
+    document.querySelectorAll('.lang-ja').forEach(el => {
+      el.classList.toggle('hidden', lang !== 'ja');
+      if (lang === 'ja') delete el.dataset.rendered;
+    });
+
+    // Re-render visible mermaid diagrams
+    document.querySelectorAll('.mermaid:not(.hidden)').forEach(el => {
+      if (!el.dataset.rendered) {
+        // Restore original source if we have it
+        if (el.dataset.src) {
+          el.innerHTML = '';
+          el.textContent = el.dataset.src;
+        }
+      }
+    });
+
+    renderVisible();
+  }
+
+  // Save original mermaid source before first render
+  document.querySelectorAll('.mermaid').forEach(el => {
+    el.dataset.src = el.textContent.trim();
+  });
+
+  renderVisible();
+</script>
+
+</body>
+</html>

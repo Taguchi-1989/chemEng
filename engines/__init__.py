@@ -116,10 +116,33 @@ def select_engine(
         else:
             substances = [s.lower() for s in substance]
 
-    # 1. 計算タイプによる選択
-    if calculation_type:
-        calc_type = calculation_type.lower()
+    calc_type = calculation_type.lower() if calculation_type else None
 
+    # 1. 物質ドメインによる選択（計算タイプより優先）
+    #    物質の特性がエンジンの精度に直結するため、先に判定する。
+    #    例: 冷媒のVLE計算はCoolPropが高精度、thermoでは不正確。
+    if substances:
+        is_refrigerant = any(s in REFRIGERANTS for s in substances)
+        is_combustion = any(s in COMBUSTION_SPECIES for s in substances)
+
+        # 冷媒 → CoolProp（VLE/物性含む全計算で優先）
+        if is_refrigerant:
+            coolprop = get_engine("coolprop")
+            if coolprop:
+                return coolprop
+
+        # 燃焼関連物質 → Cantera（反応・燃焼計算で優先）
+        # ただしVLE/flash等の平衡計算ではthermoを優先
+        if is_combustion and calc_type not in (
+            "vle", "lle", "flash", "bubble_point", "dew_point",
+            "property_estimation",
+        ):
+            cantera = get_engine("cantera")
+            if cantera:
+                return cantera
+
+    # 2. 計算タイプによる選択（物質ドメインで決まらなかった場合）
+    if calc_type:
         # 燃焼・反応速度 → Cantera
         if calc_type in ("kinetics", "combustion", "adiabatic_flame", "reactor"):
             cantera = get_engine("cantera")
@@ -137,20 +160,6 @@ def select_engine(
             thermo = get_engine("thermo")
             if thermo:
                 return thermo
-
-    # 2. 物質による選択
-    if substances:
-        # 冷媒 → CoolProp
-        if any(s in REFRIGERANTS for s in substances):
-            coolprop = get_engine("coolprop")
-            if coolprop:
-                return coolprop
-
-        # 燃焼関連物質 → Cantera
-        if any(s in COMBUSTION_SPECIES for s in substances):
-            cantera = get_engine("cantera")
-            if cantera:
-                return cantera
 
     # 3. 物性による選択
     if property_name:
