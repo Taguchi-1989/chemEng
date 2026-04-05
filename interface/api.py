@@ -238,7 +238,7 @@ def create_app() -> FastAPI:
             self._requests: dict[str, list[float]] = defaultdict(list)
 
         async def dispatch(self, request: Request, call_next):
-            rate_limited_prefixes = ("/api/v1/calculate", "/api/v1/chat", "/api/v1/suggest")
+            rate_limited_prefixes = ("/api/v1/calculate", "/api/v1/chat", "/api/v1/suggest", "/api/v1/feedback")
             if not any(request.url.path.startswith(p) for p in rate_limited_prefixes):
                 return await call_next(request)
             client_ip = request.client.host if request.client else "unknown"
@@ -641,6 +641,62 @@ def create_app() -> FastAPI:
 
     # 物質データのキャッシュ（起動時に1回だけ読み込み）
     _substances_cache: dict | None = None
+
+    # ==================== AI Endpoints ====================
+
+    # ==================== Feedback Endpoint ====================
+
+    class FeedbackRequest(BaseModel):
+        """User feedback request."""
+        category: str = Field(..., description="Feedback category", max_length=50)
+        message: str = Field(..., description="Feedback message", min_length=1, max_length=2000)
+        name: str = Field("", description="Optional user name", max_length=100)
+
+    @app.post("/api/v1/feedback")
+    async def submit_feedback(request: FeedbackRequest):
+        """Submit user feedback to Discord via webhook."""
+        import httpx
+
+        webhook_url = os.environ.get("DISCORD_WEBHOOK_URL", "")
+        if not webhook_url:
+            logger.warning("DISCORD_WEBHOOK_URL not configured — feedback discarded")
+            return {"success": False, "error": "Feedback system is not configured."}
+
+        category_labels = {
+            "bug": "\U0001f41b Bug Report",
+            "feature": "\u2728 Feature Request",
+            "question": "\u2753 Question",
+            "other": "\U0001f4ac Other",
+        }
+        cat_label = category_labels.get(request.category, request.category)
+
+        embed = {
+            "title": f"[Feedback] {cat_label}",
+            "description": request.message,
+            "color": 0x00D4FF,
+            "fields": [],
+            "footer": {"text": "ChemEng Feedback"},
+        }
+        if request.name.strip():
+            embed["fields"].append({"name": "From", "value": request.name.strip(), "inline": True})
+        embed["fields"].append({"name": "Category", "value": cat_label, "inline": True})
+
+        payload = {
+            "username": "ChemEng Feedback",
+            "embeds": [embed],
+        }
+
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.post(webhook_url, json=payload)
+            if resp.status_code in (200, 204):
+                logger.info("Feedback sent to Discord: category=%s", request.category)
+                return {"success": True}
+            logger.error("Discord webhook error: status=%s body=%s", resp.status_code, resp.text[:200])
+            return {"success": False, "error": "Failed to send feedback. Please try again later."}
+        except Exception as e:
+            logger.error("Discord webhook exception: %s", e)
+            return {"success": False, "error": "Failed to send feedback. Please try again later."}
 
     # ==================== AI Endpoints ====================
 

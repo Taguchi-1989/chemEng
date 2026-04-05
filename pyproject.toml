@@ -39,7 +39,7 @@ ai = ["anthropic>=0.40.0"]
 # Full calculation support
 calc = ["chemeng[thermo,cantera,coolprop]"]
 # API server
-api = ["fastapi>=0.100", "uvicorn>=0.20"]
+api = ["fastapi>=0.100", "uvicorn>=0.20", "httpx>=0.24.0"]
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",

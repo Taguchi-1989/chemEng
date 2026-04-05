@@ -1608,6 +1608,117 @@
         </div>
     </main>
 
+    <!-- Feedback FAB -->
+    <button class="feedback-fab" id="feedback-fab" title="フィードバック / Feedback" aria-label="フィードバックを送る">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+    </button>
+
+    <!-- Feedback Modal -->
+    <div class="feedback-overlay hidden" id="feedback-overlay"></div>
+    <div class="feedback-modal hidden" id="feedback-modal">
+        <div class="feedback-modal-header">
+            <span class="feedback-modal-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                フィードバック / Feedback
+            </span>
+            <button class="feedback-modal-close" id="feedback-modal-close" aria-label="閉じる">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <form id="feedback-form" class="feedback-form">
+            <label class="feedback-label">カテゴリ / Category</label>
+            <div class="feedback-categories">
+                <label class="feedback-cat"><input type="radio" name="fb-category" value="bug" checked><span>🐛 Bug</span></label>
+                <label class="feedback-cat"><input type="radio" name="fb-category" value="feature"><span>✨ Feature</span></label>
+                <label class="feedback-cat"><input type="radio" name="fb-category" value="question"><span>❓ Question</span></label>
+                <label class="feedback-cat"><input type="radio" name="fb-category" value="other"><span>💬 Other</span></label>
+            </div>
+            <label class="feedback-label" for="fb-name">名前 / Name <span class="feedback-optional">(任意 / optional)</span></label>
+            <input type="text" id="fb-name" class="feedback-input" placeholder="Anonymous" maxlength="100" autocomplete="off">
+            <label class="feedback-label" for="fb-message">メッセージ / Message</label>
+            <textarea id="fb-message" class="feedback-textarea" placeholder="ご意見・ご要望をお聞かせください / Share your thoughts..." maxlength="2000" required></textarea>
+            <div class="feedback-char-count"><span id="fb-char-count">0</span> / 2000</div>
+            <button type="submit" class="feedback-submit" id="feedback-submit">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+                送信 / Send
+            </button>
+        </form>
+        <div class="feedback-result hidden" id="feedback-result">
+            <div class="feedback-result-icon">✓</div>
+            <p>フィードバックを送信しました！<br>Thank you for your feedback!</p>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        const fab = document.getElementById('feedback-fab');
+        const overlay = document.getElementById('feedback-overlay');
+        const modal = document.getElementById('feedback-modal');
+        const closeBtn = document.getElementById('feedback-modal-close');
+        const form = document.getElementById('feedback-form');
+        const textarea = document.getElementById('fb-message');
+        const charCount = document.getElementById('fb-char-count');
+        const result = document.getElementById('feedback-result');
+        const submitBtn = document.getElementById('feedback-submit');
+
+        function openModal() { overlay.classList.remove('hidden'); modal.classList.remove('hidden'); textarea.focus(); }
+        function closeModal() { overlay.classList.add('hidden'); modal.classList.add('hidden'); }
+
+        fab.addEventListener('click', openModal);
+        overlay.addEventListener('click', closeModal);
+        closeBtn.addEventListener('click', closeModal);
+        document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+
+        textarea.addEventListener('input', function() { charCount.textContent = textarea.value.length; });
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            submitBtn.disabled = true;
+            submitBtn.textContent = '送信中...';
+            const category = form.querySelector('input[name="fb-category"]:checked').value;
+            const name = document.getElementById('fb-name').value.trim();
+            const message = textarea.value.trim();
+            try {
+                const resp = await fetch('/api/v1/feedback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ category, name, message }),
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    form.classList.add('hidden');
+                    result.classList.remove('hidden');
+                    setTimeout(function() {
+                        closeModal();
+                        form.reset();
+                        form.classList.remove('hidden');
+                        result.classList.add('hidden');
+                        charCount.textContent = '0';
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> 送信 / Send';
+                    }, 2000);
+                } else {
+                    alert(data.error || 'Failed to send feedback.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> 送信 / Send';
+                }
+            } catch (err) {
+                alert('送信に失敗しました / Failed to send feedback.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> 送信 / Send';
+            }
+        });
+    })();
+    </script>
+
     <!-- Footer -->
     <footer>
         <div class="footer-brand">ChemEng <span style="font-size: 0.75rem; color: var(--text-muted);">v1.0.0 — Updated 2026-04-05</span></div>
