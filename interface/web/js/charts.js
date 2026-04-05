@@ -339,30 +339,117 @@ function initSensitivityChartButtons() {
 // ==================== Dashboard Chart ====================
 let dashboardChart = null;
 
+// Breakdown definitions per skill type
+const DASHBOARD_BREAKDOWNS = {
+    lcoh: {
+        title: 'LCOH Cost Breakdown (EUR/kg H\u2082)',
+        unit: 'EUR/kg H\u2082',
+        keys:   ['capex', 'energy', 'opex', 'stack_replacement', 'water', 'carbon'],
+        labels: ['CAPEX', 'Energy', 'OPEX', 'Stack', 'Water', 'Carbon'],
+        colors: ['#00d4ff', '#0fa', '#ffa726', '#a78bfa', '#ff6b9d', '#94a3b8'],
+        extract: (c, key) => c.result?.lcoh_breakdown?.[key] || 0,
+    },
+    distillation: {
+        title: 'Distillation Design Comparison',
+        unit: '',
+        keys:   ['actual_stages', 'actual_reflux_ratio', 'condenser_duty', 'reboiler_duty'],
+        labels: ['Stages', 'Reflux Ratio', 'Qc (MW)', 'Qr (MW)'],
+        colors: ['#00d4ff', '#0fa', '#ffa726', '#a78bfa'],
+        extract: (c, key) => {
+            const v = c.result?.[key];
+            if (v == null) return 0;
+            return (key === 'condenser_duty' || key === 'reboiler_duty') ? v / 1000 : v;
+        },
+    },
+    heat_balance: {
+        title: 'Heat Balance Breakdown (kW)',
+        unit: 'kW',
+        keys:   ['sensible_heat', 'latent_heat', 'reaction_heat'],
+        labels: ['Sensible', 'Latent', 'Reaction'],
+        colors: ['#ffa726', '#ff6b9d', '#a78bfa'],
+        extract: (c, key) => c.result?.[key] || 0,
+    },
+    mass_balance: {
+        title: 'Mass Balance Stream Comparison',
+        unit: 'mol/s',
+        keys:   ['distillate_flow', 'bottoms_flow'],
+        labels: ['Distillate', 'Bottoms'],
+        colors: ['#00d4ff', '#ffa726'],
+        extract: (c, key) => {
+            if (key === 'distillate_flow') return c.result?.distillate_flow ?? c.result?.D ?? 0;
+            if (key === 'bottoms_flow') return c.result?.bottoms_flow ?? c.result?.B ?? 0;
+            return 0;
+        },
+    },
+    absorption: {
+        title: 'Absorption Tower Comparison',
+        unit: '',
+        keys:   ['actual_stages', 'removal', 'absorption_factor'],
+        labels: ['Stages', 'Removal %', 'Abs. Factor'],
+        colors: ['#00d4ff', '#0fa', '#ffa726'],
+        extract: (c, key) => {
+            if (key === 'removal') return (c.result?.removal ?? c.result?.removal_efficiency ?? 0) * 100;
+            return c.result?.[key] || 0;
+        },
+    },
+    extraction: {
+        title: 'Extraction Comparison',
+        unit: '',
+        keys:   ['stages', 'recovery', 'extraction_factor'],
+        labels: ['Stages', 'Recovery %', 'Ext. Factor'],
+        colors: ['#00d4ff', '#0fa', '#ffa726'],
+        extract: (c, key) => {
+            if (key === 'recovery') return (c.result?.recovery ?? 0) * 100;
+            if (key === 'stages') return c.result?.actual_stages ?? c.result?.stages ?? 0;
+            return c.result?.[key] || 0;
+        },
+    },
+    property: {
+        title: 'Property Value Comparison',
+        unit: '',
+        keys:   ['value'],
+        labels: ['Value'],
+        colors: ['#a78bfa'],
+        extract: (c, key) => c.result?.value ?? c.result?.[key] ?? 0,
+    },
+};
+
 // Update dashboard chart
 function updateDashboardChart(cases, chartType = 'bar') {
     const ctx = document.getElementById('dashboard-chart').getContext('2d');
+    if (dashboardChart) dashboardChart.destroy();
 
-    // Destroy existing chart
-    if (dashboardChart) {
-        dashboardChart.destroy();
-    }
+    // Determine dominant type
+    const types = new Set(cases.map(c => c.type));
+    const dominantType = types.size === 1 ? cases[0].type : null;
+    const bd = dominantType ? DASHBOARD_BREAKDOWNS[dominantType] : null;
 
-    // Prepare data for LCOH cases (most common use case)
-    const lcohCases = cases.filter(c => c.type === 'lcoh');
-    if (lcohCases.length > 0) {
-        const labels = lcohCases.map(c => c.name.replace(/LCOH: /, '').substring(0, 30));
-        const breakdownKeys = ['capex', 'energy', 'opex', 'stack_replacement', 'water', 'carbon'];
-        const breakdownLabels = ['CAPEX', 'Energy', 'OPEX', 'Stack', 'Water', 'Carbon'];
-        const colors = ['#00d4ff', '#0fa', '#ffa726', '#a78bfa', '#ff6b9d', '#94a3b8'];
+    const isStacked = chartType === 'stacked' || chartType === 'percent';
+    const isPercent = chartType === 'percent';
 
-        const datasets = breakdownKeys.map((key, i) => ({
-            label: breakdownLabels[i],
-            data: lcohCases.map(c => c.result?.lcoh_breakdown?.[key] || 0),
-            backgroundColor: colors[i],
-            borderColor: colors[i],
-            borderWidth: 1
+    if (bd && bd.keys.length > 1) {
+        // Multi-component breakdown chart
+        const labels = cases.map(c => c.name.substring(0, 30));
+
+        // Extract raw data per key
+        const rawData = bd.keys.map(key => cases.map(c => bd.extract(c, key)));
+
+        // For percent mode, normalize each case to 100%
+        let chartData = rawData;
+        if (isPercent) {
+            const totals = cases.map((_, ci) => bd.keys.reduce((sum, _k, ki) => sum + Math.abs(rawData[ki][ci]), 0));
+            chartData = rawData.map(row => row.map((v, ci) => totals[ci] > 0 ? (Math.abs(v) / totals[ci]) * 100 : 0));
+        }
+
+        const datasets = bd.keys.map((key, i) => ({
+            label: bd.labels[i],
+            data: chartData[i],
+            backgroundColor: bd.colors[i],
+            borderColor: bd.colors[i],
+            borderWidth: 1,
         }));
+
+        const yTitle = isPercent ? '%' : (bd.unit || '');
 
         dashboardChart = new Chart(ctx, {
             type: 'bar',
@@ -377,30 +464,45 @@ function updateDashboardChart(cases, chartType = 'bar') {
                     },
                     title: {
                         display: true,
-                        text: 'LCOH Cost Breakdown (EUR/kg H₂)',
-                        color: 'rgba(255,255,255,0.9)'
+                        text: bd.title + (isPercent ? ' (%)' : ''),
+                        color: 'rgba(255,255,255,0.9)',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => {
+                                const v = ctx.raw;
+                                return isPercent
+                                    ? `${ctx.dataset.label}: ${v.toFixed(1)}%`
+                                    : `${ctx.dataset.label}: ${v.toFixed(2)} ${bd.unit}`;
+                            }
+                        }
                     }
                 },
                 scales: {
                     x: {
-                        stacked: chartType === 'stacked',
+                        stacked: isStacked,
                         ticks: { color: 'rgba(255,255,255,0.7)', font: { size: 9 } },
                         grid: { color: 'rgba(255,255,255,0.1)' }
                     },
                     y: {
-                        stacked: chartType === 'stacked',
+                        stacked: isStacked,
                         beginAtZero: true,
-                        ticks: { color: 'rgba(255,255,255,0.7)' },
+                        max: isPercent ? 100 : undefined,
+                        ticks: {
+                            color: 'rgba(255,255,255,0.7)',
+                            callback: (v) => isPercent ? v + '%' : v,
+                        },
                         grid: { color: 'rgba(255,255,255,0.1)' },
-                        title: { display: true, text: 'EUR/kg H₂', color: 'rgba(255,255,255,0.7)' }
+                        title: { display: !!yTitle, text: yTitle, color: 'rgba(255,255,255,0.7)' }
                     }
                 }
             }
         });
     } else {
-        // Generic bar chart for other types
+        // Single-value comparison (mixed types or single-key type)
         const labels = cases.map(c => c.name.substring(0, 25));
         const values = cases.map(c => {
+            if (bd) return bd.extract(c, bd.keys[0]);
             const m = String(c.mainValue || '').match(/([\d.]+)/);
             return m ? parseFloat(m[1]) : 0;
         });
@@ -410,19 +512,16 @@ function updateDashboardChart(cases, chartType = 'bar') {
             data: {
                 labels,
                 datasets: [{
-                    label: 'Value',
+                    label: bd ? bd.labels[0] : 'Value',
                     data: values,
-                    backgroundColor: '#a78bfa',
-                    borderColor: '#a78bfa',
-                    borderWidth: 1
+                    backgroundColor: cases.map((_, i) => ['#00d4ff', '#0fa', '#ffa726', '#a78bfa', '#ff6b9d', '#94a3b8', '#f472b6', '#22d3ee'][i % 8]),
+                    borderWidth: 1,
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: true,
-                plugins: {
-                    legend: { display: false }
-                },
+                plugins: { legend: { display: false } },
                 scales: {
                     x: {
                         ticks: { color: 'rgba(255,255,255,0.7)', font: { size: 9 } },
@@ -437,6 +536,10 @@ function updateDashboardChart(cases, chartType = 'bar') {
             }
         });
     }
+
+    // Update chart title in UI
+    const titleEl = document.querySelector('.dashboard-chart-container .chart-title');
+    if (titleEl && bd) titleEl.textContent = bd.title;
 }
 
 // Set dashboard chart type
