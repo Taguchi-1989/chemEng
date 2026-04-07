@@ -29,10 +29,13 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements_full.txt
-          pip install ruff pytest
+          pip install ruff pytest pip-audit
 
       - name: Lint with ruff
         run: ruff check .
+
+      - name: Security audit
+        run: bash scripts/audit/security-audit.sh
 
       - name: Run tests
         run: python -m pytest tests/ -v --tb=short

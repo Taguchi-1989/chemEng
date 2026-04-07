@@ -207,9 +207,19 @@ def create_app() -> FastAPI:
         redoc_url="/redoc",
     )
 
-    # セキュリティヘッダー + リクエストトレーシング ミドルウェア
+    # セキュリティヘッダー + リクエストトレーシング + CSRF ミドルウェア
     class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         async def dispatch(self, request: Request, call_next):
+            # CSRF protection: POST to /api/ must have application/json content-type
+            if request.method == "POST" and request.url.path.startswith("/api/"):
+                ct = request.headers.get("content-type", "")
+                if "application/json" not in ct:
+                    return Response(
+                        status_code=415,
+                        content='{"detail":"Unsupported Media Type. Content-Type must be application/json."}',
+                        media_type="application/json",
+                    )
+
             request_id = request.headers.get("X-Request-ID", uuid.uuid4().hex[:12])
             start = _time.perf_counter()
             response: Response = await call_next(request)
@@ -218,6 +228,15 @@ def create_app() -> FastAPI:
             response.headers["X-Frame-Options"] = "DENY"
             response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
             response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self'; "
+                "script-src 'self' https://cdn.jsdelivr.net; "
+                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+                "font-src 'self' https://fonts.gstatic.com; "
+                "connect-src 'self'; "
+                "img-src 'self' data:; "
+                "frame-ancestors 'none';"
+            )
             response.headers["X-Request-ID"] = request_id
             if request.url.path.startswith("/api/"):
                 logger.info(
@@ -236,13 +255,32 @@ def create_app() -> FastAPI:
             self.max_requests = max_requests
             self.window = window
             self._requests: dict[str, list[float]] = defaultdict(list)
+            self._last_cleanup: float = 0.0
+
+        def _get_client_ip(self, request: Request) -> str:
+            """Extract client IP, respecting X-Forwarded-For behind reverse proxies."""
+            forwarded = request.headers.get("X-Forwarded-For", "")
+            if forwarded:
+                # First IP is the original client
+                return forwarded.split(",")[0].strip()
+            return request.client.host if request.client else "unknown"
 
         async def dispatch(self, request: Request, call_next):
             rate_limited_prefixes = ("/api/v1/calculate", "/api/v1/chat", "/api/v1/suggest", "/api/v1/feedback")
             if not any(request.url.path.startswith(p) for p in rate_limited_prefixes):
                 return await call_next(request)
-            client_ip = request.client.host if request.client else "unknown"
+            client_ip = self._get_client_ip(request)
             now = _time.time()
+
+            # Periodic cleanup to prevent unbounded memory growth
+            if now - self._last_cleanup > self.window * 2:
+                cutoff = now - self.window
+                self._requests = defaultdict(list, {
+                    k: v for k, v in self._requests.items()
+                    if v and v[-1] > cutoff
+                })
+                self._last_cleanup = now
+
             self._requests[client_ip] = [
                 t for t in self._requests[client_ip] if now - t < self.window
             ]
@@ -655,12 +693,24 @@ def create_app() -> FastAPI:
     @app.post("/api/v1/feedback")
     async def submit_feedback(request: FeedbackRequest):
         """Submit user feedback to Discord via webhook."""
+        from urllib.parse import urlparse
+
         import httpx
 
         webhook_url = os.environ.get("DISCORD_WEBHOOK_URL", "")
         if not webhook_url:
             logger.warning("DISCORD_WEBHOOK_URL not configured — feedback discarded")
             return {"success": False, "error": "Feedback system is not configured."}
+
+        # SSRF protection: only allow Discord webhook URLs
+        parsed = urlparse(webhook_url)
+        if (
+            parsed.scheme != "https"
+            or parsed.hostname not in ("discord.com", "discordapp.com")
+            or not parsed.path.startswith("/api/webhooks/")
+        ):
+            logger.error("Invalid DISCORD_WEBHOOK_URL: not a valid Discord webhook")
+            return {"success": False, "error": "Feedback system misconfigured."}
 
         category_labels = {
             "bug": "\U0001f41b Bug Report",
