@@ -189,6 +189,27 @@ class SkillDetail(SkillInfo):
     defaults: dict[str, Any] = Field(default_factory=dict)
 
 
+class FeedbackRequest(BaseModel):
+    """User feedback request."""
+    category: str = Field(..., description="Feedback category", max_length=50)
+    message: str = Field(..., description="Feedback message", min_length=1, max_length=2000)
+    name: str = Field("", description="Optional user name", max_length=100)
+
+
+class ChatRequest(BaseModel):
+    """AI chat request."""
+    message: str = Field(..., description="User message", max_length=2000)
+    history: list[dict[str, str]] = Field(default_factory=list, max_length=20)
+    context: dict[str, Any] | None = Field(None, description="Current UI context")
+
+
+class SuggestRequest(BaseModel):
+    """Parameter suggestion request."""
+    skill_id: str = Field(..., description="Skill identifier", max_length=100)
+    current_params: dict[str, Any] = Field(default_factory=dict)
+    goal: str | None = Field(None, description="User's goal description", max_length=500)
+
+
 # ==================== アプリケーション ====================
 
 def create_app() -> FastAPI:
@@ -684,12 +705,6 @@ def create_app() -> FastAPI:
 
     # ==================== Feedback Endpoint ====================
 
-    class FeedbackRequest(BaseModel):
-        """User feedback request."""
-        category: str = Field(..., description="Feedback category", max_length=50)
-        message: str = Field(..., description="Feedback message", min_length=1, max_length=2000)
-        name: str = Field("", description="Optional user name", max_length=100)
-
     @app.post("/api/v1/feedback")
     async def submit_feedback(request: FeedbackRequest):
         """Submit user feedback to Discord via webhook."""
@@ -749,18 +764,6 @@ def create_app() -> FastAPI:
             return {"success": False, "error": "Failed to send feedback. Please try again later."}
 
     # ==================== AI Endpoints ====================
-
-    class ChatRequest(BaseModel):
-        """AI chat request."""
-        message: str = Field(..., description="User message", max_length=2000)
-        history: list[dict[str, str]] = Field(default_factory=list, max_length=20)
-        context: dict[str, Any] | None = Field(None, description="Current UI context")
-
-    class SuggestRequest(BaseModel):
-        """Parameter suggestion request."""
-        skill_id: str = Field(..., description="Skill identifier", max_length=100)
-        current_params: dict[str, Any] = Field(default_factory=dict)
-        goal: str | None = Field(None, description="User's goal description", max_length=500)
 
     _assistant = None
 

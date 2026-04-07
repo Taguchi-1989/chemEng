@@ -125,15 +125,15 @@ function getCaseName(type, params, result) {
 function getMainValue(type, result) {
     switch (type) {
         case 'lcoh':
-            return result.lcoh ? `${result.lcoh.toFixed(2)} EUR/kg H\u2082` : '-';
+            return result.lcoh != null ? `${result.lcoh.toFixed(2)} EUR/kg H\u2082` : '-';
         case 'property':
-            return result.value ? `${result.value.toFixed(4)} ${result.unit || ''}` : '-';
+            return result.value != null ? `${result.value.toFixed(4)} ${result.unit || ''}` : '-';
         case 'distillation':
-            return result.actual_stages ? `${result.actual_stages} stages` : '-';
+            return result.actual_stages != null ? `${result.actual_stages} stages` : '-';
         case 'extraction':
             return result.recovery != null ? `${(result.recovery * 100).toFixed(1)}% recovery` : '-';
         case 'absorption':
-            return result.actual_stages ? `${result.actual_stages} stages` : '-';
+            return result.actual_stages != null ? `${result.actual_stages} stages` : '-';
         case 'mass_balance':
             return result.closure != null ? `Closure: ${result.closure.toFixed(1)}%` : '-';
         case 'heat_balance':

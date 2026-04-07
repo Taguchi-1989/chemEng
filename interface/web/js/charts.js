@@ -88,7 +88,7 @@ function initTxyDiagram() {
 
                 // Create chart data
                 const bubbleData = data.x.map((x, i) => ({ x: x, y: data.T_bubble[i] - 273.15 }));
-                const dewData = data.x.map((x, i) => ({ x: data.y[i], y: data.T_bubble[i] - 273.15 }));
+                const dewData = data.x.map((x, i) => ({ x: data.y[i], y: data.T_dew[i] - 273.15 }));
 
                 // Destroy previous chart if exists
                 if (txyChart) {
