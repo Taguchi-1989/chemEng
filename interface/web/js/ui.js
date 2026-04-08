@@ -426,7 +426,7 @@ function generateMainResult(type, result) {
         case 'distillation':
             html += `<div class="highlight">
                 <div class="highlight-label">理論段数 / Theoretical Stages</div>
-                <div class="highlight-value">${escapeHtml(String(result.actual_stages || result.theoretical_stages || '-'))}</div>
+                <div class="highlight-value">${escapeHtml(String(result.actual_stages ?? result.theoretical_stages ?? '-'))}</div>
             </div>`;
             break;
         case 'extraction':
@@ -444,7 +444,7 @@ function generateMainResult(type, result) {
         case 'lcoh':
             html += `<div class="highlight">
                 <div class="highlight-label">Levelized Cost of Hydrogen</div>
-                <div class="highlight-value">${escapeHtml(result.lcoh?.toFixed(2) || '-')} EUR/kg H2</div>
+                <div class="highlight-value">${escapeHtml(result.lcoh != null ? result.lcoh.toFixed(2) : '-')} EUR/kg H2</div>
             </div>`;
             // Cost breakdown
             if (result.lcoh_breakdown) {
@@ -462,7 +462,7 @@ function generateMainResult(type, result) {
                 };
                 for (const [key, value] of Object.entries(result.lcoh_breakdown)) {
                     if (key === 'total') continue;
-                    html += `<tr><th>${escapeHtml(breakdownLabels[key] || key)}</th><td>${escapeHtml(String(value?.toFixed(3) || 0))} EUR/kg H2</td></tr>`;
+                    html += `<tr><th>${escapeHtml(breakdownLabels[key] || key)}</th><td>${escapeHtml(value != null ? value.toFixed(3) : '0')} EUR/kg H2</td></tr>`;
                 }
                 html += '</table></div>';
             }
@@ -977,6 +977,86 @@ function initHelpSystem() {
             sendBtn.click();
         }
     };
+}
+
+function initFeedbackSystem() {
+    const fab = document.getElementById('feedback-fab');
+    const overlay = document.getElementById('feedback-overlay');
+    const modal = document.getElementById('feedback-modal');
+    const closeBtn = document.getElementById('feedback-modal-close');
+    const form = document.getElementById('feedback-form');
+    const textarea = document.getElementById('fb-message');
+    const charCount = document.getElementById('fb-char-count');
+    const result = document.getElementById('feedback-result');
+    const submitBtn = document.getElementById('feedback-submit');
+    if (!fab || !overlay || !modal || !closeBtn || !form || !textarea || !charCount || !result || !submitBtn) {
+        return;
+    }
+
+    const defaultSubmitHtml = submitBtn.innerHTML;
+
+    function openModal() {
+        overlay.classList.remove('hidden');
+        modal.classList.remove('hidden');
+        textarea.focus();
+    }
+
+    function closeModal() {
+        overlay.classList.add('hidden');
+        modal.classList.add('hidden');
+    }
+
+    fab.addEventListener('click', openModal);
+    overlay.addEventListener('click', closeModal);
+    closeBtn.addEventListener('click', closeModal);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+            closeModal();
+        }
+    });
+
+    textarea.addEventListener('input', () => {
+        charCount.textContent = textarea.value.length;
+    });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        submitBtn.disabled = true;
+        submitBtn.textContent = '送信中...';
+        const category = form.querySelector('input[name="fb-category"]:checked')?.value;
+        const name = document.getElementById('fb-name')?.value.trim() || '';
+        const message = textarea.value.trim();
+
+        try {
+            const resp = await apiFetch('/api/v1/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ category, name, message }),
+            });
+            const data = await resp.json();
+            if (data.success) {
+                form.classList.add('hidden');
+                result.classList.remove('hidden');
+                setTimeout(() => {
+                    closeModal();
+                    form.reset();
+                    form.classList.remove('hidden');
+                    result.classList.add('hidden');
+                    charCount.textContent = '0';
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = defaultSubmitHtml;
+                }, 2000);
+            } else {
+                alert(data.error || 'Failed to send feedback.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = defaultSubmitHtml;
+            }
+        } catch (err) {
+            alert('送信に失敗しました / Failed to send feedback.');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = defaultSubmitHtml;
+        }
+    });
 }
 
 function showHelpTopic(topic) {

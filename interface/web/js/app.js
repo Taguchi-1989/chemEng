@@ -20,6 +20,45 @@ document.getElementById('theme-toggle').onclick = () => {
     }
 };
 
+function initGlobalActionHandlers() {
+    document.addEventListener('click', (e) => {
+        const actionEl = e.target.closest('[data-action]');
+        if (actionEl) {
+            const { action, skill, type, value, caseId } = actionEl.dataset;
+            if (action === 'toggle-language') {
+                setLanguage(currentLang === 'ja' ? 'en' : 'ja');
+            } else if (action === 'clear-dashboard') {
+                clearAllDashboardCases();
+            } else if (action === 'compare-dashboard') {
+                compareDashboardCases();
+            } else if (action === 'download-template' && skill) {
+                downloadPromptTemplate(skill);
+            } else if (action === 'download-report' && type) {
+                downloadReport(type);
+            } else if (action === 'save-dashboard' && type) {
+                saveToDashboard(type);
+            } else if (action === 'export-json' && skill) {
+                exportJSON(skill);
+            } else if (action === 'export-csv' && skill) {
+                exportCSV(skill);
+            } else if (action === 'set-dashboard-chart-type' && value) {
+                setDashboardChartType(value);
+            } else if (action === 'export-dashboard-csv') {
+                exportDashboardCSV();
+            } else if (action === 'export-dashboard-png') {
+                exportDashboardPNG();
+            } else if (action === 'delete-dashboard-case' && caseId) {
+                deleteDashboardCase(caseId);
+            }
+        }
+
+        const caseCheckbox = e.target.closest('.case-checkbox');
+        if (caseCheckbox && caseCheckbox.dataset.caseId) {
+            toggleCaseSelection(caseCheckbox.dataset.caseId);
+        }
+    });
+}
+
 // ==================== Tabs ====================
 const allTabs = document.querySelectorAll('.calc-tab');
 
@@ -455,3 +494,5 @@ function showSuggestionPopover(suggestions, form, anchor) {
 
 // ==================== Help System ====================
 initHelpSystem();
+initFeedbackSystem();
+initGlobalActionHandlers();

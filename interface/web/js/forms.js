@@ -249,7 +249,13 @@ function initMassBalanceForm() {
                 if (out.outlet_streams[1]) document.getElementById('mb-out2-label').textContent = `${out.outlet_streams[1].flow_rate.toFixed(1)} mol/s`;
                 document.getElementById('mb-closure').textContent = out.closure.toFixed(2);
                 if (out.calculation_steps?.length) document.getElementById('mb-steps').innerHTML = renderSteps(out.calculation_steps);
-                saveHistory('mass_balance', { components: comps, feed_flow_rate: params.inlet_streams[0].flow_rate }, out);
+                saveHistory('mass_balance', {
+                    components: comps,
+                    feed_flow_rate: params.inlet_streams[0].flow_rate,
+                    feed_composition: feedComp,
+                    distillate_composition: distComp,
+                    bottoms_composition: bottComp
+                }, out);
                 showResult('mass_balance');
                 toast('Balance calculation complete / 物質収支計算完了');
             } else {

@@ -231,10 +231,13 @@ def create_app() -> FastAPI:
     # セキュリティヘッダー + リクエストトレーシング + CSRF ミドルウェア
     class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         async def dispatch(self, request: Request, call_next):
-            # CSRF protection: POST to /api/ must have application/json content-type
+            # CSRF protection: only enforce JSON content type when the request
+            # actually sends a body. Some endpoints use POST with query params only.
             if request.method == "POST" and request.url.path.startswith("/api/"):
                 ct = request.headers.get("content-type", "")
-                if "application/json" not in ct:
+                content_length = request.headers.get("content-length", "0").strip() or "0"
+                has_body = content_length not in ("0", "")
+                if has_body and "application/json" not in ct:
                     return Response(
                         status_code=415,
                         content='{"detail":"Unsupported Media Type. Content-Type must be application/json."}',
