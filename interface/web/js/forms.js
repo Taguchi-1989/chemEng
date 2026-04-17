@@ -2,6 +2,7 @@
 
 // ==================== Client-Side Validation ====================
 let formDirty = false;
+let isCalculating = false;
 
 function validateRequired(form, name, label) {
     const input = form.querySelector(`[name="${name}"]`);
@@ -82,12 +83,14 @@ function handleConnectionError(err) {
 function initPropertyForm() {
     document.getElementById('property-form').onsubmit = async e => {
         e.preventDefault();
+        if (isCalculating) return;
         const form = e.target;
         const valid = [
             validateRequired(form, 'substance', 'Substance/物質'),
             validateRequired(form, 'property', 'Property/物性'),
         ].every(Boolean);
         if (!valid) return;
+        isCalculating = true;
         showLoading();
         formDirty = false;
         const fd = new FormData(form);
@@ -96,8 +99,8 @@ function initPropertyForm() {
         const params = {
             substance: fd.get('substance'),
             property: fd.get('property'),
-            temperature: UNITS.temperature[tempU].toBase(parseFloat(fd.get('temperature'))),
-            pressure: UNITS.pressure[pressU].toBase(parseFloat(fd.get('pressure')))
+            temperature: UNITS.temperature[tempU].toBase(parseFloat(fd.get('temperature')) || 298.15),
+            pressure: UNITS.pressure[pressU].toBase(parseFloat(fd.get('pressure')) || 101325)
         };
         try {
             const res = await apiFetch(`${API_BASE}/calculate/property_estimation`, {
@@ -111,7 +114,7 @@ function initPropertyForm() {
                 const p = PROPERTIES[params.property] || { name: params.property, unit: '', factor: 1 };
                 document.getElementById('prop-substance').textContent = out.substance || params.substance;
                 document.getElementById('prop-name').textContent = p.name;
-                document.getElementById('prop-value').textContent = (out.value * p.factor).toFixed(4);
+                document.getElementById('prop-value').textContent = out.value != null ? (out.value * p.factor).toFixed(4) : '-';
                 document.getElementById('prop-unit').textContent = p.unit;
                 document.getElementById('prop-temp-result').textContent = params.temperature.toFixed(1);
                 document.getElementById('prop-press-result').textContent = (params.pressure / 1000).toFixed(1);
@@ -127,6 +130,8 @@ function initPropertyForm() {
             }
         } catch (err) {
             handleConnectionError(err);
+        } finally {
+            isCalculating = false;
         }
     };
 }
@@ -135,6 +140,7 @@ function initPropertyForm() {
 function initDistillationForm() {
     document.getElementById('distillation-form').onsubmit = async e => {
         e.preventDefault();
+        if (isCalculating) return;
         const form = e.target;
         const valid = [
             validateRequired(form, 'light_component', 'Light component/軽沸成分'),
@@ -146,6 +152,7 @@ function initDistillationForm() {
             validateNumber(form, 'reflux_ratio_factor', 'R/Rmin', 1.01, 10),
         ].every(Boolean);
         if (!valid) return;
+        isCalculating = true;
         showLoading();
         formDirty = false;
         const fd = new FormData(form);
@@ -170,9 +177,9 @@ function initDistillationForm() {
                 document.getElementById('dist-system').textContent = `${params.light_component} / ${params.heavy_component}`;
                 document.getElementById('dist-stages').textContent = out.actual_stages;
                 document.getElementById('dist-feed-stage').textContent = out.feed_stage;
-                document.getElementById('dist-reflux').textContent = out.actual_reflux_ratio.toFixed(2);
-                document.getElementById('dist-diam').textContent = out.column_diameter.toFixed(2);
-                const fmt = kw => kw > 1000 ? `${(kw/1000).toFixed(1)} MW` : `${kw.toFixed(0)} kW`;
+                document.getElementById('dist-reflux').textContent = (out.actual_reflux_ratio ?? 0).toFixed(2);
+                document.getElementById('dist-diam').textContent = (out.column_diameter ?? 0).toFixed(2);
+                const fmt = kw => kw != null ? (kw > 1000 ? `${(kw/1000).toFixed(1)} MW` : `${kw.toFixed(0)} kW`) : '-';
                 document.getElementById('dist-qc').textContent = fmt(out.condenser_duty);
                 document.getElementById('dist-qr').textContent = fmt(out.reboiler_duty);
                 document.getElementById('dist-feed-label').textContent = `F = ${params.feed_flow_rate}`;
@@ -180,13 +187,14 @@ function initDistillationForm() {
                 document.getElementById('dist-b-label').textContent = `B = ${out.bottoms_flow_rate.toFixed(1)}`;
                 const trays = document.getElementById('dist-trays');
                 trays.innerHTML = '';
-                const num = out.actual_stages - 1;
-                const spacing = 260 / (num + 1);
+                const num = Math.max(0, out.actual_stages - 1);
+                const spacing = num > 0 ? 260 / (num + 1) : 130;
                 for (let i = 1; i <= num; i++) {
                     const y = 70 + i * spacing;
                     trays.innerHTML += `<line x1="120" y1="${y}" x2="200" y2="${y}" stroke="var(--glass-border)" stroke-width="1"/>`;
                 }
-                document.getElementById('dist-feed-dot').setAttribute('cy', 70 + out.feed_stage * spacing);
+                const feedY = Math.min(330, 70 + (out.feed_stage ?? 1) * spacing);
+                document.getElementById('dist-feed-dot').setAttribute('cy', feedY);
                 const warn = document.getElementById('dist-warnings');
                 if (data.warnings?.length) {
                     warn.classList.remove('hidden');
@@ -201,6 +209,8 @@ function initDistillationForm() {
             }
         } catch (err) {
             handleConnectionError(err);
+        } finally {
+            isCalculating = false;
         }
     };
 }
@@ -209,6 +219,7 @@ function initDistillationForm() {
 function initMassBalanceForm() {
     document.getElementById('mass_balance-form').onsubmit = async e => {
         e.preventDefault();
+        if (isCalculating) return;
         const form = e.target;
         const valid = [
             validateRequired(form, 'components', 'Components/成分'),
@@ -218,10 +229,15 @@ function initMassBalanceForm() {
             validateComposition(form, 'bottoms_composition', 'Bottoms comp/缶出組成'),
         ].every(Boolean);
         if (!valid) return;
+        isCalculating = true;
         showLoading();
         formDirty = false;
         const fd = new FormData(form);
-        const comps = fd.get('components').split(',').map(c => c.trim());
+        const comps = fd.get('components').split(',').map(c => c.trim()).filter(c => c.length > 0);
+        if (comps.length < 2) {
+            markInvalid(form.querySelector('[name="components"]'), 'At least 2 components required / 2成分以上必要です');
+            return;
+        }
         const feedComp = parseFloat(fd.get('feed_composition'));
         const distComp = parseFloat(fd.get('distillate_composition'));
         const bottComp = parseFloat(fd.get('bottoms_composition'));
@@ -263,6 +279,8 @@ function initMassBalanceForm() {
             }
         } catch (err) {
             handleConnectionError(err);
+        } finally {
+            isCalculating = false;
         }
     };
 }
@@ -271,6 +289,7 @@ function initMassBalanceForm() {
 function initHeatBalanceForm() {
     document.getElementById('heat_balance-form').onsubmit = async e => {
         e.preventDefault();
+        if (isCalculating) return;
         const form = e.target;
         const valid = [
             validateRequired(form, 'substance', 'Substance/物質'),
@@ -279,6 +298,7 @@ function initHeatBalanceForm() {
             validateNumber(form, 'outlet_temperature', 'Outlet T/出口温度', 1, 10000),
         ].every(Boolean);
         if (!valid) return;
+        isCalculating = true;
         showLoading();
         formDirty = false;
         const fd = new FormData(form);
@@ -287,8 +307,8 @@ function initHeatBalanceForm() {
             flow_rate: parseFloat(fd.get('flow_rate')),
             inlet_temperature: parseFloat(fd.get('inlet_temperature')),
             outlet_temperature: parseFloat(fd.get('outlet_temperature')),
-            pressure: parseFloat(fd.get('pressure')),
-            efficiency: parseFloat(fd.get('efficiency')),
+            pressure: parseFloat(fd.get('pressure')) || 101325,
+            efficiency: parseFloat(fd.get('efficiency')) || 1.0,
             phase_change: true
         };
         try {
@@ -302,10 +322,10 @@ function initHeatBalanceForm() {
                 const out = data.outputs;
                 const phaseJa = { liquid: '液相', vapor: '気相', unknown: '不明' };
                 document.getElementById('hb-sub').textContent = `${params.substance} (${params.flow_rate} mol/s)`;
-                document.getElementById('hb-sens').textContent = out.sensible_heat.toFixed(1);
-                document.getElementById('hb-lat').textContent = out.latent_heat.toFixed(1);
-                document.getElementById('hb-total').textContent = out.total_heat_duty.toFixed(1);
-                document.getElementById('hb-actual').textContent = out.actual_heat_duty.toFixed(1);
+                document.getElementById('hb-sens').textContent = (out.sensible_heat ?? 0).toFixed(1);
+                document.getElementById('hb-lat').textContent = (out.latent_heat ?? 0).toFixed(1);
+                document.getElementById('hb-total').textContent = (out.total_heat_duty ?? 0).toFixed(1);
+                document.getElementById('hb-actual').textContent = (out.actual_heat_duty ?? 0).toFixed(1);
                 document.getElementById('hb-t-in').textContent = `T = ${params.inlet_temperature} K`;
                 document.getElementById('hb-t-out').textContent = `T = ${params.outlet_temperature} K`;
                 document.getElementById('hb-q-label').textContent = out.total_heat_duty > 1000 ? `Q = ${(out.total_heat_duty/1000).toFixed(1)} MW` : `Q = ${out.total_heat_duty.toFixed(0)} kW`;
@@ -327,6 +347,8 @@ function initHeatBalanceForm() {
             }
         } catch (err) {
             handleConnectionError(err);
+        } finally {
+            isCalculating = false;
         }
     };
 }
@@ -335,6 +357,7 @@ function initHeatBalanceForm() {
 function initExtractionForm() {
     document.getElementById('extraction-form').onsubmit = async e => {
         e.preventDefault();
+        if (isCalculating) return;
         const form = e.target;
         const valid = [
             validateRequired(form, 'solute', 'Solute/溶質'),
@@ -345,6 +368,7 @@ function initExtractionForm() {
             validateNumber(form, 'solvent_flow_rate', 'Solvent flow/抽剤流量', 0.001),
         ].every(Boolean);
         if (!valid) return;
+        isCalculating = true;
         showLoading();
         formDirty = false;
         const fd = new FormData(form);
@@ -356,8 +380,8 @@ function initExtractionForm() {
             feed_flow_rate: parseFloat(fd.get('feed_flow_rate')),
             feed_composition: parseFloat(fd.get('feed_composition')),
             solvent_flow_rate: parseFloat(fd.get('solvent_flow_rate')),
-            temperature: parseFloat(fd.get('temperature')),
-            recovery: parseFloat(fd.get('recovery'))
+            temperature: parseFloat(fd.get('temperature')) || 298.15,
+            recovery: parseFloat(fd.get('recovery')) || 0.9
         };
         if (stagesVal && stagesVal.trim() !== '') {
             params.stages = parseInt(stagesVal);
@@ -372,10 +396,10 @@ function initExtractionForm() {
             if (data.success) {
                 const out = data.outputs;
                 document.getElementById('ext-system').textContent = `${params.solute} from ${params.carrier} using ${params.solvent}`;
-                document.getElementById('ext-recovery').textContent = (out.recovery * 100).toFixed(1);
-                document.getElementById('ext-stages').textContent = out.actual_stages;
-                document.getElementById('ext-factor').textContent = out.extraction_factor.toFixed(3);
-                document.getElementById('ext-m').textContent = out.distribution_coefficient.toFixed(3);
+                document.getElementById('ext-recovery').textContent = out.recovery != null ? (out.recovery * 100).toFixed(1) : '-';
+                document.getElementById('ext-stages').textContent = out.actual_stages ?? '-';
+                document.getElementById('ext-factor').textContent = (out.extraction_factor ?? 0).toFixed(3);
+                document.getElementById('ext-m').textContent = (out.distribution_coefficient ?? 0).toFixed(3);
                 document.getElementById('ext-feed-label').textContent = `${params.feed_flow_rate} kmol/h`;
                 document.getElementById('ext-solv-label').textContent = `${params.solvent_flow_rate} kmol/h`;
                 document.getElementById('ext-raff-label').textContent = `${out.raffinate_flow_rate.toFixed(1)} kmol/h`;
@@ -414,6 +438,8 @@ function initExtractionForm() {
             }
         } catch (err) {
             handleConnectionError(err);
+        } finally {
+            isCalculating = false;
         }
     };
 }
@@ -422,6 +448,7 @@ function initExtractionForm() {
 function initAbsorptionForm() {
     document.getElementById('absorption-form').onsubmit = async e => {
         e.preventDefault();
+        if (isCalculating) return;
         const form = e.target;
         const valid = [
             validateRequired(form, 'gas_component', 'Gas component/ガス成分'),
@@ -431,6 +458,7 @@ function initAbsorptionForm() {
             validateComposition(form, 'inlet_gas_composition', 'Inlet comp/入口組成'),
         ].every(Boolean);
         if (!valid) return;
+        isCalculating = true;
         showLoading();
         formDirty = false;
         const fd = new FormData(form);
@@ -441,9 +469,9 @@ function initAbsorptionForm() {
             solvent: fd.get('solvent'),
             gas_flow_rate: parseFloat(fd.get('gas_flow_rate')),
             inlet_gas_composition: parseFloat(fd.get('inlet_gas_composition')),
-            temperature: parseFloat(fd.get('temperature')),
-            pressure: parseFloat(fd.get('pressure')),
-            removal_efficiency: parseFloat(fd.get('removal_efficiency'))
+            temperature: parseFloat(fd.get('temperature')) || 298.15,
+            pressure: parseFloat(fd.get('pressure')) || 101325,
+            removal_efficiency: parseFloat(fd.get('removal_efficiency')) || 0.9
         };
         if (liquidFlowVal && liquidFlowVal.trim() !== '') {
             params.liquid_flow_rate = parseFloat(liquidFlowVal);
@@ -458,10 +486,10 @@ function initAbsorptionForm() {
             if (data.success) {
                 const out = data.outputs;
                 document.getElementById('abs-system').textContent = `${params.gas_component} into ${params.solvent}`;
-                document.getElementById('abs-removal').textContent = (out.removal_efficiency * 100).toFixed(1);
-                document.getElementById('abs-stages').textContent = out.actual_stages;
-                document.getElementById('abs-factor').textContent = out.absorption_factor.toFixed(3);
-                document.getElementById('abs-lg').textContent = out.liquid_gas_ratio.toFixed(3);
+                document.getElementById('abs-removal').textContent = out.removal_efficiency != null ? (out.removal_efficiency * 100).toFixed(1) : '-';
+                document.getElementById('abs-stages').textContent = out.actual_stages ?? '-';
+                document.getElementById('abs-factor').textContent = (out.absorption_factor ?? 0).toFixed(3);
+                document.getElementById('abs-lg').textContent = (out.liquid_gas_ratio ?? 0).toFixed(3);
                 document.getElementById('abs-gas-in-label').textContent = `${params.gas_flow_rate} kmol/h`;
                 document.getElementById('abs-gas-out-label').textContent = `${out.outlet_gas_flow.toFixed(1)} kmol/h`;
                 document.getElementById('abs-liq-out-label').textContent = `${out.outlet_liquid_flow.toFixed(1)} kmol/h`;
@@ -481,7 +509,7 @@ function initAbsorptionForm() {
                 document.getElementById('abs-tbl-yin').textContent = params.inlet_gas_composition.toFixed(4);
                 document.getElementById('abs-tbl-gout').textContent = out.outlet_gas_flow.toFixed(2);
                 document.getElementById('abs-tbl-yout').textContent = out.outlet_gas_composition.toFixed(8);
-                const L_in = out.outlet_liquid_flow - out.absorbed_amount;
+                const L_in = Math.max(0, out.outlet_liquid_flow - out.absorbed_amount);
                 document.getElementById('abs-tbl-lin').textContent = L_in.toFixed(1);
                 document.getElementById('abs-tbl-xin').textContent = '0.0000';
                 document.getElementById('abs-tbl-lout').textContent = out.outlet_liquid_flow.toFixed(2);
@@ -501,6 +529,8 @@ function initAbsorptionForm() {
             }
         } catch (err) {
             handleConnectionError(err);
+        } finally {
+            isCalculating = false;
         }
     };
 }
@@ -519,12 +549,14 @@ function initLcohForm() {
 
     document.getElementById('lcoh-form').onsubmit = async e => {
         e.preventDefault();
+        if (isCalculating) return;
         const form = e.target;
         const valid = [
             validateNumber(form, 'capacity', 'Capacity/設備容量', 0.1, 10000),
             validateNumber(form, 'operating_hours', 'Hours/稼働時間', 100, 8760),
         ].every(Boolean);
         if (!valid) return;
+        isCalculating = true;
         showLoading();
         formDirty = false;
         const fd = new FormData(form);
@@ -533,10 +565,10 @@ function initLcohForm() {
             production_method: method,
             capacity: parseFloat(fd.get('capacity')),
             operating_hours: parseFloat(fd.get('operating_hours')),
-            opex_percent: parseFloat(fd.get('opex_percent')),
-            discount_rate: parseFloat(fd.get('discount_rate')),
-            project_lifetime: parseInt(fd.get('project_lifetime')),
-            carbon_price: parseFloat(fd.get('carbon_price')),
+            opex_percent: parseFloat(fd.get('opex_percent')) || 2.0,
+            discount_rate: parseFloat(fd.get('discount_rate')) || 0.08,
+            project_lifetime: parseInt(fd.get('project_lifetime')) || 20,
+            carbon_price: parseFloat(fd.get('carbon_price')) || 0,
             maintenance_days: parseFloat(fd.get('maintenance_days') || 0),
             labor_cost: parseFloat(fd.get('labor_cost') || 0),
             maintenance_cost: parseFloat(fd.get('maintenance_cost') || 0),
@@ -549,9 +581,9 @@ function initLcohForm() {
             params.capex_per_kw = parseFloat(capexVal);
         }
         if (method.includes('electrolysis')) {
-            params.electricity_price = parseFloat(fd.get('electricity_price'));
+            params.electricity_price = parseFloat(fd.get('electricity_price')) || 50;
         } else {
-            params.natural_gas_price = parseFloat(fd.get('natural_gas_price'));
+            params.natural_gas_price = parseFloat(fd.get('natural_gas_price')) || 30;
         }
 
         try {
@@ -626,6 +658,8 @@ function initLcohForm() {
             }
         } catch (err) {
             handleConnectionError(err);
+        } finally {
+            isCalculating = false;
         }
     };
 }

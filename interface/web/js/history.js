@@ -35,9 +35,11 @@ function updateHistoryUI() {
             <div class="history-summary">${escapeHtml(item.summary)}</div>
         </div>
     `).join('');
+    const VALID_TAB_TYPES = ['property', 'distillation', 'mass_balance', 'heat_balance', 'extraction', 'absorption', 'lcoh', 'dashboard'];
     list.querySelectorAll('.history-item').forEach(el => {
         el.onclick = () => {
             const entry = h[parseInt(el.dataset.idx)];
+            if (!VALID_TAB_TYPES.includes(entry.type)) return;
             const targetTab = document.querySelector(`[data-tab="${entry.type}"]`);
             if (targetTab && typeof activateTab === 'function') {
                 activateTab(targetTab);
@@ -70,6 +72,48 @@ function initHistoryToggle() {
 // ==================== Dashboard System ====================
 const DASHBOARD_STORAGE_KEY = 'chemeng_dashboard_cases';
 let selectedCases = new Set();
+
+function pruneSelectedCases(cases = loadDashboardCases()) {
+    const validIds = new Set(cases.map(c => c.id));
+    selectedCases = new Set([...selectedCases].filter(id => validIds.has(id)));
+    return cases;
+}
+
+function getSelectedDashboardCases(cases = loadDashboardCases()) {
+    const normalizedCases = pruneSelectedCases(cases);
+    return normalizedCases.filter(c => selectedCases.has(c.id));
+}
+
+function resetDashboardComparison() {
+    const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    const setHtml = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val; };
+    setText('dash-case-count', '0');
+    setText('dash-best-case', '-');
+    setText('dash-average', '-');
+    setText('dash-range', '-');
+    setText('dashboard-subtitle', t('label.comparing_n').replace('{n}', 0));
+    setHtml('dashboard-table-body', '');
+    document.getElementById('dash-mixed-note')?.classList.add('hidden');
+
+    try {
+        if (dashboardChart) { dashboardChart.destroy(); dashboardChart = null; }
+    } catch (_) { /* dashboardChart not in scope */ }
+}
+
+function syncDashboardComparison(cases = loadDashboardCases()) {
+    const selected = getSelectedDashboardCases(cases);
+    updateCompareButton(selected.length);
+
+    if (selected.length < 2) {
+        resetDashboardComparison();
+        return selected;
+    }
+
+    updateDashboardSummary(selected);
+    updateDashboardChart(selected);
+    updateDashboardTable(selected);
+    return selected;
+}
 
 // Load dashboard cases from localStorage
 function loadDashboardCases() {
@@ -169,10 +213,10 @@ function saveToDashboard(type) {
 }
 
 // Render dashboard case list
-function renderDashboardCaseList() {
+function renderDashboardCaseList(preloadedCases) {
     const container = document.getElementById('dashboard-case-list');
     const filterType = document.getElementById('dashboard-type-filter')?.value || 'all';
-    const cases = loadDashboardCases();
+    const cases = pruneSelectedCases(preloadedCases || loadDashboardCases());
     const filteredCases = filterType === 'all' ? cases : cases.filter(c => c.type === filterType);
 
     if (filteredCases.length === 0) {
@@ -186,7 +230,7 @@ function renderDashboardCaseList() {
                 <p class="dashboard-empty-hint">${escapeHtml(t('label.no_saved_cases_hint'))}</p>
             </div>
         `;
-        document.getElementById('compare-btn').disabled = true;
+        updateCompareButton(getSelectedDashboardCases(cases).length);
         return;
     }
 
@@ -213,7 +257,7 @@ function renderDashboardCaseList() {
     }).join('');
 
     container.innerHTML = html;
-    updateCompareButton();
+    updateCompareButton(getSelectedDashboardCases(cases).length);
 }
 
 // Toggle case selection
@@ -223,16 +267,18 @@ function toggleCaseSelection(caseId) {
     } else {
         selectedCases.add(caseId);
     }
-    renderDashboardCaseList();
+    const cases = loadDashboardCases();
+    renderDashboardCaseList(cases);
+    syncDashboardComparison(cases);
 }
 
 // Update compare button state
-function updateCompareButton() {
+function updateCompareButton(selectedCount = getSelectedDashboardCases().length) {
     const btn = document.getElementById('compare-btn');
-    btn.disabled = selectedCases.size < 2;
-    btn.textContent = selectedCases.size < 2
-        ? t('btn.select_more').replace('{n}', 2 - selectedCases.size)
-        : t('btn.compare_n').replace('{n}', selectedCases.size);
+    btn.disabled = selectedCount < 2;
+    btn.textContent = selectedCount < 2
+        ? t('btn.select_more').replace('{n}', 2 - selectedCount)
+        : t('btn.compare_n').replace('{n}', selectedCount);
 }
 
 // Delete a dashboard case
@@ -243,6 +289,7 @@ function deleteDashboardCase(caseId) {
         saveDashboardCases(updated);
         selectedCases.delete(caseId);
         renderDashboardCaseList();
+        syncDashboardComparison(updated);
         toast(t('msg.case_deleted'), 'success');
     });
 }
@@ -253,6 +300,7 @@ function clearAllDashboardCases() {
         saveDashboardCases([]);
         selectedCases.clear();
         renderDashboardCaseList();
+        syncDashboardComparison([]);
         toast(t('msg.all_cleared'), 'success');
     });
 }
@@ -260,24 +308,15 @@ function clearAllDashboardCases() {
 // Compare selected cases
 function compareDashboardCases() {
     const cases = loadDashboardCases();
-    const selected = cases.filter(c => selectedCases.has(c.id));
+    const selected = getSelectedDashboardCases(cases);
 
     if (selected.length < 2) {
         toast(t('msg.select_2_cases'), 'warning');
         return;
     }
 
-    // Show dashboard result panel
     showResult('dashboard');
-
-    // Update summary
-    updateDashboardSummary(selected);
-
-    // Update chart
-    updateDashboardChart(selected);
-
-    // Update table
-    updateDashboardTable(selected);
+    syncDashboardComparison(cases);
 }
 
 // Update dashboard summary cards

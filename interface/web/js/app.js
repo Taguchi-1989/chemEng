@@ -100,7 +100,6 @@ allTabs.forEach((tab, idx) => {
         }
         if (target) activateTab(target);
     };
-    // Set initial tabindex
     if (tab.classList.contains('active')) {
         tab.setAttribute('tabindex', '0');
     } else {
@@ -189,7 +188,6 @@ function initAutocomplete() {
     });
 }
 
-// Load substances then initialize autocomplete
 loadSubstances().then(() => initAutocomplete());
 
 // ==================== Unit Conversion Chips ====================
@@ -221,7 +219,6 @@ initAllForms();
 initAllCharts();
 
 // ==================== Export Buttons ====================
-// Legacy export for property estimation
 document.getElementById('export-json').onclick = () => {
     if (!lastResult) return toast('No data to export', 'warning');
     exportJSON('property_estimation');
@@ -267,7 +264,6 @@ importDropzone.ondrop = (e) => {
 document.getElementById('confirm-import').onclick = async () => {
     if (!pendingImportData) return;
 
-    // Batch mode
     if (pendingImportData._batch) {
         const cases = pendingImportData.cases;
         document.getElementById('import-modal').classList.add('hidden');
@@ -294,15 +290,9 @@ document.getElementById('confirm-import').onclick = async () => {
             });
 
             saveDashboardCases(dashCases);
-            renderDashboardCaseList();
 
-            // Switch to dashboard tab
-            document.querySelectorAll('.calc-tab').forEach(t => t.classList.remove('active'));
             const dashTab = document.querySelector('[data-tab="dashboard"]');
-            if (dashTab) dashTab.classList.add('active');
-            document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
-            const dashForm = document.getElementById('dashboard-form');
-            if (dashForm) dashForm.classList.add('active');
+            if (dashTab && typeof activateTab === 'function') activateTab(dashTab);
 
             toast(`Batch complete: ${resp.succeeded}/${resp.total} succeeded (${resp.execution_time_ms}ms) / 一括実行完了`, 'success');
         } catch (e) {
@@ -311,25 +301,13 @@ document.getElementById('confirm-import').onclick = async () => {
         return;
     }
 
-    // Single case mode (existing behavior)
     const { skill_id, parameters } = pendingImportData;
-
-    // Map skill_id to tab name
     const tabName = skill_id === 'property_estimation' ? 'property' : skill_id;
-
-    // Switch to correct tab
-    document.querySelectorAll('.calc-tab').forEach(t => t.classList.remove('active'));
     const targetTab = document.querySelector(`[data-tab="${tabName}"]`);
-    if (targetTab) targetTab.classList.add('active');
+    if (targetTab && typeof activateTab === 'function') activateTab(targetTab);
 
-    document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
-    const targetForm = document.getElementById(`${tabName}-form`);
-    if (targetForm) targetForm.classList.add('active');
-
-    // Populate form fields
     populateForm(skill_id, parameters);
 
-    // Close modal
     document.getElementById('import-modal').classList.add('hidden');
     resetImportModal();
 
@@ -417,7 +395,6 @@ document.querySelectorAll('.submit-btn[type="submit"]').forEach(btn => {
 });
 
 function showSuggestionPopover(suggestions, form, anchor) {
-    // Remove existing popover
     document.querySelectorAll('.suggestion-popover').forEach(el => el.remove());
 
     const popover = document.createElement('div');
@@ -449,15 +426,14 @@ function showSuggestionPopover(suggestions, form, anchor) {
 
     popover.innerHTML = html;
 
-    // Position near the anchor button
     anchor.style.position = 'relative';
     anchor.parentNode.style.position = 'relative';
     anchor.parentNode.appendChild(popover);
 
-    // Apply individual suggestions
     popover.querySelectorAll('.suggest-apply-btn').forEach(btn => {
         btn.onclick = () => {
             const s = suggestions[Number(btn.dataset.idx)];
+            if (!/^[a-zA-Z0-9_-]+$/.test(s.param)) return;
             const input = form.querySelector(`[name="${s.param}"]`);
             if (input) {
                 input.value = s.value;
@@ -468,9 +444,9 @@ function showSuggestionPopover(suggestions, form, anchor) {
         };
     });
 
-    // Apply all
     popover.querySelector('.suggest-apply-all').onclick = () => {
         suggestions.forEach(s => {
+            if (!/^[a-zA-Z0-9_-]+$/.test(s.param)) return;
             const input = form.querySelector(`[name="${s.param}"]`);
             if (input) {
                 input.value = s.value;
@@ -481,7 +457,6 @@ function showSuggestionPopover(suggestions, form, anchor) {
         toast('All suggestions applied / すべて適用しました', 'success');
     };
 
-    // Close on outside click
     setTimeout(() => {
         document.addEventListener('click', function closePopover(e) {
             if (!popover.contains(e.target) && e.target !== anchor) {

@@ -60,6 +60,11 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
     })
 
     # 入口での溶質流量（キャリアガスフリー基準）
+    if y_in <= 0:
+        return {
+            "success": False,
+            "errors": ["入口ガス組成 y_in は 0 より大きい必要があります / Inlet gas composition must be > 0"],
+        }
     if y_in >= 1.0:
         return {
             "success": False,

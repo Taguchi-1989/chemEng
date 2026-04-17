@@ -52,6 +52,9 @@ class ParameterSchema:
 
         # 数値範囲チェック
         if isinstance(value, (int, float)):
+            import math
+            if math.isnan(value) or math.isinf(value):
+                return False, f"{self.name} must be a finite number"
             if self.min_value is not None and value < self.min_value:
                 return False, f"{self.name} must be >= {self.min_value}"
             if self.max_value is not None and value > self.max_value:

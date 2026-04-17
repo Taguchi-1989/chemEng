@@ -433,10 +433,10 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
         flow_rate=params["flow_rate"],
         inlet_temperature=params["inlet_temperature"],
         outlet_temperature=params["outlet_temperature"],
-        pressure=params.get("pressure", 101325.0),
+        pressure=params.get("pressure") or 101325.0,
         phase_change=params.get("phase_change", True),
-        heat_of_reaction=params.get("heat_of_reaction", 0.0),
-        efficiency=params.get("efficiency", 1.0),
+        heat_of_reaction=params.get("heat_of_reaction") or 0.0,
+        efficiency=params.get("efficiency") or 1.0,
     )
 
     warnings: list[str] = []

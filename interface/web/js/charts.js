@@ -6,6 +6,7 @@ function initPropertyChart() {
         if (!lastResult) return toast('Run calculation first', 'warning');
         const tMin = parseFloat(document.getElementById('chart-tmin').value) || 280;
         const tMax = parseFloat(document.getElementById('chart-tmax').value) || 400;
+        if (tMax <= tMin) return toast('Max temperature must be greater than min / 最高温度は最低温度より大きくしてください', 'warning');
         const { params } = lastResult;
         toast('Generating chart data...');
 
@@ -262,8 +263,8 @@ function drawLcohSensitivityChart() {
         }
     }
 
-    if (!data || data.length === 0) {
-        container.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-muted);">No sensitivity data</div>';
+    if (!data || data.length < 2) {
+        container.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-muted);">Not enough sensitivity data points</div>';
         return;
     }
 

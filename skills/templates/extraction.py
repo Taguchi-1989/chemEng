@@ -38,6 +38,11 @@ def execute(params: dict[str, Any], engine=None) -> dict[str, Any]:
     if recovery_target > 0.9999:
         recovery_target = 0.9999
 
+    if F <= 0:
+        return {"success": False, "errors": ["原料流量は0より大きい必要があります / Feed flow rate must be > 0"]}
+    if S <= 0:
+        return {"success": False, "errors": ["抽剤流量は0より大きい必要があります / Solvent flow rate must be > 0"]}
+
     warnings = []
     calculation_steps = []
 
