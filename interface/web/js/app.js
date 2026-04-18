@@ -49,6 +49,18 @@ function initGlobalActionHandlers() {
                 exportDashboardPNG();
             } else if (action === 'delete-dashboard-case' && caseId) {
                 deleteDashboardCase(caseId);
+            } else if (action === 'flowsheet-calculate') {
+                if (typeof calculateFlowsheet === 'function') calculateFlowsheet();
+            } else if (action === 'flowsheet-goalseek') {
+                if (typeof openGoalSeekDialog === 'function') openGoalSeekDialog();
+            } else if (action === 'flowsheet-mermaid') {
+                if (typeof exportMermaid === 'function') exportMermaid();
+            } else if (action === 'flowsheet-export-json') {
+                if (typeof exportFlowsheetJSON === 'function') exportFlowsheetJSON();
+            } else if (action === 'flowsheet-clear') {
+                if (typeof clearFlowsheet === 'function') clearFlowsheet();
+            } else if (action === 'close-spreadsheet') {
+                if (typeof toggleSpreadsheetView === 'function') toggleSpreadsheetView();
             }
         }
 
@@ -78,6 +90,11 @@ function activateTab(tab) {
     if (name === 'dashboard') {
         showResult('dashboard');
         renderDashboardCaseList();
+    }
+    if (name === 'flowsheet') {
+        if (typeof initFlowsheetEditor === 'function' && !flowsheetEditor) {
+            initFlowsheetEditor();
+        }
     }
 }
 
@@ -467,7 +484,59 @@ function showSuggestionPopover(suggestions, form, anchor) {
     }, 100);
 }
 
+// ==================== Mermaid Initialization ====================
+if (typeof mermaid !== 'undefined') {
+    mermaid.initialize({ startOnLoad: false, theme: 'dark' });
+}
+
 // ==================== Help System ====================
 initHelpSystem();
 initFeedbackSystem();
 initGlobalActionHandlers();
+
+// ==================== Spreadsheet View Toggle ====================
+const spreadsheetSkillIds = ['heat_balance', 'mass_balance', 'distillation'];
+let spreadsheetViewActive = false;
+
+function toggleSpreadsheetView(skillId) {
+    const view = document.getElementById('spreadsheet-view');
+    if (!view) return;
+
+    if (spreadsheetViewActive || !skillId) {
+        view.classList.add('hidden');
+        spreadsheetViewActive = false;
+        if (typeof destroySpreadsheet === 'function') destroySpreadsheet();
+        return;
+    }
+
+    const titleMap = {
+        heat_balance: '熱収支 / Heat Balance',
+        mass_balance: '物質収支 / Mass Balance',
+        distillation: '蒸留塔設計 / Distillation',
+    };
+    const titleEl = document.getElementById('spreadsheet-title');
+    if (titleEl) titleEl.textContent = `${titleMap[skillId] || skillId} — Spreadsheet`;
+
+    view.classList.remove('hidden');
+    spreadsheetViewActive = true;
+    if (typeof initSpreadsheetView === 'function') initSpreadsheetView(skillId);
+}
+
+// Add spreadsheet toggle buttons to relevant forms
+spreadsheetSkillIds.forEach(skillId => {
+    const tabName = skillId;
+    const form = document.getElementById(`${tabName}-form`);
+    if (!form) return;
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'submit-btn secondary';
+    btn.style.cssText = 'background: var(--accent-cyan); margin-left: 0.5rem;';
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg> Grid View`;
+    btn.onclick = () => toggleSpreadsheetView(skillId);
+
+    const submitBtn = form.querySelector('.submit-btn[type="submit"]');
+    if (submitBtn && submitBtn.parentNode) {
+        submitBtn.parentNode.insertBefore(btn, submitBtn.nextSibling);
+    }
+});

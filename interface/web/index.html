@@ -11,6 +11,16 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"
             integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ"
             crossorigin="anonymous"></script>
+    <!-- jspreadsheet CE -->
+    <script src="https://cdn.jsdelivr.net/npm/jsuites@5/dist/jsuites.min.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsuites@5/dist/jsuites.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/jspreadsheet-ce@4/dist/index.min.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jspreadsheet-ce@4/dist/jspreadsheet.css">
+    <!-- Drawflow -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow@0.0.59/dist/drawflow.min.css">
+    <script src="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow@0.0.59/dist/drawflow.min.js" crossorigin="anonymous"></script>
+    <!-- Mermaid -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
@@ -290,6 +300,16 @@
                         </svg>
                         <div class="calc-tab-label" style="color: var(--accent-violet);">ダッシュボード</div>
                         <div class="calc-tab-sublabel">Dashboard</div>
+                    </div>
+                    <div class="calc-tab" data-tab="flowsheet" role="tab" aria-selected="false" style="background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 255, 136, 0.1)); border-color: var(--accent-cyan);">
+                        <svg class="calc-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--accent-cyan);">
+                            <rect x="2" y="3" width="6" height="5" rx="1"/>
+                            <rect x="16" y="3" width="6" height="5" rx="1"/>
+                            <rect x="9" y="16" width="6" height="5" rx="1"/>
+                            <path d="M5 8v3h14V8M12 11v5"/>
+                        </svg>
+                        <div class="calc-tab-label" style="color: var(--accent-cyan);">プロセスビルダー</div>
+                        <div class="calc-tab-sublabel">Process Builder</div>
                     </div>
                 </div>
 
@@ -747,6 +767,59 @@
                     </svg>
                     <div class="empty-title">Ready for Analysis</div>
                     <div class="empty-desc">Configure parameters and run calculation</div>
+                </div>
+
+                <!-- Process Builder Form -->
+                <div id="flowsheet-form" class="form-section" role="tabpanel" aria-label="プロセスビルダー">
+                    <div class="flowsheet-layout">
+                        <!-- Block Palette -->
+                        <div id="block-palette" class="block-palette"></div>
+
+                        <!-- Flowsheet Canvas -->
+                        <div class="flowsheet-main">
+                            <div class="flowsheet-toolbar">
+                                <button type="button" class="toolbar-btn" id="btn-calculate-flowsheet" data-action="flowsheet-calculate">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                    計算実行 / Calculate
+                                </button>
+                                <button type="button" class="toolbar-btn" data-action="flowsheet-goalseek">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                    ゴールシーク / Goal Seek
+                                </button>
+                                <button type="button" class="toolbar-btn" data-action="flowsheet-mermaid">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                                    Mermaid図
+                                </button>
+                                <button type="button" class="toolbar-btn" data-action="flowsheet-export-json">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    JSON出力
+                                </button>
+                                <button type="button" class="toolbar-btn toolbar-btn-danger" data-action="flowsheet-clear">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                    クリア
+                                </button>
+                            </div>
+                            <div id="flowsheet-canvas" class="flowsheet-canvas"></div>
+                        </div>
+                    </div>
+
+                    <!-- Flowsheet Results -->
+                    <div id="flowsheet-results" class="flowsheet-results"></div>
+                    <div id="convergence-panel" class="convergence-panel"></div>
+                    <div id="mermaid-container" class="mermaid-container hidden"></div>
+                </div>
+
+                <!-- Spreadsheet View (overlay for any skill) -->
+                <div id="spreadsheet-view" class="spreadsheet-view hidden">
+                    <div class="spreadsheet-header">
+                        <h3 id="spreadsheet-title">Spreadsheet View</h3>
+                        <button type="button" class="toolbar-btn" id="btn-close-spreadsheet" data-action="close-spreadsheet">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            閉じる / Close
+                        </button>
+                    </div>
+                    <div id="spreadsheet-container"></div>
+                    <div id="spreadsheet-steps"></div>
                 </div>
 
                 <!-- Loading State -->
@@ -1675,6 +1748,8 @@
     <script src="/js/forms.js"></script>
     <script src="/js/charts.js"></script>
     <script src="/js/history.js"></script>
+    <script src="/js/spreadsheet.js"></script>
+    <script src="/js/flowsheet.js"></script>
     <script src="/js/app.js"></script>
 </body>
 </html>

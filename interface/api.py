@@ -210,6 +210,29 @@ class SuggestRequest(BaseModel):
     goal: str | None = Field(None, description="User's goal description", max_length=500)
 
 
+class FlowsheetRequest(BaseModel):
+    """Flowsheet calculation request."""
+    id: str = Field("flowsheet-1", max_length=100)
+    name: str = Field("Process Flowsheet", max_length=200)
+    components: list[str] = Field(default_factory=list)
+    blocks: dict[str, Any] = Field(default_factory=dict)
+    streams: dict[str, Any] = Field(default_factory=dict)
+    tear_streams: list[str] = Field(default_factory=list)
+    convergence_config: dict[str, Any] = Field(default_factory=dict)
+
+
+class GoalSeekRequest(BaseModel):
+    """Goal seek request."""
+    flowsheet: dict[str, Any] = Field(...)
+    target_variable: str = Field(..., max_length=200)
+    target_value: float = Field(...)
+    manipulated_variable: str = Field(..., max_length=200)
+    lower_bound: float = Field(...)
+    upper_bound: float = Field(...)
+    tolerance: float = Field(1e-6)
+    max_iterations: int = Field(50, ge=1, le=500)
+
+
 # ==================== アプリケーション ====================
 
 def create_app() -> FastAPI:
@@ -255,7 +278,7 @@ def create_app() -> FastAPI:
             response.headers["Content-Security-Policy"] = (
                 "default-src 'self'; "
                 "script-src 'self' https://cdn.jsdelivr.net; "
-                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; "
                 "font-src 'self' https://fonts.gstatic.com; "
                 "connect-src 'self'; "
                 "img-src 'self' data:; "
@@ -290,7 +313,7 @@ def create_app() -> FastAPI:
             return request.client.host if request.client else "unknown"
 
         async def dispatch(self, request: Request, call_next):
-            rate_limited_prefixes = ("/api/v1/calculate", "/api/v1/chat", "/api/v1/suggest", "/api/v1/feedback")
+            rate_limited_prefixes = ("/api/v1/calculate", "/api/v1/chat", "/api/v1/suggest", "/api/v1/feedback", "/api/v1/flowsheet")
             if not any(request.url.path.startswith(p) for p in rate_limited_prefixes):
                 return await call_next(request)
             client_ip = self._get_client_ip(request)
@@ -327,7 +350,7 @@ def create_app() -> FastAPI:
         CORSMiddleware,
         allow_origins=cors_origins,
         allow_credentials=allow_credentials,
-        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_methods=["GET", "POST", "PUT", "OPTIONS"],
         allow_headers=["Content-Type", "Accept"],
     )
 
@@ -914,6 +937,78 @@ def create_app() -> FastAPI:
 
         except Exception as e:
             raise HTTPException(status_code=400, detail=safe_error_message(e))
+
+    # ==================== Flowsheet Endpoints ====================
+
+    @app.post("/api/v1/flowsheet/calculate")
+    async def calculate_flowsheet(request: FlowsheetRequest):
+        """フローシート全体を計算"""
+        import asyncio
+        import concurrent.futures
+
+        def _run():
+            from core.solver import SequentialModularSolver
+            solver = SequentialModularSolver(request.model_dump())
+            return solver.solve()
+
+        try:
+            loop = asyncio.get_event_loop()
+            with concurrent.futures.ThreadPoolExecutor() as pool:
+                result = await asyncio.wait_for(
+                    loop.run_in_executor(pool, _run),
+                    timeout=60.0,
+                )
+            return result
+        except asyncio.TimeoutError:
+            return {"success": False, "error": "Flowsheet calculation timed out (60s)"}
+        except Exception as e:
+            logger.error("Flowsheet calculation error: %s", e, exc_info=True)
+            return {"success": False, "error": safe_error_message(e)}
+
+    @app.post("/api/v1/flowsheet/goal-seek")
+    async def goal_seek(request: GoalSeekRequest):
+        """ゴールシーク実行"""
+        import asyncio
+        import concurrent.futures
+
+        def _run():
+            from core.solver import GoalSeekSolver
+            solver = GoalSeekSolver(request.flowsheet)
+            return solver.solve(
+                target_variable=request.target_variable,
+                target_value=request.target_value,
+                manipulated_variable=request.manipulated_variable,
+                lower_bound=request.lower_bound,
+                upper_bound=request.upper_bound,
+                tolerance=request.tolerance,
+                max_iterations=request.max_iterations,
+            )
+
+        try:
+            loop = asyncio.get_event_loop()
+            with concurrent.futures.ThreadPoolExecutor() as pool:
+                result = await asyncio.wait_for(
+                    loop.run_in_executor(pool, _run),
+                    timeout=120.0,
+                )
+            return result
+        except asyncio.TimeoutError:
+            return {"success": False, "error": "Goal seek timed out (120s)"}
+        except Exception as e:
+            logger.error("Goal seek error: %s", e, exc_info=True)
+            return {"success": False, "error": safe_error_message(e)}
+
+    @app.post("/api/v1/flowsheet/export-mermaid")
+    async def export_mermaid(request: FlowsheetRequest):
+        """フローシートからMermaidダイアグラムを生成"""
+        try:
+            from core.flowsheet import FlowsheetData, generate_mermaid
+            flowsheet = FlowsheetData.from_dict(request.model_dump())
+            mermaid_text = generate_mermaid(flowsheet)
+            return {"success": True, "mermaid": mermaid_text}
+        except Exception as e:
+            logger.error("Mermaid export error: %s", e, exc_info=True)
+            return {"success": False, "error": safe_error_message(e)}
 
     return app
 
