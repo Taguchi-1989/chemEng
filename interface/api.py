@@ -271,6 +271,8 @@ def create_app() -> FastAPI:
             start = _time.perf_counter()
             response: Response = await call_next(request)
             elapsed = _time.perf_counter() - start
+            if request.url.path.startswith("/js/") or request.url.path.startswith("/css/"):
+                response.headers["Cache-Control"] = "no-cache, must-revalidate"
             response.headers["X-Content-Type-Options"] = "nosniff"
             response.headers["X-Frame-Options"] = "DENY"
             response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"

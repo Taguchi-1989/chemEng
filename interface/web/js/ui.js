@@ -182,12 +182,12 @@ function generateReport(type) {
     <title>ChemEng Report - ${typeLabels[type] || type}</title>
     <style>
         :root {
-            --primary: #14b8a6;
-            --bg: #0f172a;
-            --card-bg: #1e293b;
-            --text: #e2e8f0;
-            --text-muted: #94a3b8;
-            --border: #334155;
+            --primary: #0d9488;
+            --bg: #ffffff;
+            --card-bg: #f8fafc;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -250,7 +250,7 @@ function generateReport(type) {
             font-family: 'Consolas', monospace;
         }
         .highlight {
-            background: linear-gradient(135deg, var(--primary), #06b6d4);
+            background: linear-gradient(135deg, #14b8a6, #06b6d4);
             color: white;
             padding: 1.5rem;
             border-radius: 12px;
@@ -325,12 +325,63 @@ function generateReport(type) {
     return html;
 }
 
+function getAssumptions(type, params) {
+    const common = [
+        '定常状態を仮定 / Steady-state operation assumed',
+        '理想的な混合を仮定 / Ideal mixing assumed',
+    ];
+    const specific = {
+        property: [
+            '物性値は thermo/chemicals ライブラリの相関式から算出 / Properties calculated from thermo/chemicals library correlations',
+            '純物質の物性を計算（混合物は未対応）/ Pure substance properties (mixtures not supported)',
+        ],
+        distillation: [
+            'Fenske-Underwood-Gilliland 法による簡易設計 / Shortcut design using Fenske-Underwood-Gilliland method',
+            '一定モル流量を仮定 (CMO: Constant Molar Overflow) / Constant molar overflow assumed',
+            '相対揮発度はカラム全体で一定と仮定 / Relative volatility assumed constant throughout column',
+            '全縮器・全蒸発器を使用 / Total condenser and total reboiler',
+            '段効率はO\'Connell相関で推定 / Stage efficiency estimated by O\'Connell correlation',
+            `還流比係数 R/R_min = ${params.reflux_ratio_factor || params.reflux_ratio || '1.3'} を使用 / Reflux ratio factor applied`,
+        ],
+        mass_balance: [
+            '全成分の物質収支を計算 / Total and component mass balances computed',
+            '反応なし（分離プロセスのみ）/ No reaction (separation process only)',
+            '各ストリームの組成合計は1.0と仮定 / Stream compositions sum to 1.0',
+        ],
+        heat_balance: [
+            '比熱は Shomate 方程式で温度依存性を考慮 / Heat capacity from Shomate equation (temperature-dependent)',
+            '相変化がある場合は蒸発潜熱を含む / Latent heat included when phase change occurs',
+            `効率 η = ${params.efficiency || 1.0} を適用 / Efficiency η applied to total duty`,
+            '圧力降下は無視 / Pressure drop neglected',
+        ],
+        extraction: [
+            'Kremser の式による多段抽出計算 / Kremser equation for multistage extraction',
+            '分配係数は修正UNIFAC法で推定 / Distribution coefficient estimated by modified UNIFAC',
+            '向流抽出を仮定 / Countercurrent extraction assumed',
+            '各段で平衡に到達すると仮定 / Equilibrium reached at each stage',
+        ],
+        absorption: [
+            'Kremser の式によるガス吸収計算 / Kremser equation for gas absorption',
+            'ヘンリーの法則が成立する希薄溶液を仮定 / Dilute solution assumption (Henry\'s law applicable)',
+            '向流接触を仮定 / Countercurrent contact assumed',
+            '等温操作を仮定 / Isothermal operation assumed',
+        ],
+        lcoh: [
+            '均等化原価法 (Levelized Cost) による経済評価 / Levelized cost methodology',
+            `割引率 ${((params.discount_rate || 0.08) * 100).toFixed(1)}% で資本回収係数を計算 / CRF calculated at given discount rate`,
+            `プロジェクト期間 ${params.project_lifetime || 20} 年 / Project lifetime applied`,
+            'インフレ・為替変動は考慮しない / Inflation and exchange rate fluctuations not considered',
+        ],
+    };
+    return [...common, ...(specific[type] || [])];
+}
+
 function generateReportContent(type, data) {
     const { params, result } = data;
     let html = '';
 
-    // Input Parameters Section
-    html += '<div class="section"><div class="section-title">📥 入力パラメータ / Input Parameters</div><table>';
+    // 1. Input Parameters Section
+    html += '<div class="section"><div class="section-title">1. 計算条件 / Input Conditions</div><table>';
     const paramLabels = getParamLabels(type);
     for (const [key, value] of Object.entries(params)) {
         const label = paramLabels[key] || key;
@@ -338,12 +389,20 @@ function generateReportContent(type, data) {
     }
     html += '</table></div>';
 
-    // Main Result (type-specific)
+    // 2. Assumptions Section
+    const assumptions = getAssumptions(type, params);
+    html += '<div class="section"><div class="section-title">2. 前提条件・仮定 / Assumptions</div><ul style="list-style:none;padding:0;">';
+    assumptions.forEach(a => {
+        html += `<li style="padding:0.4rem 0;border-bottom:1px solid var(--border);font-size:0.9rem;">• ${escapeHtml(a)}</li>`;
+    });
+    html += '</ul></div>';
+
+    // 3. Main Result (type-specific highlight)
     html += generateMainResult(type, result);
 
-    // Output Parameters Section
+    // 4. Detailed Output Parameters
     if (result) {
-        html += '<div class="section"><div class="section-title">📊 計算結果詳細 / Detailed Results</div><table>';
+        html += '<div class="section"><div class="section-title">3. 計算結果詳細 / Detailed Results</div><table>';
         const outputLabels = getOutputLabels(type);
         for (const [key, value] of Object.entries(result)) {
             if (key === 'calculation_steps' || key === 'sensitivity_data' || key === 'lcoh_breakdown' || key === 'annual_costs') continue;
@@ -354,14 +413,13 @@ function generateReportContent(type, data) {
         html += '</table></div>';
     }
 
-
-    // Object Outputs Section (e.g., annual_costs)
+    // 5. Object Outputs Section (e.g., annual_costs)
     if (result) {
         const outputLabels = getOutputLabels(type);
         const objectEntries = Object.entries(result).filter(([key, value]) => {
             if (!value || typeof value !== 'object') return false;
             if (key === 'calculation_steps' || key === 'sensitivity_data') return false;
-            if (key === 'lcoh_breakdown') return false; // handled in main result
+            if (key === 'lcoh_breakdown') return false;
             return true;
         });
         if (objectEntries.length) {
@@ -393,16 +451,16 @@ function generateReportContent(type, data) {
         }
     }
 
-    // Calculation Steps
+    // 6. Calculation Steps (formulas and derivation)
     if (result?.calculation_steps?.length) {
-        html += '<div class="section"><div class="section-title">📝 計算過程 / Calculation Steps</div>';
+        html += '<div class="section"><div class="section-title">4. 計算過程・導出 / Calculation Steps & Derivation</div>';
         result.calculation_steps.forEach((step, i) => {
             html += `<div class="step">
-                <div class="step-title">Step ${i + 1}: ${escapeHtml(step.step || step.title || '')}</div>
-                ${step.description ? `<div>${escapeHtml(step.description)}</div>` : ''}
+                <div class="step-title">Step ${i + 1}: ${escapeHtml(step.title || step.step || '')}</div>
+                ${step.description ? `<div style="margin-bottom:0.5rem;">${escapeHtml(step.description)}</div>` : ''}
                 ${step.formula ? `<div class="step-formula">${escapeHtml(step.formula)}</div>` : ''}
                 ${step.formulas ? `<div class="step-formula">${step.formulas.map(escapeHtml).join('<br>')}</div>` : ''}
-                ${step.values ? `<div class="step-formula">${Object.entries(step.values).map(([k,v]) => `${escapeHtml(k)}: ${escapeHtml(v)}`).join(', ')}</div>` : ''}
+                ${step.values ? `<div class="step-formula" style="margin-top:0.3rem;color:var(--text);">${Object.entries(step.values).map(([k,v]) => `${escapeHtml(k)} = ${escapeHtml(typeof v === 'number' ? v.toFixed(4) : String(v))}`).join('<br>')}</div>` : ''}
                 ${step.result ? `<div class="step-result">→ ${escapeHtml(step.result)}</div>` : ''}
             </div>`;
         });
@@ -566,17 +624,92 @@ function downloadReport(type) {
     const html = generateReport(type);
     if (!html) return;
 
-    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
     const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
-    a.download = `chemeng_${type}_report_${timestamp}.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast('Report downloaded');
+    const filename = `chemeng_${type}_report_${timestamp}.pdf`;
+
+    if (typeof window.html2pdf === 'undefined') {
+        // Fallback: HTML download if html2pdf not loaded
+        const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename.replace('.pdf', '.html');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast('Report downloaded (HTML fallback)');
+        return;
+    }
+
+    toast('PDFを生成中... / Generating PDF...', 'info');
+
+    const container = document.createElement('div');
+    container.innerHTML = html;
+    const reportBody = container.querySelector('.report-container');
+    if (!reportBody) {
+        toast('Report generation failed', 'error');
+        return;
+    }
+
+    // Apply print styles inline for PDF rendering
+    reportBody.style.cssText = 'max-width:800px;margin:0 auto;font-family:Segoe UI,Hiragino Sans,sans-serif;color:#1e293b;line-height:1.6;';
+    reportBody.querySelectorAll('.section').forEach(el => {
+        el.style.cssText = 'background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:1.2rem;margin-bottom:1.2rem;';
+    });
+    reportBody.querySelectorAll('.section-title').forEach(el => {
+        el.style.cssText = 'color:#0d9488;font-size:1rem;font-weight:600;margin-bottom:0.8rem;padding-bottom:0.4rem;border-bottom:1px solid #e2e8f0;';
+    });
+    reportBody.querySelectorAll('.highlight').forEach(el => {
+        el.style.cssText = 'background:linear-gradient(135deg,#14b8a6,#06b6d4);color:white;padding:1.2rem;border-radius:8px;text-align:center;margin-bottom:1.2rem;';
+    });
+    reportBody.querySelectorAll('.step').forEach(el => {
+        el.style.cssText = 'background:rgba(20,184,166,0.08);border-left:3px solid #14b8a6;padding:0.8rem;margin:0.5rem 0;border-radius:0 6px 6px 0;';
+    });
+    reportBody.querySelectorAll('.step-title').forEach(el => {
+        el.style.cssText = 'font-weight:600;color:#0d9488;margin-bottom:0.4rem;';
+    });
+    reportBody.querySelectorAll('.step-formula').forEach(el => {
+        el.style.cssText = 'font-family:Consolas,monospace;color:#475569;font-size:0.85rem;';
+    });
+    reportBody.querySelectorAll('.step-result').forEach(el => {
+        el.style.cssText = 'color:#0d9488;font-weight:500;margin-top:0.3rem;';
+    });
+    reportBody.querySelectorAll('table').forEach(el => {
+        el.style.cssText = 'width:100%;border-collapse:collapse;';
+    });
+    reportBody.querySelectorAll('th').forEach(el => {
+        el.style.cssText = 'padding:0.5rem;text-align:left;border-bottom:1px solid #e2e8f0;color:#64748b;font-weight:500;font-size:0.85rem;';
+    });
+    reportBody.querySelectorAll('td').forEach(el => {
+        el.style.cssText = 'padding:0.5rem;text-align:left;border-bottom:1px solid #e2e8f0;font-family:Consolas,monospace;';
+    });
+    reportBody.querySelectorAll('.report-header').forEach(el => {
+        el.style.cssText = 'text-align:center;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:2px solid #14b8a6;';
+    });
+    reportBody.querySelectorAll('.report-header h1').forEach(el => {
+        el.style.cssText = 'color:#0d9488;font-size:1.6rem;margin-bottom:0.3rem;';
+    });
+    reportBody.querySelectorAll('.footer').forEach(el => {
+        el.style.cssText = 'text-align:center;color:#94a3b8;font-size:0.75rem;margin-top:1.5rem;padding-top:0.8rem;border-top:1px solid #e2e8f0;';
+    });
+
+    document.body.appendChild(reportBody);
+
+    window.html2pdf().set({
+        margin: [10, 10, 10, 10],
+        filename: filename,
+        image: { type: 'jpeg', quality: 0.95 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    }).from(reportBody).save().then(() => {
+        document.body.removeChild(reportBody);
+        toast('PDF report downloaded / PDFレポートをダウンロードしました', 'success');
+    }).catch(err => {
+        document.body.removeChild(reportBody);
+        toast('PDF generation failed: ' + err.message, 'error');
+    });
 }
 
 // ==================== Export ====================
