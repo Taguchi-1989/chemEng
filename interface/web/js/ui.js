@@ -11,6 +11,11 @@ function escapeHtml(text) {
 function toast(msg, type = 'success', duration) {
     if (!duration) duration = type === 'error' ? 8000 : 4000;
     const container = document.getElementById('toast-container');
+    // Deduplicate: skip if last toast has same message
+    const lastMsg = container.lastElementChild?.querySelector('.toast-message')?.textContent;
+    if (lastMsg === msg) return;
+    // Limit concurrent toasts
+    while (container.children.length >= 4) container.firstElementChild.remove();
     const el = document.createElement('div');
     el.className = `toast ${type}`;
     el.setAttribute('role', type === 'error' ? 'alert' : 'status');
@@ -22,7 +27,7 @@ function toast(msg, type = 'success', duration) {
     `;
     container.appendChild(el);
     el.querySelector('.toast-close').onclick = () => el.remove();
-    setTimeout(() => el.remove(), duration);
+    setTimeout(() => { if (el.parentNode) el.remove(); }, duration);
 }
 
 // ==================== Error Message Formatter ====================
@@ -58,7 +63,7 @@ function confirmAction(message, onConfirm) {
     const overlay = document.createElement('div');
     overlay.className = 'confirm-overlay';
     overlay.innerHTML = `
-        <div class="confirm-dialog">
+        <div class="confirm-dialog" role="dialog" aria-modal="true" aria-label="確認">
             <p>${escapeHtml(message)}</p>
             <div class="confirm-actions">
                 <button class="confirm-cancel">Cancel / キャンセル</button>
@@ -67,11 +72,11 @@ function confirmAction(message, onConfirm) {
         </div>
     `;
     document.body.appendChild(overlay);
-    overlay.querySelector('.confirm-cancel').onclick = () => overlay.remove();
-    overlay.querySelector('.confirm-ok').onclick = () => { overlay.remove(); onConfirm(); };
-    overlay.addEventListener('keydown', e => {
-        if (e.key === 'Escape') overlay.remove();
-    });
+    const close = () => { overlay.remove(); document.removeEventListener('keydown', escHandler); };
+    const escHandler = (e) => { if (e.key === 'Escape') close(); };
+    overlay.querySelector('.confirm-cancel').onclick = close;
+    overlay.querySelector('.confirm-ok').onclick = () => { close(); onConfirm(); };
+    document.addEventListener('keydown', escHandler);
     overlay.querySelector('.confirm-cancel').focus();
 }
 
@@ -128,12 +133,11 @@ function updateLoadingProgress(current, total) {
 
 function showResult(type) {
     hideLoading();
-    // Clear all result sections first
     document.querySelectorAll('.result-section').forEach(s => s.classList.remove('active'));
-    // Hide empty state
     document.getElementById('empty-state').classList.add('hidden');
-    // Show the specified result
-    document.getElementById(`${type}-result`).classList.add('active');
+    const resultEl = document.getElementById(`${type}-result`);
+    resultEl.classList.add('active');
+    setTimeout(() => resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
 }
 
 // ==================== Render Calculation Steps ====================

@@ -13,6 +13,10 @@ async function apiFetch(url, options = {}, timeoutMs = 30000) {
         if (!response.ok && response.status >= 500) {
             throw new Error(`Server error (${response.status}) / サーバーエラー (${response.status})`);
         }
+        if (!response.ok && response.status >= 400) {
+            const body = await response.json().catch(() => ({}));
+            throw new Error(body.detail || body.message || `Request error (${response.status}) / リクエストエラー (${response.status})`);
+        }
         return response;
     } catch (err) {
         clearTimeout(timeoutId);

@@ -4,6 +4,25 @@
 let formDirty = false;
 let isCalculating = false;
 
+function startCalculation(form) {
+    if (isCalculating) {
+        toast('計算中です... / Calculation in progress...', 'warning');
+        return false;
+    }
+    isCalculating = true;
+    const btn = form.querySelector('.submit-btn[type="submit"]');
+    if (btn) btn.disabled = true;
+    showLoading();
+    formDirty = false;
+    return true;
+}
+
+function endCalculation(form) {
+    isCalculating = false;
+    const btn = form.querySelector('.submit-btn[type="submit"]');
+    if (btn) btn.disabled = false;
+}
+
 function validateRequired(form, name, label) {
     const input = form.querySelector(`[name="${name}"]`);
     if (!input) return true;
@@ -83,16 +102,13 @@ function handleConnectionError(err) {
 function initPropertyForm() {
     document.getElementById('property-form').onsubmit = async e => {
         e.preventDefault();
-        if (isCalculating) return;
         const form = e.target;
         const valid = [
             validateRequired(form, 'substance', 'Substance/物質'),
             validateRequired(form, 'property', 'Property/物性'),
         ].every(Boolean);
         if (!valid) return;
-        isCalculating = true;
-        showLoading();
-        formDirty = false;
+        if (!startCalculation(form)) return;
         const fd = new FormData(form);
         const tempU = activeUnits['prop-temp'] || 'K';
         const pressU = activeUnits['prop-press'] || 'Pa';
@@ -131,7 +147,7 @@ function initPropertyForm() {
         } catch (err) {
             handleConnectionError(err);
         } finally {
-            isCalculating = false;
+            endCalculation(form);
         }
     };
 }
@@ -140,7 +156,6 @@ function initPropertyForm() {
 function initDistillationForm() {
     document.getElementById('distillation-form').onsubmit = async e => {
         e.preventDefault();
-        if (isCalculating) return;
         const form = e.target;
         const valid = [
             validateRequired(form, 'light_component', 'Light component/軽沸成分'),
@@ -152,9 +167,7 @@ function initDistillationForm() {
             validateNumber(form, 'reflux_ratio_factor', 'R/Rmin', 1.01, 10),
         ].every(Boolean);
         if (!valid) return;
-        isCalculating = true;
-        showLoading();
-        formDirty = false;
+        if (!startCalculation(form)) return;
         const fd = new FormData(form);
         const params = {
             light_component: fd.get('light_component'),
@@ -183,8 +196,8 @@ function initDistillationForm() {
                 document.getElementById('dist-qc').textContent = fmt(out.condenser_duty);
                 document.getElementById('dist-qr').textContent = fmt(out.reboiler_duty);
                 document.getElementById('dist-feed-label').textContent = `F = ${params.feed_flow_rate}`;
-                document.getElementById('dist-d-label').textContent = `D = ${out.distillate_flow_rate.toFixed(1)}`;
-                document.getElementById('dist-b-label').textContent = `B = ${out.bottoms_flow_rate.toFixed(1)}`;
+                document.getElementById('dist-d-label').textContent = `D = ${(out.distillate_flow_rate ?? 0).toFixed(1)}`;
+                document.getElementById('dist-b-label').textContent = `B = ${(out.bottoms_flow_rate ?? 0).toFixed(1)}`;
                 const trays = document.getElementById('dist-trays');
                 trays.innerHTML = '';
                 const num = Math.max(0, out.actual_stages - 1);
@@ -210,7 +223,7 @@ function initDistillationForm() {
         } catch (err) {
             handleConnectionError(err);
         } finally {
-            isCalculating = false;
+            endCalculation(form);
         }
     };
 }
@@ -219,7 +232,6 @@ function initDistillationForm() {
 function initMassBalanceForm() {
     document.getElementById('mass_balance-form').onsubmit = async e => {
         e.preventDefault();
-        if (isCalculating) return;
         const form = e.target;
         const valid = [
             validateRequired(form, 'components', 'Components/成分'),
@@ -229,13 +241,12 @@ function initMassBalanceForm() {
             validateComposition(form, 'bottoms_composition', 'Bottoms comp/缶出組成'),
         ].every(Boolean);
         if (!valid) return;
-        isCalculating = true;
-        showLoading();
-        formDirty = false;
+        if (!startCalculation(form)) return;
         const fd = new FormData(form);
         const comps = fd.get('components').split(',').map(c => c.trim()).filter(c => c.length > 0);
         if (comps.length < 2) {
             markInvalid(form.querySelector('[name="components"]'), 'At least 2 components required / 2成分以上必要です');
+            endCalculation(form);
             return;
         }
         const feedComp = parseFloat(fd.get('feed_composition'));
@@ -259,11 +270,11 @@ function initMassBalanceForm() {
             if (data.success) {
                 const out = data.outputs;
                 document.getElementById('mb-comps').textContent = comps.join(' / ');
-                document.getElementById('mb-in-label').textContent = `${out.inlet_total.flow_rate.toFixed(1)} mol/s`;
-                document.getElementById('mb-closure-svg').textContent = `Closure: ${out.closure.toFixed(1)}%`;
+                document.getElementById('mb-in-label').textContent = `${(out.inlet_total?.flow_rate ?? 0).toFixed(1)} mol/s`;
+                document.getElementById('mb-closure-svg').textContent = `Closure: ${(out.closure ?? 0).toFixed(1)}%`;
                 if (out.outlet_streams[0]) document.getElementById('mb-out1-label').textContent = `${out.outlet_streams[0].flow_rate.toFixed(1)} mol/s`;
                 if (out.outlet_streams[1]) document.getElementById('mb-out2-label').textContent = `${out.outlet_streams[1].flow_rate.toFixed(1)} mol/s`;
-                document.getElementById('mb-closure').textContent = out.closure.toFixed(2);
+                document.getElementById('mb-closure').textContent = (out.closure ?? 0).toFixed(2);
                 if (out.calculation_steps?.length) document.getElementById('mb-steps').innerHTML = renderSteps(out.calculation_steps);
                 saveHistory('mass_balance', {
                     components: comps,
@@ -280,7 +291,7 @@ function initMassBalanceForm() {
         } catch (err) {
             handleConnectionError(err);
         } finally {
-            isCalculating = false;
+            endCalculation(form);
         }
     };
 }
@@ -289,7 +300,6 @@ function initMassBalanceForm() {
 function initHeatBalanceForm() {
     document.getElementById('heat_balance-form').onsubmit = async e => {
         e.preventDefault();
-        if (isCalculating) return;
         const form = e.target;
         const valid = [
             validateRequired(form, 'substance', 'Substance/物質'),
@@ -298,9 +308,7 @@ function initHeatBalanceForm() {
             validateNumber(form, 'outlet_temperature', 'Outlet T/出口温度', 1, 10000),
         ].every(Boolean);
         if (!valid) return;
-        isCalculating = true;
-        showLoading();
-        formDirty = false;
+        if (!startCalculation(form)) return;
         const fd = new FormData(form);
         const params = {
             substance: fd.get('substance'),
@@ -348,7 +356,7 @@ function initHeatBalanceForm() {
         } catch (err) {
             handleConnectionError(err);
         } finally {
-            isCalculating = false;
+            endCalculation(form);
         }
     };
 }
@@ -357,7 +365,6 @@ function initHeatBalanceForm() {
 function initExtractionForm() {
     document.getElementById('extraction-form').onsubmit = async e => {
         e.preventDefault();
-        if (isCalculating) return;
         const form = e.target;
         const valid = [
             validateRequired(form, 'solute', 'Solute/溶質'),
@@ -368,8 +375,7 @@ function initExtractionForm() {
             validateNumber(form, 'solvent_flow_rate', 'Solvent flow/抽剤流量', 0.001),
         ].every(Boolean);
         if (!valid) return;
-        isCalculating = true;
-        showLoading();
+        if (!startCalculation(form)) return;
         formDirty = false;
         const fd = new FormData(form);
         const stagesVal = fd.get('stages');
@@ -402,8 +408,8 @@ function initExtractionForm() {
                 document.getElementById('ext-m').textContent = (out.distribution_coefficient ?? 0).toFixed(3);
                 document.getElementById('ext-feed-label').textContent = `${params.feed_flow_rate} kmol/h`;
                 document.getElementById('ext-solv-label').textContent = `${params.solvent_flow_rate} kmol/h`;
-                document.getElementById('ext-raff-label').textContent = `${out.raffinate_flow_rate.toFixed(1)} kmol/h`;
-                document.getElementById('ext-extract-label').textContent = `${out.extract_flow_rate.toFixed(1)} kmol/h`;
+                document.getElementById('ext-raff-label').textContent = `${(out.raffinate_flow_rate ?? 0).toFixed(1)} kmol/h`;
+                document.getElementById('ext-extract-label').textContent = `${(out.extract_flow_rate ?? 0).toFixed(1)} kmol/h`;
                 const stagesSvg = document.getElementById('ext-stages-svg');
                 stagesSvg.innerHTML = '';
                 const nStages = out.actual_stages;
@@ -420,10 +426,10 @@ function initExtractionForm() {
                 document.getElementById('ext-tbl-xf').textContent = params.feed_composition.toFixed(4);
                 document.getElementById('ext-tbl-solv').textContent = params.solvent_flow_rate.toFixed(1);
                 document.getElementById('ext-tbl-ys').textContent = '0.0000';
-                document.getElementById('ext-tbl-raff').textContent = out.raffinate_flow_rate.toFixed(2);
-                document.getElementById('ext-tbl-xr').textContent = out.raffinate_composition.toFixed(6);
-                document.getElementById('ext-tbl-extract').textContent = out.extract_flow_rate.toFixed(2);
-                document.getElementById('ext-tbl-ye').textContent = out.extract_composition.toFixed(6);
+                document.getElementById('ext-tbl-raff').textContent = (out.raffinate_flow_rate ?? 0).toFixed(2);
+                document.getElementById('ext-tbl-xr').textContent = (out.raffinate_composition ?? 0).toFixed(6);
+                document.getElementById('ext-tbl-extract').textContent = (out.extract_flow_rate ?? 0).toFixed(2);
+                document.getElementById('ext-tbl-ye').textContent = (out.extract_composition ?? 0).toFixed(6);
                 const warn = document.getElementById('ext-warnings');
                 if (data.warnings?.length) {
                     warn.classList.remove('hidden');
@@ -439,7 +445,7 @@ function initExtractionForm() {
         } catch (err) {
             handleConnectionError(err);
         } finally {
-            isCalculating = false;
+            endCalculation(form);
         }
     };
 }
@@ -448,7 +454,6 @@ function initExtractionForm() {
 function initAbsorptionForm() {
     document.getElementById('absorption-form').onsubmit = async e => {
         e.preventDefault();
-        if (isCalculating) return;
         const form = e.target;
         const valid = [
             validateRequired(form, 'gas_component', 'Gas component/ガス成分'),
@@ -458,9 +463,7 @@ function initAbsorptionForm() {
             validateComposition(form, 'inlet_gas_composition', 'Inlet comp/入口組成'),
         ].every(Boolean);
         if (!valid) return;
-        isCalculating = true;
-        showLoading();
-        formDirty = false;
+        if (!startCalculation(form)) return;
         const fd = new FormData(form);
         const liquidFlowVal = fd.get('liquid_flow_rate');
         const params = {
@@ -491,8 +494,8 @@ function initAbsorptionForm() {
                 document.getElementById('abs-factor').textContent = (out.absorption_factor ?? 0).toFixed(3);
                 document.getElementById('abs-lg').textContent = (out.liquid_gas_ratio ?? 0).toFixed(3);
                 document.getElementById('abs-gas-in-label').textContent = `${params.gas_flow_rate} kmol/h`;
-                document.getElementById('abs-gas-out-label').textContent = `${out.outlet_gas_flow.toFixed(1)} kmol/h`;
-                document.getElementById('abs-liq-out-label').textContent = `${out.outlet_liquid_flow.toFixed(1)} kmol/h`;
+                document.getElementById('abs-gas-out-label').textContent = `${(out.outlet_gas_flow ?? 0).toFixed(1)} kmol/h`;
+                document.getElementById('abs-liq-out-label').textContent = `${(out.outlet_liquid_flow ?? 0).toFixed(1)} kmol/h`;
                 const stagesSvg = document.getElementById('abs-stages-svg');
                 stagesSvg.innerHTML = '';
                 const nStages = out.actual_stages;
@@ -507,14 +510,14 @@ function initAbsorptionForm() {
                 }
                 document.getElementById('abs-tbl-gin').textContent = params.gas_flow_rate.toFixed(1);
                 document.getElementById('abs-tbl-yin').textContent = params.inlet_gas_composition.toFixed(4);
-                document.getElementById('abs-tbl-gout').textContent = out.outlet_gas_flow.toFixed(2);
-                document.getElementById('abs-tbl-yout').textContent = out.outlet_gas_composition.toFixed(8);
+                document.getElementById('abs-tbl-gout').textContent = (out.outlet_gas_flow ?? 0).toFixed(2);
+                document.getElementById('abs-tbl-yout').textContent = (out.outlet_gas_composition ?? 0).toFixed(8);
                 const L_in = Math.max(0, out.outlet_liquid_flow - out.absorbed_amount);
                 document.getElementById('abs-tbl-lin').textContent = L_in.toFixed(1);
                 document.getElementById('abs-tbl-xin').textContent = '0.0000';
-                document.getElementById('abs-tbl-lout').textContent = out.outlet_liquid_flow.toFixed(2);
-                document.getElementById('abs-tbl-xout').textContent = out.outlet_liquid_composition.toFixed(6);
-                document.getElementById('abs-absorbed').textContent = out.absorbed_amount.toFixed(3);
+                document.getElementById('abs-tbl-lout').textContent = (out.outlet_liquid_flow ?? 0).toFixed(2);
+                document.getElementById('abs-tbl-xout').textContent = (out.outlet_liquid_composition ?? 0).toFixed(6);
+                document.getElementById('abs-absorbed').textContent = (out.absorbed_amount ?? 0).toFixed(3);
                 const warn = document.getElementById('abs-warnings');
                 if (data.warnings?.length) {
                     warn.classList.remove('hidden');
@@ -530,7 +533,7 @@ function initAbsorptionForm() {
         } catch (err) {
             handleConnectionError(err);
         } finally {
-            isCalculating = false;
+            endCalculation(form);
         }
     };
 }
@@ -549,16 +552,13 @@ function initLcohForm() {
 
     document.getElementById('lcoh-form').onsubmit = async e => {
         e.preventDefault();
-        if (isCalculating) return;
         const form = e.target;
         const valid = [
             validateNumber(form, 'capacity', 'Capacity/設備容量', 0.1, 10000),
             validateNumber(form, 'operating_hours', 'Hours/稼働時間', 100, 8760),
         ].every(Boolean);
         if (!valid) return;
-        isCalculating = true;
-        showLoading();
-        formDirty = false;
+        if (!startCalculation(form)) return;
         const fd = new FormData(form);
         const method = fd.get('production_method');
         const params = {
@@ -605,34 +605,34 @@ function initLcohForm() {
                     'atr_ccs': 'ATR + CCS (Blue H\u2082)'
                 };
                 document.getElementById('lcoh-method-label').textContent = methodLabels[method] || method;
-                document.getElementById('lcoh-value').textContent = out.lcoh.toFixed(2);
-                document.getElementById('lcoh-production').textContent = (out.annual_h2_production / 1000).toFixed(1);
-                document.getElementById('lcoh-capex').textContent = (out.total_capex / 1000000).toFixed(2);
-                document.getElementById('lcoh-efficiency').textContent = out.energy_efficiency.toFixed(1);
-                document.getElementById('lcoh-carbon').textContent = out.carbon_intensity.toFixed(2);
-                const bd = out.lcoh_breakdown;
+                document.getElementById('lcoh-value').textContent = (out.lcoh ?? 0).toFixed(2);
+                document.getElementById('lcoh-production').textContent = ((out.annual_h2_production ?? 0) / 1000).toFixed(1);
+                document.getElementById('lcoh-capex').textContent = ((out.total_capex ?? 0) / 1000000).toFixed(2);
+                document.getElementById('lcoh-efficiency').textContent = (out.energy_efficiency ?? 0).toFixed(1);
+                document.getElementById('lcoh-carbon').textContent = (out.carbon_intensity ?? 0).toFixed(2);
+                const bd = out.lcoh_breakdown || {};
                 const labor = bd.labor || 0;
                 const maintenance = bd.maintenance || 0;
                 const water = bd.water || 0;
                 const revenue = bd.revenue_offset || 0;
-                const totalPositive = bd.capex + bd.energy + bd.opex + labor + maintenance + bd.stack_replacement + bd.carbon + water;
+                const totalPositive = (bd.capex || 0) + (bd.energy || 0) + (bd.opex || 0) + labor + maintenance + (bd.stack_replacement || 0) + (bd.carbon || 0) + water;
                 const pct = (v) => totalPositive > 0 ? ((v / totalPositive) * 100).toFixed(1) + '%' : '-';
-                document.getElementById('lcoh-tbl-capex').textContent = bd.capex.toFixed(3);
-                document.getElementById('lcoh-tbl-capex-pct').textContent = pct(bd.capex);
-                document.getElementById('lcoh-tbl-energy').textContent = bd.energy.toFixed(3);
-                document.getElementById('lcoh-tbl-energy-pct').textContent = pct(bd.energy);
-                document.getElementById('lcoh-tbl-opex').textContent = bd.opex.toFixed(3);
-                document.getElementById('lcoh-tbl-opex-pct').textContent = pct(bd.opex);
+                document.getElementById('lcoh-tbl-capex').textContent = (bd.capex || 0).toFixed(3);
+                document.getElementById('lcoh-tbl-capex-pct').textContent = pct(bd.capex || 0);
+                document.getElementById('lcoh-tbl-energy').textContent = (bd.energy || 0).toFixed(3);
+                document.getElementById('lcoh-tbl-energy-pct').textContent = pct(bd.energy || 0);
+                document.getElementById('lcoh-tbl-opex').textContent = (bd.opex || 0).toFixed(3);
+                document.getElementById('lcoh-tbl-opex-pct').textContent = pct(bd.opex || 0);
                 document.getElementById('lcoh-tbl-labor').textContent = labor.toFixed(3);
                 document.getElementById('lcoh-tbl-labor-pct').textContent = pct(labor);
                 document.getElementById('lcoh-tbl-maint').textContent = maintenance.toFixed(3);
                 document.getElementById('lcoh-tbl-maint-pct').textContent = pct(maintenance);
-                document.getElementById('lcoh-tbl-stack').textContent = bd.stack_replacement.toFixed(3);
-                document.getElementById('lcoh-tbl-stack-pct').textContent = pct(bd.stack_replacement);
+                document.getElementById('lcoh-tbl-stack').textContent = (bd.stack_replacement || 0).toFixed(3);
+                document.getElementById('lcoh-tbl-stack-pct').textContent = pct(bd.stack_replacement || 0);
                 document.getElementById('lcoh-tbl-water').textContent = water.toFixed(3);
                 document.getElementById('lcoh-tbl-water-pct').textContent = pct(water);
-                document.getElementById('lcoh-tbl-carbon').textContent = bd.carbon.toFixed(3);
-                document.getElementById('lcoh-tbl-carbon-pct').textContent = pct(bd.carbon);
+                document.getElementById('lcoh-tbl-carbon').textContent = (bd.carbon || 0).toFixed(3);
+                document.getElementById('lcoh-tbl-carbon-pct').textContent = pct(bd.carbon || 0);
                 document.getElementById('lcoh-tbl-revenue').textContent = revenue.toFixed(3);
                 document.getElementById('lcoh-tbl-revenue-pct').textContent = pct(revenue);
                 drawLcohBreakdownChart(bd, totalPositive);
@@ -659,7 +659,7 @@ function initLcohForm() {
         } catch (err) {
             handleConnectionError(err);
         } finally {
-            isCalculating = false;
+            endCalculation(form);
         }
     };
 }
