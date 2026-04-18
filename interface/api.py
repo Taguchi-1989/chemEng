@@ -281,7 +281,7 @@ def create_app() -> FastAPI:
                 "default-src 'self'; "
                 "script-src 'self' https://cdn.jsdelivr.net; "
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; "
-                "font-src 'self' https://fonts.gstatic.com; "
+                "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; "
                 "connect-src 'self'; "
                 "img-src 'self' data:; "
                 "frame-ancestors 'none';"

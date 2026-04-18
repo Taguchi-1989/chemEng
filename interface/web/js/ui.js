@@ -180,6 +180,7 @@ function generateReport(type) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChemEng Report - ${typeLabels[type] || type}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
     <style>
         :root {
             --primary: #0d9488;
@@ -455,12 +456,26 @@ function generateReportContent(type, data) {
     if (result?.calculation_steps?.length) {
         html += '<div class="section"><div class="section-title">4. 計算過程・導出 / Calculation Steps & Derivation</div>';
         result.calculation_steps.forEach((step, i) => {
+            const formulaLines = [];
+            if (step.formula) formulaLines.push(step.formula);
+            if (step.formulas) formulaLines.push(...step.formulas);
+
+            const renderedFormulas = formulaLines
+                .filter(f => f && f.trim())
+                .map(f => renderFormula(f))
+                .join('<br>');
+
+            const renderedValues = step.values
+                ? Object.entries(step.values)
+                    .map(([k, v]) => renderFormula(`${k} = ${typeof v === 'number' ? v.toFixed(4) : String(v)}`))
+                    .join('<br>')
+                : '';
+
             html += `<div class="step">
                 <div class="step-title">Step ${i + 1}: ${escapeHtml(step.title || step.step || '')}</div>
                 ${step.description ? `<div style="margin-bottom:0.5rem;">${escapeHtml(step.description)}</div>` : ''}
-                ${step.formula ? `<div class="step-formula">${escapeHtml(step.formula)}</div>` : ''}
-                ${step.formulas ? `<div class="step-formula">${step.formulas.map(escapeHtml).join('<br>')}</div>` : ''}
-                ${step.values ? `<div class="step-formula" style="margin-top:0.3rem;color:var(--text);">${Object.entries(step.values).map(([k,v]) => `${escapeHtml(k)} = ${escapeHtml(typeof v === 'number' ? v.toFixed(4) : String(v))}`).join('<br>')}</div>` : ''}
+                ${renderedFormulas ? `<div class="step-formula">${renderedFormulas}</div>` : ''}
+                ${renderedValues ? `<div class="step-formula" style="margin-top:0.3rem;">${renderedValues}</div>` : ''}
                 ${step.result ? `<div class="step-result">→ ${escapeHtml(step.result)}</div>` : ''}
             </div>`;
         });
@@ -608,6 +623,52 @@ function getOutputLabels(type) {
         ntu: 'NTU',
         value: '値 / Value'
     };
+}
+
+// Convert plain-text formula to KaTeX-compatible LaTeX
+function formulaToKatex(text) {
+    if (!text || !text.trim()) return '';
+    // Skip purely descriptive text (no math symbols)
+    if (!/[=×÷\^√∫αηΔ\d]/.test(text)) return null;
+
+    let tex = text;
+    // Subscripts: x_D, x_B, y_in, etc.
+    tex = tex.replace(/([a-zA-Z])_([a-zA-Z0-9]+)/g, '{$1}_{$2}');
+    // Superscripts: x^2, A^(N+1)
+    tex = tex.replace(/\^(\([^)]+\))/g, '^{$1}');
+    tex = tex.replace(/\^(\d+)/g, '^{$1}');
+    // Greek letters
+    tex = tex.replace(/α/g, '\\alpha ');
+    tex = tex.replace(/η/g, '\\eta ');
+    tex = tex.replace(/Δ/g, '\\Delta ');
+    // Math operators
+    tex = tex.replace(/×/g, '\\times ');
+    tex = tex.replace(/÷/g, '\\div ');
+    tex = tex.replace(/√/g, '\\sqrt');
+    tex = tex.replace(/∫/g, '\\int ');
+    tex = tex.replace(/≈/g, '\\approx ');
+    tex = tex.replace(/≥/g, '\\geq ');
+    tex = tex.replace(/≤/g, '\\leq ');
+    // ln, log, exp
+    tex = tex.replace(/\bln\b/g, '\\ln');
+    tex = tex.replace(/\blog\b/g, '\\log');
+    tex = tex.replace(/\bexp\b/g, '\\exp');
+    return tex;
+}
+
+// Render a formula string: KaTeX if available, otherwise monospace text
+function renderFormula(text) {
+    if (!text) return '';
+    const safe = escapeHtml(text);
+    if (typeof window !== 'undefined' && window.katex) {
+        const tex = formulaToKatex(text);
+        if (tex) {
+            try {
+                return window.katex.renderToString(tex, { throwOnError: false, displayMode: false });
+            } catch (_) { /* fall through */ }
+        }
+    }
+    return `<span class="step-formula">${safe}</span>`;
 }
 
 function formatValue(val) {
