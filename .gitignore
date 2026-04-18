@@ -88,6 +88,16 @@ nul
 # Playwright MCP
 .playwright-mcp/
 
+# Test artifacts
+.tmp_test/
+test-results/
+playwright_smoke/
+playwright-smoke.spec.js
+playwright.smoke.config.js
+
+# OMC state
+.omc/
+
 # Screenshots (use docs/ for tracked documentation images)
 screenshot-*.png
 
