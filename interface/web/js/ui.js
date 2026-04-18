@@ -137,7 +137,15 @@ function showResult(type) {
     document.getElementById('empty-state').classList.add('hidden');
     const resultEl = document.getElementById(`${type}-result`);
     resultEl.classList.add('active');
-    setTimeout(() => resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+    setTimeout(() => {
+        if (window.innerWidth <= 1024) {
+            // Mobile: result is below form, scroll to it
+            resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            // Desktop: result is beside form, scroll to top to see both
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, 100);
 }
 
 // ==================== Render Calculation Steps ====================

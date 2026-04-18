@@ -4,7 +4,17 @@
 let formDirty = false;
 let isCalculating = false;
 
-function startCalculation(form) {
+const CALC_MESSAGES = {
+    property: '物性値を計算中... / Calculating property...',
+    distillation: '蒸留塔を設計中... / Designing distillation column...',
+    mass_balance: '物質収支を計算中... / Computing mass balance...',
+    heat_balance: '熱収支を計算中... / Computing heat balance...',
+    extraction: '液液抽出を計算中... / Calculating extraction...',
+    absorption: 'ガス吸収を計算中... / Calculating gas absorption...',
+    lcoh: '水素製造原価を計算中... / Calculating LCOH...',
+};
+
+function startCalculation(form, calcType) {
     if (isCalculating) {
         toast('計算中です... / Calculation in progress...', 'warning');
         return false;
@@ -12,7 +22,8 @@ function startCalculation(form) {
     isCalculating = true;
     const btn = form.querySelector('.submit-btn[type="submit"]');
     if (btn) btn.disabled = true;
-    showLoading();
+    const msg = CALC_MESSAGES[calcType] || 'Processing calculation...';
+    showLoading(msg);
     formDirty = false;
     return true;
 }
@@ -108,7 +119,7 @@ function initPropertyForm() {
             validateRequired(form, 'property', 'Property/物性'),
         ].every(Boolean);
         if (!valid) return;
-        if (!startCalculation(form)) return;
+        if (!startCalculation(form, 'property')) return;
         const fd = new FormData(form);
         const tempU = activeUnits['prop-temp'] || 'K';
         const pressU = activeUnits['prop-press'] || 'Pa';
@@ -167,7 +178,7 @@ function initDistillationForm() {
             validateNumber(form, 'reflux_ratio_factor', 'R/Rmin', 1.01, 10),
         ].every(Boolean);
         if (!valid) return;
-        if (!startCalculation(form)) return;
+        if (!startCalculation(form, 'distillation')) return;
         const fd = new FormData(form);
         const params = {
             light_component: fd.get('light_component'),
@@ -241,7 +252,7 @@ function initMassBalanceForm() {
             validateComposition(form, 'bottoms_composition', 'Bottoms comp/缶出組成'),
         ].every(Boolean);
         if (!valid) return;
-        if (!startCalculation(form)) return;
+        if (!startCalculation(form, 'mass_balance')) return;
         const fd = new FormData(form);
         const comps = fd.get('components').split(',').map(c => c.trim()).filter(c => c.length > 0);
         if (comps.length < 2) {
@@ -308,7 +319,7 @@ function initHeatBalanceForm() {
             validateNumber(form, 'outlet_temperature', 'Outlet T/出口温度', 1, 10000),
         ].every(Boolean);
         if (!valid) return;
-        if (!startCalculation(form)) return;
+        if (!startCalculation(form, 'heat_balance')) return;
         const fd = new FormData(form);
         const params = {
             substance: fd.get('substance'),
@@ -375,7 +386,7 @@ function initExtractionForm() {
             validateNumber(form, 'solvent_flow_rate', 'Solvent flow/抽剤流量', 0.001),
         ].every(Boolean);
         if (!valid) return;
-        if (!startCalculation(form)) return;
+        if (!startCalculation(form, 'extraction')) return;
         formDirty = false;
         const fd = new FormData(form);
         const stagesVal = fd.get('stages');
@@ -463,7 +474,7 @@ function initAbsorptionForm() {
             validateComposition(form, 'inlet_gas_composition', 'Inlet comp/入口組成'),
         ].every(Boolean);
         if (!valid) return;
-        if (!startCalculation(form)) return;
+        if (!startCalculation(form, 'absorption')) return;
         const fd = new FormData(form);
         const liquidFlowVal = fd.get('liquid_flow_rate');
         const params = {
@@ -558,7 +569,7 @@ function initLcohForm() {
             validateNumber(form, 'operating_hours', 'Hours/稼働時間', 100, 8760),
         ].every(Boolean);
         if (!valid) return;
-        if (!startCalculation(form)) return;
+        if (!startCalculation(form, 'lcoh')) return;
         const fd = new FormData(form);
         const method = fd.get('production_method');
         const params = {
