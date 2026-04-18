@@ -11,7 +11,7 @@
             --accent-violet: #a78bfa;
             --text-bright: #e8f4f8;
             --text-dim: #7a9aa8;
-            --text-muted: #4a6a78;
+            --text-muted: #5d8494;
             --success: #00e676;
             --warning: #ffab40;
             --danger: #ff5252;
@@ -30,7 +30,7 @@
             --accent-teal: #00aa88;
             --text-bright: #1a2a3a;
             --text-dim: #5a7a8a;
-            --text-muted: #8a9aa8;
+            --text-muted: #6b7b89;
             --grid-line: rgba(60, 120, 160, 0.06);
         }
 
@@ -299,6 +299,7 @@
             font-size: 1.1rem;
             font-weight: 600;
             color: var(--text-bright);
+            margin: 0;
         }
 
         .panel-body {
@@ -420,7 +421,7 @@
         }
 
         .form-input:focus {
-            outline: none;
+            outline: 2px solid transparent;
             border-color: var(--accent-cyan);
             box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.15), 0 0 20px rgba(0, 212, 255, 0.1);
         }
@@ -997,7 +998,7 @@
         }
 
         .chart-input:focus {
-            outline: none;
+            outline: 2px solid transparent;
             border-color: var(--accent-cyan);
         }
 
@@ -1904,7 +1905,7 @@
 
         .feedback-input:focus,
         .feedback-textarea:focus {
-            outline: none;
+            outline: 2px solid transparent;
             border-color: var(--accent-cyan);
             box-shadow: 0 0 12px rgba(0, 212, 255, 0.2);
         }
@@ -2351,7 +2352,7 @@
         }
 
         .help-input:focus {
-            outline: none;
+            outline: 2px solid transparent;
             border-color: var(--accent-cyan);
             box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.15);
         }
@@ -2917,7 +2918,7 @@
 
         .param-row input:focus,
         .param-row select:focus {
-            outline: none;
+            outline: 2px solid transparent;
             border-color: var(--accent-cyan);
         }
 

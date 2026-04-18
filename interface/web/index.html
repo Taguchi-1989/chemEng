@@ -4,23 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChemEng — Chemical Engineering Laboratory</title>
+    <meta name="description" content="Chemical engineering calculator for property estimation, distillation column design, mass/heat balance, liquid-liquid extraction, gas absorption, and hydrogen cost (LCOH) analysis.">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚗️</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Spectral:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"
             integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ"
             crossorigin="anonymous"></script>
     <!-- jspreadsheet CE -->
-    <script src="https://cdn.jsdelivr.net/npm/jsuites@5/dist/jsuites.min.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/jsuites@5/dist/jsuites.min.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsuites@5/dist/jsuites.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/jspreadsheet-ce@4/dist/index.min.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/jspreadsheet-ce@4/dist/index.min.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jspreadsheet-ce@4/dist/jspreadsheet.css">
     <!-- Drawflow -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow@0.0.59/dist/drawflow.min.css">
-    <script src="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow@0.0.59/dist/drawflow.min.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow@0.0.59/dist/drawflow.min.js" crossorigin="anonymous"></script>
     <!-- Mermaid -->
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
@@ -145,8 +146,8 @@
 
         <div class="help-panel-footer">
             <div class="help-input-wrapper">
-                <input type="text" class="help-input" id="help-input" placeholder="質問を入力...">
-                <button class="help-send-btn" id="help-send-btn" title="送信">
+                <input type="text" class="help-input" id="help-input" placeholder="質問を入力..." aria-label="ヘルプの質問を入力">
+                <button class="help-send-btn" id="help-send-btn" title="送信" aria-label="送信">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="22" y1="2" x2="11" y2="13"/>
                         <polygon points="22 2 15 22 11 13 2 9 22 2"/>
@@ -217,7 +218,7 @@
                         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
                     </svg>
                 </div>
-                <span class="panel-title">Calculation Parameters</span>
+                <h2 class="panel-title">Calculation Parameters</h2>
             </div>
             <div class="panel-body">
                 <!-- Calculation Type Tabs -->
@@ -316,15 +317,15 @@
                 <!-- Property Form -->
                 <form id="property-form" class="form-section active" role="tabpanel" aria-label="物性推算">
                     <div class="form-group">
-                        <label class="form-label">Substance / 物質名</label>
+                        <label class="form-label" for="prop-substance">Substance / 物質名</label>
                         <div class="autocomplete-wrapper">
-                            <input type="text" name="substance" class="form-input substance-input" value="ethanol" required autocomplete="off" placeholder="Enter substance name...">
+                            <input type="text" name="substance" id="prop-substance" class="form-input substance-input" value="ethanol" required autocomplete="off" placeholder="Enter substance name...">
                             <div class="autocomplete-dropdown hidden" id="autocomplete-1"></div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Property / 物性</label>
-                        <select name="property" class="form-input">
+                        <label class="form-label" for="prop-property">Property / 物性</label>
+                        <select name="property" id="prop-property" class="form-input">
                             <option value="vapor_pressure">蒸気圧 / Vapor Pressure</option>
                             <option value="liquid_density">液密度 / Liquid Density</option>
                             <option value="liquid_viscosity">液粘度 / Liquid Viscosity</option>
@@ -334,7 +335,7 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Temperature / 温度</label>
+                        <label class="form-label" for="prop-temp">Temperature / 温度</label>
                         <input type="number" name="temperature" id="prop-temp" class="form-input" value="350" step="any">
                         <div class="unit-row">
                             <button type="button" class="unit-chip active" data-unit="K" data-target="prop-temp">K</button>
@@ -343,7 +344,7 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Pressure / 圧力</label>
+                        <label class="form-label" for="prop-press">Pressure / 圧力</label>
                         <input type="number" name="pressure" id="prop-press" class="form-input" value="101325" step="any">
                         <div class="unit-row">
                             <button type="button" class="unit-chip active" data-unit="Pa" data-target="prop-press">Pa</button>
@@ -359,38 +360,38 @@
                 <!-- Distillation Form -->
                 <form id="distillation-form" class="form-section" role="tabpanel" aria-label="蒸留塔設計">
                     <div class="form-group">
-                        <label class="form-label">Light Component / 軽沸成分</label>
+                        <label class="form-label" for="dist-light-component">Light Component / 軽沸成分</label>
                         <div class="autocomplete-wrapper">
-                            <input type="text" name="light_component" class="form-input substance-input" value="ethanol" required autocomplete="off">
+                            <input type="text" name="light_component" id="dist-light-component" class="form-input substance-input" value="ethanol" required autocomplete="off">
                             <div class="autocomplete-dropdown hidden" id="autocomplete-2"></div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Heavy Component / 重沸成分</label>
+                        <label class="form-label" for="dist-heavy-component">Heavy Component / 重沸成分</label>
                         <div class="autocomplete-wrapper">
-                            <input type="text" name="heavy_component" class="form-input substance-input" value="water" required autocomplete="off">
+                            <input type="text" name="heavy_component" id="dist-heavy-component" class="form-input substance-input" value="water" required autocomplete="off">
                             <div class="autocomplete-dropdown hidden" id="autocomplete-3"></div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Feed Flow Rate / 原料流量 (kmol/h)</label>
-                        <input type="number" name="feed_flow_rate" class="form-input" value="100" step="1" required>
+                        <label class="form-label" for="dist-feed-flow-rate">Feed Flow Rate / 原料流量 (kmol/h)</label>
+                        <input type="number" name="feed_flow_rate" id="dist-feed-flow-rate" class="form-input" value="100" step="1" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Feed Composition / 原料組成 (mol frac)</label>
-                        <input type="number" name="feed_composition" class="form-input" value="0.4" step="0.01" min="0" max="1" required>
+                        <label class="form-label" for="dist-feed-composition">Feed Composition / 原料組成 (mol frac)</label>
+                        <input type="number" name="feed_composition" id="dist-feed-composition" class="form-input" value="0.4" step="0.01" min="0" max="1" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Distillate Purity / 留出液純度</label>
-                        <input type="number" name="distillate_purity" class="form-input" value="0.95" step="0.01" min="0" max="1" required>
+                        <label class="form-label" for="dist-distillate-purity">Distillate Purity / 留出液純度</label>
+                        <input type="number" name="distillate_purity" id="dist-distillate-purity" class="form-input" value="0.95" step="0.01" min="0" max="1" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Bottoms Purity / 缶出液純度</label>
-                        <input type="number" name="bottoms_purity" class="form-input" value="0.98" step="0.01" min="0" max="1" required>
+                        <label class="form-label" for="dist-bottoms-purity">Bottoms Purity / 缶出液純度</label>
+                        <input type="number" name="bottoms_purity" id="dist-bottoms-purity" class="form-input" value="0.98" step="0.01" min="0" max="1" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Reflux Ratio Factor / 還流比係数 (R/Rmin)</label>
-                        <input type="number" name="reflux_ratio_factor" class="form-input" value="1.3" step="0.1" min="1" required>
+                        <label class="form-label" for="dist-reflux-ratio-factor">Reflux Ratio Factor / 還流比係数 (R/Rmin)</label>
+                        <input type="number" name="reflux_ratio_factor" id="dist-reflux-ratio-factor" class="form-input" value="1.3" step="0.1" min="1" required>
                     </div>
                     <div class="form-actions">
                         <button type="submit" class="submit-btn">Design Column</button>
@@ -409,7 +410,7 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <h3>T-x-y Phase Diagram / 相図</h3>
-                            <button class="modal-close" id="close-txy-modal">&times;</button>
+                            <button class="modal-close" id="close-txy-modal" aria-label="閉じる">&times;</button>
                         </div>
                         <div class="modal-body">
                             <canvas id="txy-chart" width="500" height="400"></canvas>
@@ -423,7 +424,7 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <h3>Import Parameters / パラメータ読込</h3>
-                            <button class="modal-close" id="close-import-modal">&times;</button>
+                            <button class="modal-close" id="close-import-modal" aria-label="閉じる">&times;</button>
                         </div>
                         <div class="modal-body">
                             <div class="import-dropzone" id="import-dropzone">
@@ -453,24 +454,24 @@
                 <!-- Mass Balance Form -->
                 <form id="mass_balance-form" class="form-section" role="tabpanel" aria-label="物質収支">
                     <div class="form-group">
-                        <label class="form-label">Components / 成分リスト (comma-separated)</label>
-                        <input type="text" name="components" class="form-input" value="ethanol, water" required>
+                        <label class="form-label" for="mb-components">Components / 成分リスト (comma-separated)</label>
+                        <input type="text" name="components" id="mb-components" class="form-input" value="ethanol, water" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Feed Flow Rate / 原料流量 (mol/s)</label>
-                        <input type="number" name="feed_flow_rate" class="form-input" value="100" step="1" required>
+                        <label class="form-label" for="mb-feed-flow-rate">Feed Flow Rate / 原料流量 (mol/s)</label>
+                        <input type="number" name="feed_flow_rate" id="mb-feed-flow-rate" class="form-input" value="100" step="1" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Feed Composition / 原料組成</label>
-                        <input type="number" name="feed_composition" class="form-input" value="0.4" step="0.01" min="0" max="1" required>
+                        <label class="form-label" for="mb-feed-composition">Feed Composition / 原料組成</label>
+                        <input type="number" name="feed_composition" id="mb-feed-composition" class="form-input" value="0.4" step="0.01" min="0" max="1" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Distillate Composition / 留出液組成</label>
-                        <input type="number" name="distillate_composition" class="form-input" value="0.95" step="0.01" min="0" max="1" required>
+                        <label class="form-label" for="mb-distillate-composition">Distillate Composition / 留出液組成</label>
+                        <input type="number" name="distillate_composition" id="mb-distillate-composition" class="form-input" value="0.95" step="0.01" min="0" max="1" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Bottoms Composition / 缶出液組成</label>
-                        <input type="number" name="bottoms_composition" class="form-input" value="0.05" step="0.01" min="0" max="1" required>
+                        <label class="form-label" for="mb-bottoms-composition">Bottoms Composition / 缶出液組成</label>
+                        <input type="number" name="bottoms_composition" id="mb-bottoms-composition" class="form-input" value="0.05" step="0.01" min="0" max="1" required>
                     </div>
                     <button type="submit" class="submit-btn">Calculate Balance</button>
                 </form>
@@ -478,31 +479,31 @@
                 <!-- Heat Balance Form -->
                 <form id="heat_balance-form" class="form-section" role="tabpanel" aria-label="熱収支">
                     <div class="form-group">
-                        <label class="form-label">Substance / 物質名</label>
+                        <label class="form-label" for="hb-substance">Substance / 物質名</label>
                         <div class="autocomplete-wrapper">
-                            <input type="text" name="substance" class="form-input substance-input" value="water" required autocomplete="off">
+                            <input type="text" name="substance" id="hb-substance" class="form-input substance-input" value="water" required autocomplete="off">
                             <div class="autocomplete-dropdown hidden" id="autocomplete-4"></div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Flow Rate / 流量 (mol/s)</label>
-                        <input type="number" name="flow_rate" class="form-input" value="100" step="0.1" required>
+                        <label class="form-label" for="hb-flow-rate">Flow Rate / 流量 (mol/s)</label>
+                        <input type="number" name="flow_rate" id="hb-flow-rate" class="form-input" value="100" step="0.1" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Inlet Temperature / 入口温度 (K)</label>
-                        <input type="number" name="inlet_temperature" class="form-input" value="300" step="0.1" required>
+                        <label class="form-label" for="hb-inlet-temperature">Inlet Temperature / 入口温度 (K)</label>
+                        <input type="number" name="inlet_temperature" id="hb-inlet-temperature" class="form-input" value="300" step="0.1" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Outlet Temperature / 出口温度 (K)</label>
-                        <input type="number" name="outlet_temperature" class="form-input" value="400" step="0.1" required>
+                        <label class="form-label" for="hb-outlet-temperature">Outlet Temperature / 出口温度 (K)</label>
+                        <input type="number" name="outlet_temperature" id="hb-outlet-temperature" class="form-input" value="400" step="0.1" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Pressure / 圧力 (Pa)</label>
-                        <input type="number" name="pressure" class="form-input" value="101325" step="any">
+                        <label class="form-label" for="hb-pressure">Pressure / 圧力 (Pa)</label>
+                        <input type="number" name="pressure" id="hb-pressure" class="form-input" value="101325" step="any">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Efficiency / 熱効率 (0-1)</label>
-                        <input type="number" name="efficiency" class="form-input" value="0.85" step="0.01" min="0" max="1">
+                        <label class="form-label" for="hb-efficiency">Efficiency / 熱効率 (0-1)</label>
+                        <input type="number" name="efficiency" id="hb-efficiency" class="form-input" value="0.85" step="0.01" min="0" max="1">
                     </div>
                     <button type="submit" class="submit-btn">Calculate Heat Duty</button>
                 </form>
@@ -510,49 +511,49 @@
                 <!-- Liquid-Liquid Extraction Form -->
                 <form id="extraction-form" class="form-section" role="tabpanel" aria-label="液液抽出">
                     <div class="form-group">
-                        <label class="form-label">Solute / 溶質</label>
+                        <label class="form-label" for="ext-solute">Solute / 溶質</label>
                         <div class="autocomplete-wrapper">
-                            <input type="text" name="solute" class="form-input substance-input" value="acetic_acid" required autocomplete="off">
+                            <input type="text" name="solute" id="ext-solute" class="form-input substance-input" value="acetic_acid" required autocomplete="off">
                             <div class="autocomplete-dropdown hidden" id="autocomplete-ext-1"></div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Carrier / キャリア（原料溶媒）</label>
+                        <label class="form-label" for="ext-carrier">Carrier / キャリア（原料溶媒）</label>
                         <div class="autocomplete-wrapper">
-                            <input type="text" name="carrier" class="form-input substance-input" value="water" required autocomplete="off">
+                            <input type="text" name="carrier" id="ext-carrier" class="form-input substance-input" value="water" required autocomplete="off">
                             <div class="autocomplete-dropdown hidden" id="autocomplete-ext-2"></div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Solvent / 抽剤（抽出溶媒）</label>
+                        <label class="form-label" for="ext-solvent">Solvent / 抽剤（抽出溶媒）</label>
                         <div class="autocomplete-wrapper">
-                            <input type="text" name="solvent" class="form-input substance-input" value="ethyl_acetate" required autocomplete="off">
+                            <input type="text" name="solvent" id="ext-solvent" class="form-input substance-input" value="ethyl_acetate" required autocomplete="off">
                             <div class="autocomplete-dropdown hidden" id="autocomplete-ext-3"></div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Feed Flow Rate / 原料流量 (kmol/h)</label>
-                        <input type="number" name="feed_flow_rate" class="form-input" value="100" step="0.1" min="0" required>
+                        <label class="form-label" for="ext-feed-flow-rate">Feed Flow Rate / 原料流量 (kmol/h)</label>
+                        <input type="number" name="feed_flow_rate" id="ext-feed-flow-rate" class="form-input" value="100" step="0.1" min="0" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Feed Composition / 原料組成 (溶質モル分率)</label>
-                        <input type="number" name="feed_composition" class="form-input" value="0.1" step="0.01" min="0" max="1" required>
+                        <label class="form-label" for="ext-feed-composition">Feed Composition / 原料組成 (溶質モル分率)</label>
+                        <input type="number" name="feed_composition" id="ext-feed-composition" class="form-input" value="0.1" step="0.01" min="0" max="1" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Solvent Flow Rate / 抽剤流量 (kmol/h)</label>
-                        <input type="number" name="solvent_flow_rate" class="form-input" value="50" step="0.1" min="0" required>
+                        <label class="form-label" for="ext-solvent-flow-rate">Solvent Flow Rate / 抽剤流量 (kmol/h)</label>
+                        <input type="number" name="solvent_flow_rate" id="ext-solvent-flow-rate" class="form-input" value="50" step="0.1" min="0" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Temperature / 温度 (K)</label>
-                        <input type="number" name="temperature" class="form-input" value="298.15" step="any" min="200" max="500">
+                        <label class="form-label" for="ext-temperature">Temperature / 温度 (K)</label>
+                        <input type="number" name="temperature" id="ext-temperature" class="form-input" value="298.15" step="any" min="200" max="500">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Number of Stages / 段数 (Optional)</label>
-                        <input type="number" name="stages" class="form-input" placeholder="Leave empty to calculate" step="1" min="1" max="50">
+                        <label class="form-label" for="ext-stages">Number of Stages / 段数 (Optional)</label>
+                        <input type="number" name="stages" id="ext-stages" class="form-input" placeholder="Leave empty to calculate" step="1" min="1" max="50">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Target Recovery / 目標抽出率 (0-1)</label>
-                        <input type="number" name="recovery" class="form-input" value="0.9" step="0.01" min="0" max="1">
+                        <label class="form-label" for="ext-recovery">Target Recovery / 目標抽出率 (0-1)</label>
+                        <input type="number" name="recovery" id="ext-recovery" class="form-input" value="0.9" step="0.01" min="0" max="1">
                     </div>
                     <button type="submit" class="submit-btn">Calculate Extraction</button>
                 </form>
@@ -560,49 +561,49 @@
                 <!-- Gas Absorption Form -->
                 <form id="absorption-form" class="form-section" role="tabpanel" aria-label="ガス吸収">
                     <div class="form-group">
-                        <label class="form-label">Gas Component / 吸収成分</label>
+                        <label class="form-label" for="abs-gas-component">Gas Component / 吸収成分</label>
                         <div class="autocomplete-wrapper">
-                            <input type="text" name="gas_component" class="form-input substance-input" value="ammonia" required autocomplete="off">
+                            <input type="text" name="gas_component" id="abs-gas-component" class="form-input substance-input" value="ammonia" required autocomplete="off">
                             <div class="autocomplete-dropdown hidden" id="autocomplete-abs-1"></div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Carrier Gas / キャリアガス</label>
+                        <label class="form-label" for="abs-carrier-gas">Carrier Gas / キャリアガス</label>
                         <div class="autocomplete-wrapper">
-                            <input type="text" name="carrier_gas" class="form-input substance-input" value="air" required autocomplete="off">
+                            <input type="text" name="carrier_gas" id="abs-carrier-gas" class="form-input substance-input" value="air" required autocomplete="off">
                             <div class="autocomplete-dropdown hidden" id="autocomplete-abs-2"></div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Solvent / 吸収液</label>
+                        <label class="form-label" for="abs-solvent">Solvent / 吸収液</label>
                         <div class="autocomplete-wrapper">
-                            <input type="text" name="solvent" class="form-input substance-input" value="water" required autocomplete="off">
+                            <input type="text" name="solvent" id="abs-solvent" class="form-input substance-input" value="water" required autocomplete="off">
                             <div class="autocomplete-dropdown hidden" id="autocomplete-abs-3"></div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Gas Flow Rate / ガス流量 (kmol/h)</label>
-                        <input type="number" name="gas_flow_rate" class="form-input" value="100" step="0.1" min="0" required>
+                        <label class="form-label" for="abs-gas-flow-rate">Gas Flow Rate / ガス流量 (kmol/h)</label>
+                        <input type="number" name="gas_flow_rate" id="abs-gas-flow-rate" class="form-input" value="100" step="0.1" min="0" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Inlet Gas Composition / 入口ガス組成</label>
-                        <input type="number" name="inlet_gas_composition" class="form-input" value="0.05" step="0.001" min="0" max="1" required>
+                        <label class="form-label" for="abs-inlet-gas-composition">Inlet Gas Composition / 入口ガス組成</label>
+                        <input type="number" name="inlet_gas_composition" id="abs-inlet-gas-composition" class="form-input" value="0.05" step="0.001" min="0" max="1" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Liquid Flow Rate / 液流量 (kmol/h, Optional)</label>
-                        <input type="number" name="liquid_flow_rate" class="form-input" placeholder="Auto-calculate if empty" step="0.1" min="0">
+                        <label class="form-label" for="abs-liquid-flow-rate">Liquid Flow Rate / 液流量 (kmol/h, Optional)</label>
+                        <input type="number" name="liquid_flow_rate" id="abs-liquid-flow-rate" class="form-input" placeholder="Auto-calculate if empty" step="0.1" min="0">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Temperature / 温度 (K)</label>
-                        <input type="number" name="temperature" class="form-input" value="298.15" step="any" min="200" max="500">
+                        <label class="form-label" for="abs-temperature">Temperature / 温度 (K)</label>
+                        <input type="number" name="temperature" id="abs-temperature" class="form-input" value="298.15" step="any" min="200" max="500">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Pressure / 圧力 (Pa)</label>
-                        <input type="number" name="pressure" class="form-input" value="101325" step="any" min="1000">
+                        <label class="form-label" for="abs-pressure">Pressure / 圧力 (Pa)</label>
+                        <input type="number" name="pressure" id="abs-pressure" class="form-input" value="101325" step="any" min="1000">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Target Removal / 目標除去率 (0-1)</label>
-                        <input type="number" name="removal_efficiency" class="form-input" value="0.9" step="0.01" min="0" max="0.9999">
+                        <label class="form-label" for="abs-removal-efficiency">Target Removal / 目標除去率 (0-1)</label>
+                        <input type="number" name="removal_efficiency" id="abs-removal-efficiency" class="form-input" value="0.9" step="0.01" min="0" max="0.9999">
                     </div>
                     <button type="submit" class="submit-btn">Calculate Absorption</button>
                 </form>
@@ -610,7 +611,7 @@
                 <!-- LCOH Form -->
                 <form id="lcoh-form" class="form-section" role="tabpanel" aria-label="水素原価計算">
                     <div class="form-group">
-                        <label class="form-label">Production Method / 製造方法</label>
+                        <label class="form-label" for="lcoh-method">Production Method / 製造方法</label>
                         <select name="production_method" class="form-input" id="lcoh-method">
                             <option value="pem_electrolysis">PEM電解 / PEM Electrolysis</option>
                             <option value="alkaline_electrolysis">アルカリ電解 / Alkaline Electrolysis</option>
@@ -621,64 +622,64 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Capacity / 設備容量 (MW)</label>
-                        <input type="number" name="capacity" class="form-input" value="10" step="0.1" min="0.1" max="1000" required>
+                        <label class="form-label" for="lcoh-capacity">Capacity / 設備容量 (MW)</label>
+                        <input type="number" name="capacity" id="lcoh-capacity" class="form-input" value="10" step="0.1" min="0.1" max="1000" required>
                     </div>
                     <div class="form-group" id="lcoh-capex-group">
-                        <label class="form-label">CAPEX / 設備投資単価 (EUR/kW)</label>
-                        <input type="number" name="capex_per_kw" class="form-input" placeholder="Default based on method" step="10" min="100" max="5000">
+                        <label class="form-label" for="lcoh-capex-per-kw">CAPEX / 設備投資単価 (EUR/kW)</label>
+                        <input type="number" name="capex_per_kw" id="lcoh-capex-per-kw" class="form-input" placeholder="Default based on method" step="10" min="100" max="5000">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">CAPEX Subsidy / 補助率 (%)</label>
-                        <input type="number" name="capex_subsidy_percent" class="form-input" value="0" step="1" min="0" max="100">
+                        <label class="form-label" for="lcoh-capex-subsidy-percent">CAPEX Subsidy / 補助率 (%)</label>
+                        <input type="number" name="capex_subsidy_percent" id="lcoh-capex-subsidy-percent" class="form-input" value="0" step="1" min="0" max="100">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">CAPEX Subsidy Amount / 補助額 (EUR)</label>
-                        <input type="number" name="capex_subsidy_amount" class="form-input" value="0" step="10000" min="0">
+                        <label class="form-label" for="lcoh-capex-subsidy-amount">CAPEX Subsidy Amount / 補助額 (EUR)</label>
+                        <input type="number" name="capex_subsidy_amount" id="lcoh-capex-subsidy-amount" class="form-input" value="0" step="10000" min="0">
                     </div>
                     <div class="form-group" id="lcoh-elec-group">
-                        <label class="form-label">Electricity Price / 電力単価 (EUR/MWh)</label>
-                        <input type="number" name="electricity_price" class="form-input" value="50" step="1" min="0" max="500">
+                        <label class="form-label" for="lcoh-electricity-price">Electricity Price / 電力単価 (EUR/MWh)</label>
+                        <input type="number" name="electricity_price" id="lcoh-electricity-price" class="form-input" value="50" step="1" min="0" max="500">
                     </div>
                     <div class="form-group hidden" id="lcoh-gas-group">
-                        <label class="form-label">Natural Gas Price / 天然ガス価格 (EUR/MWh)</label>
-                        <input type="number" name="natural_gas_price" class="form-input" value="30" step="1" min="0" max="200">
+                        <label class="form-label" for="lcoh-natural-gas-price">Natural Gas Price / 天然ガス価格 (EUR/MWh)</label>
+                        <input type="number" name="natural_gas_price" id="lcoh-natural-gas-price" class="form-input" value="30" step="1" min="0" max="200">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Operating Hours / 年間稼働時間 (h/year)</label>
-                        <input type="number" name="operating_hours" class="form-input" value="4000" step="100" min="1000" max="8760">
+                        <label class="form-label" for="lcoh-operating-hours">Operating Hours / 年間稼働時間 (h/year)</label>
+                        <input type="number" name="operating_hours" id="lcoh-operating-hours" class="form-input" value="4000" step="100" min="1000" max="8760">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Maintenance Downtime / 計画停止日数 (days/year)</label>
-                        <input type="number" name="maintenance_days" class="form-input" value="0" step="1" min="0" max="365">
+                        <label class="form-label" for="lcoh-maintenance-days">Maintenance Downtime / 計画停止日数 (days/year)</label>
+                        <input type="number" name="maintenance_days" id="lcoh-maintenance-days" class="form-input" value="0" step="1" min="0" max="365">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">OPEX / 年間運転費 (% of CAPEX)</label>
-                        <input type="number" name="opex_percent" class="form-input" value="3" step="0.1" min="0.5" max="10">
+                        <label class="form-label" for="lcoh-opex-percent">OPEX / 年間運転費 (% of CAPEX)</label>
+                        <input type="number" name="opex_percent" id="lcoh-opex-percent" class="form-input" value="3" step="0.1" min="0.5" max="10">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Labor Cost / 人件費 (EUR/year)</label>
-                        <input type="number" name="labor_cost" class="form-input" value="0" step="10000" min="0">
+                        <label class="form-label" for="lcoh-labor-cost">Labor Cost / 人件費 (EUR/year)</label>
+                        <input type="number" name="labor_cost" id="lcoh-labor-cost" class="form-input" value="0" step="10000" min="0">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Maintenance Cost / 保守費用 (EUR/year)</label>
-                        <input type="number" name="maintenance_cost" class="form-input" value="0" step="10000" min="0">
+                        <label class="form-label" for="lcoh-maintenance-cost">Maintenance Cost / 保守費用 (EUR/year)</label>
+                        <input type="number" name="maintenance_cost" id="lcoh-maintenance-cost" class="form-input" value="0" step="10000" min="0">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Discount Rate / 割引率 (%)</label>
-                        <input type="number" name="discount_rate" class="form-input" value="6" step="0.5" min="2" max="15">
+                        <label class="form-label" for="lcoh-discount-rate">Discount Rate / 割引率 (%)</label>
+                        <input type="number" name="discount_rate" id="lcoh-discount-rate" class="form-input" value="6" step="0.5" min="2" max="15">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Project Lifetime / プロジェクト寿命 (years)</label>
-                        <input type="number" name="project_lifetime" class="form-input" value="20" step="1" min="10" max="40">
+                        <label class="form-label" for="lcoh-project-lifetime">Project Lifetime / プロジェクト寿命 (years)</label>
+                        <input type="number" name="project_lifetime" id="lcoh-project-lifetime" class="form-input" value="20" step="1" min="10" max="40">
                     </div>
                     <div class="form-group" id="lcoh-carbon-group">
-                        <label class="form-label">Carbon Price / 炭素価格 (EUR/ton CO₂)</label>
-                        <input type="number" name="carbon_price" class="form-input" value="0" step="10" min="0" max="500">
+                        <label class="form-label" for="lcoh-carbon-price">Carbon Price / 炭素価格 (EUR/ton CO₂)</label>
+                        <input type="number" name="carbon_price" id="lcoh-carbon-price" class="form-input" value="0" step="10" min="0" max="500">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Subsidy / 補助金 (EUR/kg H2)</label>
-                        <input type="number" name="subsidies" class="form-input" value="0" step="0.1" min="0">
+                        <label class="form-label" for="lcoh-subsidies">Subsidy / 補助金 (EUR/kg H2)</label>
+                        <input type="number" name="subsidies" id="lcoh-subsidies" class="form-input" value="0" step="0.1" min="0">
                     </div>
                     <button type="submit" class="submit-btn">Calculate LCOH</button>
                 </form>
@@ -756,7 +757,7 @@
                         <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
                     </svg>
                 </div>
-                <span class="panel-title">Analysis Results</span>
+                <h2 class="panel-title">Analysis Results</h2>
             </div>
             <div class="panel-body">
                 <!-- Empty State -->
@@ -1742,14 +1743,14 @@
         <div class="footer-powered">Powered by thermo/chemicals</div>
     </footer>
 
-    <script src="/js/config.js"></script>
-    <script src="/js/api.js"></script>
-    <script src="/js/ui.js"></script>
-    <script src="/js/forms.js"></script>
-    <script src="/js/charts.js"></script>
-    <script src="/js/history.js"></script>
-    <script src="/js/spreadsheet.js"></script>
-    <script src="/js/flowsheet.js"></script>
-    <script src="/js/app.js"></script>
+    <script defer src="/js/config.js"></script>
+    <script defer src="/js/api.js"></script>
+    <script defer src="/js/ui.js"></script>
+    <script defer src="/js/forms.js"></script>
+    <script defer src="/js/charts.js"></script>
+    <script defer src="/js/history.js"></script>
+    <script defer src="/js/spreadsheet.js"></script>
+    <script defer src="/js/flowsheet.js"></script>
+    <script defer src="/js/app.js"></script>
 </body>
 </html>
