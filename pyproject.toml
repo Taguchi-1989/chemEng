@@ -7,7 +7,7 @@ name = "chemeng"
 version = "0.1.0"
 description = "化学工学計算モジュール - AI対話ベースの要件収集と計算実行"
 readme = "README.md"
-license = {text = "MIT"}
+license = {text = "Proprietary"}
 requires-python = ">=3.10"
 authors = [
     {name = "ZEAL-BOOT-CAMP"}
@@ -16,7 +16,7 @@ keywords = ["chemical engineering", "thermodynamics", "process simulation"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
+    "License :: Other/Proprietary License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",

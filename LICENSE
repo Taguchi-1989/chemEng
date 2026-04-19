@@ -1,21 +1,105 @@
-MIT License
+ChemEng Proprietary License
 
-Copyright (c) 2025 ZEAL-BOOT-CAMP
+Copyright (c) 2025 ZEAL-BOOT-CAMP. All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+1. DEFINITIONS
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+"Software" means the ChemEng application, including all source code, object code,
+documentation, data files, and associated materials.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+"Licensor" means ZEAL-BOOT-CAMP.
+
+"Authorized User" means an individual or entity that has obtained a valid license
+from the Licensor, either through a free-tier registration or a paid subscription.
+
+2. GRANT OF LICENSE
+
+Subject to the terms of this License, the Licensor grants Authorized Users a
+limited, non-exclusive, non-transferable, revocable license to access and use the
+Software through the hosted service provided by the Licensor.
+
+3. FREE TIER
+
+The Licensor may offer a free tier of the Software with limited functionality.
+Free-tier access is provided at the sole discretion of the Licensor and may be
+modified, suspended, or terminated at any time without notice.
+
+4. RESTRICTIONS
+
+Unless expressly authorized in writing by the Licensor, you may NOT:
+
+  (a) Copy, reproduce, or distribute the Software or any portion thereof;
+  (b) Modify, adapt, translate, reverse engineer, decompile, or disassemble
+      the Software;
+  (c) Create derivative works based on the Software;
+  (d) Sublicense, lease, rent, sell, or otherwise transfer rights to the Software;
+  (e) Remove or alter any proprietary notices, labels, or marks on the Software;
+  (f) Use the Software to build a competing product or service;
+  (g) Share login credentials or allow unauthorized third parties to access
+      the Software through your account;
+  (h) Use the Software in any manner that violates applicable laws or regulations.
+
+5. INTELLECTUAL PROPERTY
+
+The Software and all copies thereof are proprietary to the Licensor and title
+thereto remains in the Licensor. All rights in the Software not specifically
+granted in this License are reserved to the Licensor.
+
+6. DATA AND PRIVACY
+
+The Licensor will handle user data in accordance with the separately published
+Privacy Policy. Calculation inputs and results are processed on the Licensor's
+servers and may be stored for service improvement purposes.
+
+7. THIRD-PARTY COMPONENTS
+
+The Software incorporates open-source components, each subject to its own license
+terms. A list of these components and their licenses is available upon request.
+Nothing in this License limits any rights you may have under the licenses of such
+open-source components.
+
+8. DISCLAIMER OF WARRANTIES
+
+THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE, AND NONINFRINGEMENT. THE LICENSOR DOES NOT WARRANT THAT THE
+SOFTWARE WILL BE UNINTERRUPTED, ERROR-FREE, OR THAT CALCULATION RESULTS WILL BE
+ACCURATE OR SUITABLE FOR ANY PARTICULAR APPLICATION.
+
+CALCULATION RESULTS PROVIDED BY THE SOFTWARE ARE FOR REFERENCE PURPOSES ONLY.
+THE USER ASSUMES ALL RESPONSIBILITY FOR ANY ENGINEERING DECISIONS MADE BASED ON
+SUCH RESULTS.
+
+9. LIMITATION OF LIABILITY
+
+IN NO EVENT SHALL THE LICENSOR BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL,
+CONSEQUENTIAL, OR PUNITIVE DAMAGES ARISING OUT OF OR RELATED TO THE USE OF OR
+INABILITY TO USE THE SOFTWARE, EVEN IF THE LICENSOR HAS BEEN ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGES.
+
+THE LICENSOR'S TOTAL LIABILITY SHALL NOT EXCEED THE AMOUNT PAID BY YOU FOR THE
+SOFTWARE DURING THE TWELVE (12) MONTHS PRECEDING THE EVENT GIVING RISE TO THE
+CLAIM.
+
+10. TERMINATION
+
+This License is effective until terminated. The Licensor may terminate this
+License at any time if you breach any of its terms. Upon termination, you must
+cease all use of the Software and destroy any copies in your possession.
+
+11. GOVERNING LAW
+
+This License shall be governed by and construed in accordance with the laws of
+Japan, without regard to its conflict of laws provisions. Any disputes arising
+under this License shall be subject to the exclusive jurisdiction of the courts
+of Tokyo, Japan.
+
+12. ENTIRE AGREEMENT
+
+This License constitutes the entire agreement between you and the Licensor with
+respect to the Software and supersedes all prior or contemporaneous agreements,
+communications, and proposals.
+
+---
+
+For licensing inquiries, contact: [contact information to be added]
