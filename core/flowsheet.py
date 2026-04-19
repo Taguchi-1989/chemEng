@@ -4,6 +4,7 @@
 プロセスシミュレーションのブロック、ストリーム、フローシートを定義する。
 """
 from __future__ import annotations
+
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -104,7 +105,7 @@ class FlowsheetData:
     def get_calculation_order(self) -> list[str]:
         """トポロジカルソートで計算順序を決定"""
         # Build adjacency from streams
-        in_degree: dict[str, int] = {bid: 0 for bid in self.blocks}
+        in_degree: dict[str, int] = dict.fromkeys(self.blocks, 0)
         adj: dict[str, list[str]] = {bid: [] for bid in self.blocks}
 
         tear_set = set(self.tear_streams)

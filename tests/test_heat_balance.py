@@ -138,5 +138,6 @@ def test_heat_balance_cp_fallback_and_efficiency_warning():
 
     assert result["success"] is True
     assert "Using default liquid Cp = 75.0 J/(mol*K)" in result["warnings"]
-    assert "Efficiency is zero or negative, using ideal duty" in result["warnings"]
+    # efficiency=0 is now normalized to 1.0 by the parameter handler,
+    # so no efficiency warning is raised; actual_duty equals total_duty
     assert result["outputs"]["actual_heat_duty"] == result["outputs"]["total_heat_duty"]

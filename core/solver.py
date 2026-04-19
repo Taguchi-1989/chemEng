@@ -8,8 +8,9 @@ from __future__ import annotations
 import copy
 import logging
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
 
 logger = logging.getLogger("chemeng")
 
@@ -410,9 +411,6 @@ class SequentialModularSolver:
         """計算結果を出口ストリームに反映"""
         if not block.outlet_streams:
             return
-
-        # Map result keys to outlet streams
-        outlet_keys = [k for k in result if k.startswith("outlet") or k.endswith("outlet")]
 
         if len(block.outlet_streams) == 1 and "outlet" in result:
             self._update_stream(block.outlet_streams[0], result["outlet"])
