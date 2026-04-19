@@ -73,9 +73,19 @@ class ChemEngAssistant:
         if context:
             context_note = "\n\n## Current context\n"
             if context.get("current_skill"):
-                context_note += f"- User is viewing the **{context['current_skill']}** calculation tab.\n"
+                # Validate against known skill IDs to prevent prompt injection
+                try:
+                    from core import get_registry
+                    valid_ids = {s.id for s in get_registry().list_skills()}
+                except Exception:
+                    valid_ids = set()
+                skill_val = context["current_skill"]
+                if valid_ids and skill_val in valid_ids:
+                    context_note += f"- User is viewing the **{skill_val}** calculation tab.\n"
             if context.get("last_result"):
-                context_note += f"- Last calculation result summary: {context['last_result']}\n"
+                # Truncate to prevent oversized injection
+                last_result = str(context["last_result"])[:500]
+                context_note += f"- Last calculation result summary: {last_result}\n"
             system_prompt += context_note
 
         messages: list[dict[str, str]] = []

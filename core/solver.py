@@ -62,12 +62,16 @@ def calculate_mixer(block_params: dict, inlet_streams: list[dict], components: l
     if total_flow <= 0:
         return {"error": "No inlet flow"}
 
-    # Mass-weighted temperature
-    total_enthalpy_flow = sum(
-        (s.get("total_flow", 0) or 0) * (s.get("temperature", 298.15) or 298.15)
-        for s in inlet_streams
-    )
-    outlet_temp = total_enthalpy_flow / total_flow if total_flow > 0 else 298.15
+    # Cp-weighted enthalpy mixing: T_out = Σ(F_i * Cp_i * T_i) / Σ(F_i * Cp_i)
+    total_cp_flow = 0.0
+    total_enthalpy_flow = 0.0
+    for s in inlet_streams:
+        flow = s.get("total_flow", 0) or 0
+        temp = s.get("temperature", 298.15) or 298.15
+        cp = s.get("cp", 75.0) or 75.0  # J/(mol·K), default water
+        total_cp_flow += flow * cp
+        total_enthalpy_flow += flow * cp * temp
+    outlet_temp = total_enthalpy_flow / total_cp_flow if total_cp_flow > 0 else 298.15
 
     # Composition mixing
     comp_flows = {}
@@ -182,13 +186,24 @@ def calculate_reactor(block_params: dict, inlet_streams: list[dict], components:
             if comp != key_component and comp in comp_flows:
                 comp_flows[comp] += reacted * coeff
 
-        new_total = sum(max(0, f) for f in comp_flows.values())
-        new_composition = {comp: max(0, f) / new_total for comp, f in comp_flows.items()} if new_total > 0 else composition
+        warnings = []
+        for comp, f in comp_flows.items():
+            if f < 0:
+                warnings.append(
+                    f"Component {comp} flow became negative ({f:.4g} mol/s). "
+                    f"Check stoichiometry or conversion. / "
+                    f"成分 {comp} の流量が負になりました。化学量論または転化率を確認してください。"
+                )
+                comp_flows[comp] = 0.0
+
+        new_total = sum(comp_flows.values())
+        new_composition = {comp: f / new_total for comp, f in comp_flows.items()} if new_total > 0 else composition
     else:
         new_total = total_flow
         new_composition = composition
+        warnings = []
 
-    return {
+    result = {
         "outlet": {
             "total_flow": new_total,
             "temperature": outlet_temperature,
@@ -197,6 +212,9 @@ def calculate_reactor(block_params: dict, inlet_streams: list[dict], components:
             "phase": inlet.get("phase", "liquid"),
         },
     }
+    if warnings:
+        result["warnings"] = warnings
+    return result
 
 
 def calculate_flash(block_params: dict, inlet_streams: list[dict], components: list[str]) -> dict:
@@ -231,6 +249,14 @@ def calculate_flash(block_params: dict, inlet_streams: list[dict], components: l
             y = z
         liquid_comp[comp] = x
         vapor_comp[comp] = y
+
+    # Normalize compositions to sum to 1.0
+    sum_x = sum(liquid_comp.values())
+    sum_y = sum(vapor_comp.values())
+    if sum_x > 0:
+        liquid_comp = {c: v / sum_x for c, v in liquid_comp.items()}
+    if sum_y > 0:
+        vapor_comp = {c: v / sum_y for c, v in vapor_comp.items()}
 
     return {
         "vapor_outlet": {

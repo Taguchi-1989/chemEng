@@ -243,12 +243,13 @@ def create_app() -> FastAPI:
     def _result_timestamp(value: Any) -> str | None:
         return value.isoformat() if value is not None else None
 
+    _is_production = bool(os.environ.get("RENDER") or os.environ.get("ENVIRONMENT") == "production")
     app = FastAPI(
         title="ChemEng API",
         description="化学工学計算モジュール REST API",
         version="1.0.0",
-        docs_url="/docs",
-        redoc_url="/redoc",
+        docs_url=None if _is_production else "/docs",
+        redoc_url=None if _is_production else "/redoc",
     )
 
     # セキュリティヘッダー + リクエストトレーシング + CSRF ミドルウェア
@@ -307,11 +308,11 @@ def create_app() -> FastAPI:
             self._last_cleanup: float = 0.0
 
         def _get_client_ip(self, request: Request) -> str:
-            """Extract client IP, respecting X-Forwarded-For behind reverse proxies."""
+            """Extract client IP from the rightmost (trusted proxy-added) X-Forwarded-For entry."""
             forwarded = request.headers.get("X-Forwarded-For", "")
             if forwarded:
-                # First IP is the original client
-                return forwarded.split(",")[0].strip()
+                # Rightmost entry is added by the trusted reverse proxy (Render)
+                return forwarded.split(",")[-1].strip()
             return request.client.host if request.client else "unknown"
 
         async def dispatch(self, request: Request, call_next):
@@ -322,7 +323,7 @@ def create_app() -> FastAPI:
             now = _time.time()
 
             # Periodic cleanup to prevent unbounded memory growth
-            if now - self._last_cleanup > self.window * 2:
+            if now - self._last_cleanup > self.window * 2 or len(self._requests) > 10000:
                 cutoff = now - self.window
                 self._requests = defaultdict(list, {
                     k: v for k, v in self._requests.items()
@@ -534,7 +535,6 @@ def create_app() -> FastAPI:
     async def calculate(skill_id: str, request: CalculationRequest):
         """計算実行（30秒タイムアウト付き）"""
         import asyncio
-        import concurrent.futures
 
         from core import get_registry
 
@@ -544,12 +544,11 @@ def create_app() -> FastAPI:
             return registry.execute(skill_id, request.parameters)
 
         try:
-            loop = asyncio.get_event_loop()
-            with concurrent.futures.ThreadPoolExecutor() as pool:
-                result = await asyncio.wait_for(
-                    loop.run_in_executor(pool, _run_calculation),
-                    timeout=30.0,
-                )
+            loop = asyncio.get_running_loop()
+            result = await asyncio.wait_for(
+                loop.run_in_executor(None, _run_calculation),
+                timeout=30.0,
+            )
         except asyncio.TimeoutError:
             logger.warning("Calculation timed out: skill=%s", skill_id)
             return CalculationResponse(
@@ -946,7 +945,6 @@ def create_app() -> FastAPI:
     async def calculate_flowsheet(request: FlowsheetRequest):
         """フローシート全体を計算"""
         import asyncio
-        import concurrent.futures
 
         def _run():
             from core.solver import SequentialModularSolver
@@ -954,12 +952,11 @@ def create_app() -> FastAPI:
             return solver.solve()
 
         try:
-            loop = asyncio.get_event_loop()
-            with concurrent.futures.ThreadPoolExecutor() as pool:
-                result = await asyncio.wait_for(
-                    loop.run_in_executor(pool, _run),
-                    timeout=60.0,
-                )
+            loop = asyncio.get_running_loop()
+            result = await asyncio.wait_for(
+                loop.run_in_executor(None, _run),
+                timeout=60.0,
+            )
             return result
         except asyncio.TimeoutError:
             return {"success": False, "error": "Flowsheet calculation timed out (60s)"}
@@ -971,7 +968,6 @@ def create_app() -> FastAPI:
     async def goal_seek(request: GoalSeekRequest):
         """ゴールシーク実行"""
         import asyncio
-        import concurrent.futures
 
         def _run():
             from core.solver import GoalSeekSolver
@@ -987,12 +983,11 @@ def create_app() -> FastAPI:
             )
 
         try:
-            loop = asyncio.get_event_loop()
-            with concurrent.futures.ThreadPoolExecutor() as pool:
-                result = await asyncio.wait_for(
-                    loop.run_in_executor(pool, _run),
-                    timeout=120.0,
-                )
+            loop = asyncio.get_running_loop()
+            result = await asyncio.wait_for(
+                loop.run_in_executor(None, _run),
+                timeout=120.0,
+            )
             return result
         except asyncio.TimeoutError:
             return {"success": False, "error": "Goal seek timed out (120s)"}

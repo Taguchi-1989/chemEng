@@ -10,6 +10,17 @@ from .config import AI_MODEL, ANTHROPIC_API_KEY, MAX_TOKENS
 
 logger = logging.getLogger("chemeng.ai")
 
+_client = None
+
+
+def _get_client():
+    """Lazy-initialize a singleton Anthropic client."""
+    global _client
+    if _client is None:
+        import anthropic
+        _client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    return _client
+
 
 def suggest_parameters(
     skill_id: str,
@@ -28,11 +39,6 @@ def suggest_parameters(
     """
     if not ANTHROPIC_API_KEY:
         raise RuntimeError("ANTHROPIC_API_KEY is not set")
-
-    try:
-        import anthropic
-    except ImportError:
-        raise RuntimeError("anthropic package is not installed")
 
     # Load skill schema
     try:
@@ -72,7 +78,7 @@ for the "{skill_name}" calculation in ChemEng.
 - Return ONLY the JSON array, no other text.
 """
 
-    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    client = _get_client()
 
     try:
         response = client.messages.create(

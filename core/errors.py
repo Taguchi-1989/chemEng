@@ -58,4 +58,4 @@ def safe_error_message(exc: Exception) -> str:
     # 未知の例外 → 参照IDでログに記録し、汎用メッセージを返す
     ref_id = uuid.uuid4().hex[:8]
     logger.error("Unexpected error (ref: %s): %s", ref_id, exc, exc_info=True)
-    return f"内部計算エラーが発生しました (ref: {ref_id})"
+    return f"Internal calculation error / 内部計算エラーが発生しました (ref: {ref_id})"

@@ -119,10 +119,11 @@ class FlowsheetData:
                 in_degree[tgt] += 1
 
         # Kahn's algorithm
-        queue = [bid for bid, deg in in_degree.items() if deg == 0]
+        from collections import deque
+        queue = deque(bid for bid, deg in in_degree.items() if deg == 0)
         order = []
         while queue:
-            node = queue.pop(0)
+            node = queue.popleft()
             order.append(node)
             for neighbor in adj[node]:
                 in_degree[neighbor] -= 1

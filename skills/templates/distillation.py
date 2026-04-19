@@ -466,7 +466,7 @@ def _gilliland_correlation(N_min: float, R_min: float, R: float) -> float:
         return float('inf')
     if X >= 1:
         # X >= 1 means very high reflux, approaching total reflux → N ≈ N_min
-        return N_min * 1.05
+        return N_min
 
     try:
         exponent = (1 + 54.4 * X) / (11 + 117.2 * X) * (X - 1) / math.sqrt(X)
