@@ -315,12 +315,19 @@ def create_app() -> FastAPI:
                 return forwarded.split(",")[-1].strip()
             return request.client.host if request.client else "unknown"
 
+        # Stricter rate limit for AI endpoints (costly API calls)
+        _AI_PREFIXES = ("/api/v1/chat", "/api/v1/suggest")
+        _AI_MAX_REQUESTS = 10  # 10 req/min for AI endpoints
+
         async def dispatch(self, request: Request, call_next):
             rate_limited_prefixes = ("/api/v1/calculate", "/api/v1/chat", "/api/v1/suggest", "/api/v1/feedback", "/api/v1/flowsheet")
             if not any(request.url.path.startswith(p) for p in rate_limited_prefixes):
                 return await call_next(request)
             client_ip = self._get_client_ip(request)
             now = _time.time()
+            # Use stricter limit for AI endpoints
+            is_ai = any(request.url.path.startswith(p) for p in self._AI_PREFIXES)
+            effective_max = self._AI_MAX_REQUESTS if is_ai else self.max_requests
 
             # Periodic cleanup to prevent unbounded memory growth
             if now - self._last_cleanup > self.window * 2 or len(self._requests) > 10000:
@@ -334,7 +341,7 @@ def create_app() -> FastAPI:
             self._requests[client_ip] = [
                 t for t in self._requests[client_ip] if now - t < self.window
             ]
-            if len(self._requests[client_ip]) >= self.max_requests:
+            if len(self._requests[client_ip]) >= effective_max:
                 return Response(
                     status_code=429,
                     content='{"detail":"Rate limit exceeded. Please wait. / レート制限超過。しばらくお待ちください。"}',
